@@ -132,27 +132,30 @@
         </div>
         
         <!-- 主要内容区域 -->
-        <div class="flex-1 flex">
-            <!-- 左侧玩家1区域 - 90度顺时针旋转 -->
-            <div class="w-1/3 bg-player1/10 flex flex-col transform rotate-90 origin-center mr-24">
-                <!-- 玩家1分数显示 -->
-                <div class="text-center p-2">
-                    <p class="text-player1 font-bold text-lg">玩家1</p>
-                    <p id="score1" class="text-player1 font-bold text-3xl">0</p>
-                </div>
-                
-                <!-- 玩家1倒计时显示 -->
-                <div class="text-center p-2">
-                    <div class="bg-player1/20 rounded-lg p-2 inline-block">
-                        <i class="fa fa-clock-o text-player1 mr-1"></i>
-                        <span id="countdown-player1" class="text-player1 font-bold text-lg">5</span>
+        <div class="flex-1 flex overflow-hidden relative">
+            <!-- 左侧玩家1区域容器 -->
+            <div class="w-1/3 bg-player1/10 relative overflow-hidden flex items-center justify-center">
+                <!-- 玩家1旋转区域 - 90度顺时针旋转 -->
+                <div class="w-full h-full flex flex-col transform rotate-90 origin-center">
+                    <!-- 玩家1分数显示 -->
+                    <div class="text-center p-2">
+                        <p class="text-player1 font-bold text-lg">玩家1</p>
+                        <p id="score1" class="text-player1 font-bold text-3xl">0</p>
                     </div>
-                </div>
-                
-                <!-- 玩家1选项区域 -->
-                <div class="flex-1 flex items-start justify-center p-16">
-                    <div id="options-player1" class="grid grid-cols-2 gap-4 w-48 h-32">
-                        <!-- 选项会动态生成 -->
+                    
+                    <!-- 玩家1倒计时显示 -->
+                    <div class="text-center p-2">
+                        <div class="bg-player1/20 rounded-lg p-2 inline-block">
+                            <i class="fa fa-clock-o text-player1 mr-1"></i>
+                            <span id="countdown-player1" class="text-player1 font-bold text-lg">5</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 玩家1选项区域 -->
+                    <div class="flex-1 flex items-start justify-center p-8">
+                        <div id="options-player1" class="grid grid-cols-2 gap-3 w-40 h-28">
+                            <!-- 选项会动态生成 -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -172,26 +175,29 @@
                 </div>
             </div>
             
-            <!-- 右侧玩家2区域 - 90度逆时针旋转 -->
-            <div class="w-1/3 bg-player2/10 flex flex-col transform -rotate-90 origin-center ml-24">
-                <!-- 玩家2分数显示 -->
-                <div class="text-center p-2">
-                    <p class="text-player2 font-bold text-lg">玩家2</p>
-                    <p id="score2" class="text-player2 font-bold text-3xl">0</p>
-                </div>
-                
-                <!-- 玩家2倒计时显示 -->
-                <div class="text-center p-2">
-                    <div class="bg-player2/20 rounded-lg p-2 inline-block">
-                        <i class="fa fa-clock-o text-player2 mr-1"></i>
-                        <span id="countdown-player2" class="text-player2 font-bold text-lg">5</span>
+            <!-- 右侧玩家2区域容器 -->
+            <div class="w-1/3 bg-player2/10 relative overflow-hidden flex items-center justify-center">
+                <!-- 玩家2旋转区域 - 90度逆时针旋转 -->
+                <div class="w-full h-full flex flex-col transform -rotate-90 origin-center">
+                    <!-- 玩家2分数显示 -->
+                    <div class="text-center p-2">
+                        <p class="text-player2 font-bold text-lg">玩家2</p>
+                        <p id="score2" class="text-player2 font-bold text-3xl">0</p>
                     </div>
-                </div>
-                
-                <!-- 玩家2选项区域 -->
-                <div class="flex-1 flex items-start justify-center p-16">
-                    <div id="options-player2" class="grid grid-cols-2 gap-4 w-48 h-32">
-                        <!-- 选项会动态生成 -->
+                    
+                    <!-- 玩家2倒计时显示 -->
+                    <div class="text-center p-2">
+                        <div class="bg-player2/20 rounded-lg p-2 inline-block">
+                            <i class="fa fa-clock-o text-player2 mr-1"></i>
+                            <span id="countdown-player2" class="text-player2 font-bold text-lg">5</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 玩家2选项区域 -->
+                    <div class="flex-1 flex items-start justify-center p-8">
+                        <div id="options-player2" class="grid grid-cols-2 gap-3 w-40 h-28">
+                            <!-- 选项会动态生成 -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -804,11 +810,22 @@
             // 设置样式（蓝色边框表示信息提示）
             notification.className = `fixed top-1/4 ${otherPlayer === 'player1' ? 'left-1/4' : 'right-1/4'} bg-white rounded-2xl shadow-2xl p-4 text-center z-[9999] border-4 border-blue-500 transform ${otherPlayer === 'player1' ? 'rotate-90' : '-rotate-90'}`;
             
-            // 设置文本内容
-            textEl.textContent = `${otherPlayerName}，题目已结束`;
-            textEl.className = `text-xl font-bold text-blue-600 mb-1`;
-            subtextEl.innerHTML = `正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span>`;
-            subtextEl.className = `text-lg text-gray-600 mb-1`;
+            // 检查是否是时间到期的情况
+            const isTimeUp = !gameActive && countdown <= 0;
+            
+            if (isTimeUp) {
+                // 时间到期的提示
+                textEl.textContent = `时间到！`;
+                textEl.className = `text-xl font-bold text-orange-600 mb-1`;
+                subtextEl.innerHTML = `正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span>`;
+                subtextEl.className = `text-lg text-gray-600 mb-1`;
+            } else {
+                // 正常的题目结束提示
+                textEl.textContent = `${otherPlayerName}，题目已结束`;
+                textEl.className = `text-xl font-bold text-blue-600 mb-1`;
+                subtextEl.innerHTML = `正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span>`;
+                subtextEl.className = `text-lg text-gray-600 mb-1`;
+            }
 
             // 显示提示
             notification.classList.remove('hidden');
@@ -879,8 +896,9 @@
                             btn.classList.add('bg-green-100', 'border-2', 'border-green-500');
                         });
                         
-                        // 显示时间到提示
-                        showTimeUpNotification();
+                        // 给两个玩家都显示时间到提示
+                        showAnswerToOtherPlayer('player1');
+                        showAnswerToOtherPlayer('player2');
                         
                         // 延迟进入下一轮
                         setTimeout(() => {
@@ -983,24 +1001,7 @@
             }, 2000);
         }
         
-        // 显示时间到期提示
-        function showTimeUpNotification() {
-            const notification = document.createElement('div');
-            notification.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm px-8 py-4 rounded-2xl shadow-lg z-[9999] border-2 border-orange-500';
-            notification.innerHTML = `
-                <div class="text-center">
-                    <i class="fa fa-clock-o text-orange-500 text-2xl mb-2"></i>
-                    <p class="text-lg font-bold text-orange-600">时间到！</p>
-                    <p class="text-sm text-gray-600">正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span></p>
-                </div>
-            `;
-            document.body.appendChild(notification);
-            
-            // 2秒后移除提示
-            setTimeout(() => {
-                notification.remove();
-            }, 2000);
-        }
+
         
         // 适配iPad旋转
         window.addEventListener('resize', () => {
