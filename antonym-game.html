@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>反义词大挑战 - 双人对战</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        player1: '#FF6B6B',
+                        player2: '#4ECDC4',
+                        neutral: '#F7FFF7',
+                        accent: '#FFD166',
+                        text: '#292F36'
+                    },
+                    fontFamily: {
+                        kids: ['"Comic Sans MS"', '"Marker Felt"', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .bounce-light {
+                animation: bounce-light 0.5s ease infinite alternate;
+            }
+            .pulse-slow {
+                animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .scale-hover {
+                transition: transform 0.2s;
+            }
+            .scale-hover:hover {
+                transform: scale(1.05);
+            }
+            .correct-animation {
+                animation: correct 0.5s ease-in-out;
+            }
+            @keyframes bounce-light {
+                from { transform: translateY(0); }
+                to { transform: translateY(-5px); }
+            }
+            @keyframes correct {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.2); }
+                100% { transform: scale(1); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-50 to-indigo-50 min-h-screen font-kids text-text overflow-hidden">
+    <!-- 开始界面 -->
+    <div id="start-screen" class="flex flex-col items-center justify-center h-screen p-6 z-30 relative">
+        <div class="text-center max-w-md mx-auto bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-500">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-player1 to-player2 mb-4">反义词大挑战</h1>
+            <p class="text-lg mb-6">两个人，一人一边<br>找出正确的反义词，看谁更快！</p>
+            
+            <div class="flex justify-center mb-8">
+                <div class="w-24 h-24 bg-player1 rounded-full flex items-center justify-center text-white text-4xl shadow-lg">
+                    <i class="fa fa-user"></i>
+                </div>
+                <div class="mx-4 text-2xl flex items-center">VS</div>
+                <div class="w-24 h-24 bg-player2 rounded-full flex items-center justify-center text-white text-4xl shadow-lg">
+                    <i class="fa fa-user"></i>
+                </div>
+            </div>
+            
+            <button id="start-btn" class="bg-accent hover:bg-yellow-400 text-text font-bold py-3 px-8 rounded-full text-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                开始游戏 <i class="fa fa-play ml-2"></i>
+            </button>
+            
+            <div class="mt-6 text-sm text-gray-500">
+                <p>适合年龄：6-9岁</p>
+            </div>
+        </div>
+        
+        <!-- 装饰元素 -->
+        <div class="absolute top-10 left-10 text-5xl text-player1/30">
+            <i class="fa fa-star bounce-light"></i>
+        </div>
+        <div class="absolute bottom-10 right-10 text-5xl text-player2/30">
+            <i class="fa fa-heart bounce-light" style="animation-delay: 0.2s"></i>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="hidden h-screen flex flex-col">
+        <!-- 顶部信息栏 -->
+        <div class="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-md">
+            <div class="bg-accent px-4 py-2 rounded-full text-sm font-bold shadow-md">
+                <span id="round-counter">第1轮</span> / 共10轮
+            </div>
+            
+            <div id="timer" class="text-2xl font-bold text-accent bg-white/90 backdrop-blur-sm px-6 py-2 rounded-full shadow-md">
+                <i class="fa fa-clock-o mr-2"></i><span id="countdown">5</span>
+            </div>
+        </div>
+        
+        <!-- 主要内容区域 -->
+        <div class="flex-1 flex">
+            <!-- 左侧玩家1区域 - 90度顺时针旋转 -->
+            <div class="w-1/3 bg-player1/10 flex flex-col transform rotate-90 origin-center">
+                <!-- 玩家1分数显示 -->
+                <div class="text-center p-2">
+                    <p class="text-player1 font-bold text-sm">玩家1</p>
+                    <p id="score1" class="text-player1 font-bold text-lg">0</p>
+                </div>
+                
+                <!-- 玩家1倒计时显示 -->
+                <div class="text-center p-2">
+                    <div class="bg-player1/20 rounded-lg p-2 inline-block">
+                        <i class="fa fa-clock-o text-player1 mr-1"></i>
+                        <span id="countdown-player1" class="text-player1 font-bold text-lg">5</span>
+                    </div>
+                </div>
+                
+                <!-- 玩家1选择提示 -->
+                <div class="text-center p-2">
+                    <p class="text-player1 font-bold text-sm">玩家1选择</p>
+                </div>
+                
+                <!-- 玩家1选项区域 -->
+                <div class="flex-1 flex items-center justify-center p-4">
+                    <div id="options-player1" class="grid grid-cols-2 gap-4 w-80 h-80">
+                        <!-- 选项会动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 中间目标字区域 -->
+            <div class="w-1/3 bg-white flex flex-col justify-center items-center p-4">
+                <!-- 上方目标字卡片 - 跟玩家1方向一致（顺时针旋转90度） -->
+                <div class="bg-white rounded-3xl shadow-2xl p-8 text-center mb-4 transform rotate-90">
+                    <p class="text-[clamp(2.5rem,8vw,4rem)] font-bold text-text" id="target-word">大</p>
+                    <p class="text-gray-500 mt-2 text-sm">找出它的反义词！</p>
+                </div>
+                
+
+                
+                <!-- 下方目标字卡片 - 跟玩家2方向一致（逆时针旋转90度） -->
+                <div class="bg-white rounded-3xl shadow-2xl p-8 text-center transform -rotate-90">
+                    <p class="text-[clamp(2.5rem,8vw,4rem)] font-bold text-text" id="target-word-2">大</p>
+                    <p class="text-gray-500 mt-2 text-sm">找出它的反义词！</p>
+                </div>
+            </div>
+            
+            <!-- 右侧玩家2区域 - 90度逆时针旋转 -->
+            <div class="w-1/3 bg-player2/10 flex flex-col transform -rotate-90 origin-center">
+                <!-- 玩家2分数显示 -->
+                <div class="text-center p-2">
+                    <p class="text-player2 font-bold text-sm">玩家2</p>
+                    <p id="score2" class="text-player2 font-bold text-lg">0</p>
+                </div>
+                
+                <!-- 玩家2倒计时显示 -->
+                <div class="text-center p-2">
+                    <div class="bg-player2/20 rounded-lg p-2 inline-block">
+                        <i class="fa fa-clock-o text-player2 mr-1"></i>
+                        <span id="countdown-player2" class="text-player2 font-bold text-lg">5</span>
+                    </div>
+                </div>
+                
+                <!-- 玩家2选择提示 -->
+                <div class="text-center p-2">
+                    <p class="text-player2 font-bold text-sm">玩家2选择</p>
+                </div>
+                
+                <!-- 玩家2选项区域 -->
+                <div class="flex-1 flex items-center justify-center p-4">
+                    <div id="options-player2" class="grid grid-cols-2 gap-4 w-80 h-80">
+                        <!-- 选项会动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 结果界面 -->
+    <div id="result-screen" class="hidden flex flex-col items-center justify-center h-screen p-6 z-20 relative bg-white/90 backdrop-blur-md">
+        <div class="text-center max-w-md mx-auto">
+            <h2 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold mb-6">游戏结束！</h2>
+            
+            <div class="bg-neutral rounded-2xl shadow-lg p-6 mb-8">
+                <div class="flex justify-between items-center mb-4 pb-4 border-b">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-player1 rounded-full flex items-center justify-center text-white mr-2">
+                            <i class="fa fa-user"></i>
+                        </div>
+                        <span class="font-bold">玩家1</span>
+                    </div>
+                    <span id="final-score1" class="text-2xl font-bold text-player1">0</span>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-player2 rounded-full flex items-center justify-center text-white mr-2">
+                            <i class="fa fa-user"></i>
+                        </div>
+                        <span class="font-bold">玩家2</span>
+                    </div>
+                    <span id="final-score2" class="text-2xl font-bold text-player2">0</span>
+                </div>
+            </div>
+            
+            <div id="winner-message" class="text-xl font-bold mb-8 p-4 rounded-xl">
+                平局！你们都很棒！
+            </div>
+            
+            <button id="restart-btn" class="bg-accent hover:bg-yellow-400 text-text font-bold py-3 px-8 rounded-full text-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                再玩一次 <i class="fa fa-refresh ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 反义词数据库 - 200对反义词
+        const antonymsList = [
+            // 形容词类
+            { word: "大", antonym: "小" },
+            { word: "多", antonym: "少" },
+            { word: "高", antonym: "矮" },
+            { word: "胖", antonym: "瘦" },
+            { word: "长", antonym: "短" },
+            { word: "宽", antonym: "窄" },
+            { word: "厚", antonym: "薄" },
+            { word: "粗", antonym: "细" },
+            { word: "快", antonym: "慢" },
+            { word: "远", antonym: "近" },
+            { word: "黑", antonym: "白" },
+            { word: "红", antonym: "绿" },
+            { word: "明", antonym: "暗" },
+            { word: "亮", antonym: "暗" },
+            { word: "甜", antonym: "苦" },
+            { word: "酸", antonym: "甜" },
+            { word: "咸", antonym: "淡" },
+            { word: "冷", antonym: "热" },
+            { word: "温", antonym: "凉" },
+            { word: "干", antonym: "湿" },
+            { word: "软", antonym: "硬" },
+            { word: "松", antonym: "紧" },
+            { word: "新", antonym: "旧" },
+            { word: "好", antonym: "坏" },
+            { word: "真", antonym: "假" },
+            { word: "美", antonym: "丑" },
+            { word: "香", antonym: "臭" },
+            { word: "轻", antonym: "重" },
+            { word: "深", antonym: "浅" },
+            { word: "浓", antonym: "淡" },
+            { word: "熟", antonym: "生" },
+            { word: "正", antonym: "歪" },
+            { word: "直", antonym: "弯" },
+            { word: "满", antonym: "空" },
+            { word: "尖", antonym: "钝" },
+            { word: "光滑", antonym: "粗糙" },
+            { word: "整齐", antonym: "凌乱" },
+            { word: "干净", antonym: "肮脏" },
+            { word: "安静", antonym: "热闹" },
+            { word: "勤劳", antonym: "懒惰" },
+            { word: "聪明", antonym: "愚蠢" },
+            { word: "勇敢", antonym: "胆小" },
+            { word: "诚实", antonym: "虚伪" },
+            { word: "热情", antonym: "冷漠" },
+            { word: "善良", antonym: "凶恶" },
+            { word: "谦虚", antonym: "骄傲" },
+            { word: "活泼", antonym: "呆板" },
+            { word: "机灵", antonym: "笨拙" },
+            { word: "温柔", antonym: "粗暴" },
+            
+            // 动词类
+            { word: "开", antonym: "关" },
+            { word: "进", antonym: "出" },
+            { word: "来", antonym: "去" },
+            { word: "上", antonym: "下" },
+            { word: "升", antonym: "降" },
+            { word: "起", antonym: "落" },
+            { word: "推", antonym: "拉" },
+            { word: "涨", antonym: "落" },
+            { word: "得", antonym: "失" },
+            { word: "买", antonym: "卖" },
+            { word: "爱", antonym: "恨" },
+            { word: "哭", antonym: "笑" },
+            { word: "醒", antonym: "睡" },
+            { word: "迎", antonym: "送" },
+            { word: "问", antonym: "答" },
+            { word: "分", antonym: "合" },
+            { word: "死", antonym: "活" },
+            { word: "存", antonym: "亡" },
+            { word: "收", antonym: "放" },
+            { word: "伸", antonym: "缩" },
+            { word: "举", antonym: "放" },
+            { word: "加", antonym: "减" },
+            { word: "胜", antonym: "败" },
+            { word: "输", antonym: "赢" },
+            { word: "有", antonym: "无" },
+            { word: "动", antonym: "静" },
+            { word: "攻", antonym: "守" },
+            { word: "传", antonym: "接" },
+            { word: "涨", antonym: "跌" },
+            { word: "增", antonym: "减" },
+            { word: "生", antonym: "灭" },
+            { word: "始", antonym: "终" },
+            { word: "止", antonym: "行" },
+            { word: "追", antonym: "逃" },
+            { word: "落", antonym: "升" },
+            { word: "借", antonym: "还" },
+            { word: "取", antonym: "舍" },
+            { word: "吞", antonym: "吐" },
+            { word: "吸", antonym: "呼" },
+            
+            // 方位词类
+            { word: "前", antonym: "后" },
+            { word: "左", antonym: "右" },
+            { word: "里", antonym: "外" },
+            { word: "东", antonym: "西" },
+            { word: "南", antonym: "北" },
+            { word: "内", antonym: "外" },
+            { word: "远", antonym: "近" },
+            { word: "高", antonym: "低" },
+            { word: "横", antonym: "竖" },
+            { word: "斜", antonym: "正" },
+            { word: "天", antonym: "地" },
+            { word: "昼", antonym: "夜" },
+            { word: "春", antonym: "秋" },
+            { word: "夏", antonym: "冬" },
+            { word: "早", antonym: "晚" },
+            { word: "晨", antonym: "昏" },
+            { word: "古", antonym: "今" },
+            { word: "朝", antonym: "暮" },
+            { word: "首", antonym: "尾" },
+            
+            // 其他类别
+            { word: "是", antonym: "否" },
+            { word: "对", antonym: "错" },
+            { word: "该", antonym: "不该" },
+            { word: "能", antonym: "不能" },
+            { word: "会", antonym: "不会" },
+            { word: "可以", antonym: "不可以" },
+            { word: "应该", antonym: "不应该" },
+            { word: "必须", antonym: "不必" },
+            { word: "也许", antonym: "一定" },
+            { word: "可能", antonym: "不可能" },
+            { word: "经常", antonym: "偶尔" },
+            { word: "有时", antonym: "永远" },
+            { word: "许多", antonym: "很少" },
+            { word: "全部", antonym: "部分" },
+            { word: "一起", antonym: "分开" },
+            { word: "容易", antonym: "困难" },
+            { word: "简单", antonym: "复杂" },
+            { word: "高兴", antonym: "难过" },
+            { word: "安全", antonym: "危险" },
+            { word: "成功", antonym: "失败" },
+            { word: "同意", antonym: "反对" },
+            { word: "熟悉", antonym: "陌生" },
+            { word: "明白", antonym: "糊涂" },
+            { word: "清楚", antonym: "模糊" },
+            { word: "紧张", antonym: "轻松" },
+            { word: "忙碌", antonym: "悠闲" },
+            { word: "笔直", antonym: "弯曲" },
+            { word: "凸起", antonym: "凹陷" },
+            { word: "新鲜", antonym: "陈旧" },
+            { word: "平坦", antonym: "崎岖" },
+            { word: "聚合", antonym: "分散" },
+            { word: "坚定", antonym: "动摇" },
+            { word: "团结", antonym: "分裂" },
+            { word: "丰富", antonym: "贫乏" },
+            { word: "坎坷", antonym: "平坦" },
+            { word: "曲折", antonym: "平坦" },
+            { word: "和平", antonym: "战争" },
+            { word: "富裕", antonym: "贫穷" },
+            { word: "强大", antonym: "弱小" },
+            { word: "复杂", antonym: "单一" },
+            { word: "糊涂", antonym: "清醒" },
+            { word: "完整", antonym: "残缺" },
+            { word: "正常", antonym: "异常" },
+            { word: "普通", antonym: "特殊" },
+            { word: "懵懂", antonym: "明白" },
+            { word: "浑浊", antonym: "清澈" },
+            { word: "繁荣", antonym: "衰败" },
+            { word: "兴旺", antonym: "萧条" },
+            { word: "宽阔", antonym: "狭窄" },
+            { word: "锋利", antonym: "滞钝" },
+            { word: "宽敞", antonym: "狭小" },
+            { word: "舒展", antonym: "蜷缩" },
+            { word: "敏捷", antonym: "迟缓" },
+            { word: "清晰", antonym: "朦胧" },
+            { word: "陡峭", antonym: "平缓" },
+            { word: "缓和", antonym: "激烈" },
+            { word: "嘈杂", antonym: "寂静" },
+            { word: "松弛", antonym: "紧张" },
+            { word: "微弱", antonym: "强烈" },
+            { word: "蓬勃", antonym: "衰败" },
+            { word: "旺盛", antonym: "枯萎" },
+            { word: "镇静", antonym: "慌张" },
+            { word: "沉着", antonym: "慌张" },
+            { word: "缓慢", antonym: "快速" },
+            { word: "永久", antonym: "暂时" },
+            { word: "辽阔", antonym: "狭窄" },
+            { word: "巨大", antonym: "渺小" },
+            { word: "光明", antonym: "黑暗" },
+            { word: "温暖", antonym: "寒冷" },
+            { word: "拮据", antonym: "富裕" },
+            { word: "愚笨", antonym: "聪明" },
+            { word: "笨拙", antonym: "伶俐" },
+            { word: "狠毒", antonym: "善良" },
+            { word: "逼仄", antonym: "宽阔" },
+            { word: "吝啬", antonym: "慷慨" },
+            { word: "潮湿", antonym: "干燥" },
+            { word: "短暂", antonym: "永久" },
+            { word: "漆黑", antonym: "明亮" },
+            { word: "喧闹", antonym: "寂静" },
+            { word: "柔软", antonym: "坚硬" },
+            { word: "清澈", antonym: "浑浊" },
+            { word: "蜿蜒", antonym: "笔直" },
+            { word: "生疏", antonym: "熟悉" },
+            { word: "轻盈", antonym: "笨重" },
+            { word: "腐烂", antonym: "新鲜" },
+            { word: "繁重", antonym: "轻松" },
+            { word: "悲伤", antonym: "愉快" },
+            { word: "炎热", antonym: "寒冷" },
+            { word: "犹豫", antonym: "果断" },
+            { word: "软弱", antonym: "坚强" }
+        ];
+        
+        // 游戏状态变量
+        let currentWord = null;
+        let currentAntonym = null;
+        let score1 = 0;
+        let score2 = 0;
+        let round = 1;
+        let gameActive = false;
+        let timerInterval = null;
+        let countdown = 10;
+        let usedIndices = [];
+        
+        // DOM元素
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const targetWordEl = document.getElementById('target-word');
+        const targetWord2El = document.getElementById('target-word-2');
+        const optionsPlayer1 = document.getElementById('options-player1');
+        const optionsPlayer2 = document.getElementById('options-player2');
+        const score1El = document.getElementById('score1');
+        const score2El = document.getElementById('score2');
+        const roundCounter = document.getElementById('round-counter');
+        const countdownEl = document.getElementById('countdown');
+        const countdownPlayer1El = document.getElementById('countdown-player1');
+        const countdownPlayer2El = document.getElementById('countdown-player2');
+        const finalScore1El = document.getElementById('final-score1');
+        const finalScore2El = document.getElementById('final-score2');
+        const winnerMessageEl = document.getElementById('winner-message');
+        
+        // 事件监听
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', restartGame);
+        
+        // 开始游戏
+        function startGame() {
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            score1 = 0;
+            score2 = 0;
+            round = 1;
+            usedIndices = [];
+            updateScores();
+            nextRound();
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            resultScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            score1 = 0;
+            score2 = 0;
+            round = 1;
+            usedIndices = [];
+            updateScores();
+            nextRound();
+        }
+        
+        // 下一轮
+        function nextRound() {
+            if (round > 10) {
+                endGame();
+                return;
+            }
+            
+            gameActive = true;
+            roundCounter.textContent = `第${round}轮`;
+            
+            // 选择一个未使用过的反义词对
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * antonymsList.length);
+            } while (usedIndices.includes(randomIndex));
+            
+            usedIndices.push(randomIndex);
+            const pair = antonymsList[randomIndex];
+            currentWord = pair.word;
+            currentAntonym = pair.antonym;
+            
+            // 显示目标字（两个卡片）
+            targetWordEl.textContent = currentWord;
+            targetWord2El.textContent = currentWord;
+            targetWordEl.classList.remove('correct-animation');
+            targetWord2El.classList.remove('correct-animation');
+            void targetWordEl.offsetWidth; // 重置动画
+            void targetWord2El.offsetWidth; // 重置动画
+            targetWordEl.classList.add('correct-animation');
+            targetWord2El.classList.add('correct-animation');
+            
+            // 生成选项
+            generateOptions();
+            
+            // 开始倒计时
+            startCountdown();
+        }
+        
+        // 生成选项
+        function generateOptions() {
+            // 清空之前的选项
+            optionsPlayer1.innerHTML = '';
+            optionsPlayer2.innerHTML = '';
+            
+            // 获取当前目标字的字数
+            const targetWordLength = currentWord.length;
+            
+            // 收集其他可能的干扰项（字数要跟目标字一样）
+            const distractors = [];
+            const sameLengthWords = antonymsList.filter(item => 
+                item.word.length === targetWordLength && 
+                item.word !== currentAntonym && 
+                item.antonym !== currentAntonym
+            );
+            
+            // 如果同字数的词不够，从所有词中随机选择
+            const availableWords = sameLengthWords.length >= 3 ? sameLengthWords : antonymsList;
+            
+            while (distractors.length < 3) {
+                const randomItem = availableWords[Math.floor(Math.random() * availableWords.length)];
+                const randomWord = randomItem.word;
+                if (randomWord !== currentAntonym && !distractors.includes(randomWord)) {
+                    distractors.push(randomWord);
+                }
+            }
+            
+            // 选项列表：正确答案 + 3个干扰项
+            const allOptions = [currentAntonym, ...distractors];
+            
+            // 打乱顺序
+            const shuffledOptions = shuffleArray([...allOptions]);
+            
+            // 为两个玩家生成相同的选项（顺序可能不同）
+            const player1Options = shuffleArray([...allOptions]);
+            const player2Options = shuffleArray([...allOptions]);
+            
+            console.log('生成选项:', { 
+                targetWord: currentWord, 
+                targetWordLength, 
+                player1Options, 
+                player2Options, 
+                currentAntonym 
+            });
+            
+            // 创建玩家1的选项按钮
+            player1Options.forEach(option => {
+                const button = createOptionButton(option, 'player1');
+                optionsPlayer1.appendChild(button);
+            });
+            
+            // 创建玩家2的选项按钮
+            player2Options.forEach(option => {
+                const button = createOptionButton(option, 'player2');
+                optionsPlayer2.appendChild(button);
+            });
+            
+            console.log('选项按钮已创建:', {
+                player1Count: optionsPlayer1.children.length,
+                player2Count: optionsPlayer2.children.length
+            });
+        }
+        
+        // 创建选项按钮
+        function createOptionButton(text, player) {
+            const button = document.createElement('button');
+            
+            // 根据字数调整字体大小
+            let fontSize = 'text-[clamp(1.5rem,4vw,2.5rem)]';
+            if (text.length === 2) {
+                fontSize = 'text-[clamp(1.2rem,3vw,2rem)]';
+            } else if (text.length === 3) {
+                fontSize = 'text-[clamp(1rem,2.5vw,1.8rem)]';
+            } else if (text.length >= 4) {
+                fontSize = 'text-[clamp(0.8rem,2vw,1.5rem)]';
+            }
+            
+            button.className = `bg-white rounded-2xl shadow-lg p-4 ${fontSize} font-bold transition-all duration-200 hover:scale-105 active:scale-95 min-w-[160px] min-h-[160px] ${
+                player === 'player1' ? 'text-player1 hover:bg-player1/10 border-4 border-player1/30' : 'text-player2 hover:bg-player2/10 border-4 border-player2/30'
+            }`;
+            button.textContent = text;
+            button.dataset.option = text;
+            button.addEventListener('click', () => handleAnswer(button, player));
+            return button;
+        }
+        
+        // 处理答案选择
+        function handleAnswer(button, player) {
+            if (!gameActive) return;
+            
+            const selectedOption = button.dataset.option;
+            const isCorrect = selectedOption === currentAntonym;
+            
+            // 立即结束当前轮次，防止重复答题
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            if (isCorrect) {
+                // 答对了
+                button.classList.add('bg-green-100', 'border-2', 'border-green-500', 'correct-animation');
+                
+                // 给答题者加分
+                if (player === 'player1') {
+                    score1++;
+                } else {
+                    score2++;
+                }
+                updateScores();
+                
+                // 提示另一方正确答案
+                const otherPlayer = player === 'player1' ? 'player2' : 'player1';
+                showAnswerToOtherPlayer(otherPlayer);
+                
+            } else {
+                // 答错了
+                button.classList.add('bg-red-100', 'border-2', 'border-red-500');
+                
+                // 高亮正确答案
+                const correctButtons = document.querySelectorAll(`[data-option="${currentAntonym}"]`);
+                correctButtons.forEach(btn => {
+                    btn.classList.add('bg-green-100', 'border-2', 'border-green-500');
+                });
+                
+                // 显示答错提示
+                showWrongAnswerHint(player);
+            }
+            
+            // 延迟进入下一轮
+            setTimeout(() => {
+                round++;
+                nextRound();
+            }, 3000);
+        }
+        
+        // 提示另一方正确答案
+        function showAnswerToOtherPlayer(otherPlayer) {
+            const otherPlayerName = otherPlayer === 'player1' ? '玩家1' : '玩家2';
+            
+            // 创建提示元素
+            const notification = document.createElement('div');
+            notification.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 text-center z-50 border-4 border-blue-500`;
+            
+            // 根据另一方设置旋转方向
+            if (otherPlayer === 'player1') {
+                notification.className += ' transform rotate-90';
+            } else {
+                notification.className += ' transform -rotate-90';
+            }
+            
+            notification.innerHTML = `
+                <p class="text-2xl font-bold text-blue-600 mb-2">${otherPlayerName}，题目已结束</p>
+                <p class="text-lg text-gray-600 mb-2">正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span></p>
+                <p class="text-sm text-gray-500">准备下一题</p>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 3秒后移除提示
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // 显示答错提示
+        function showWrongAnswerHint(player) {
+            const playerName = player === 'player1' ? '玩家1' : '玩家2';
+            
+            // 创建提示元素
+            const notification = document.createElement('div');
+            notification.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 text-center z-50 border-4 border-red-500`;
+            
+            // 根据答题者设置旋转方向
+            if (player === 'player1') {
+                notification.className += ' transform rotate-90';
+            } else {
+                notification.className += ' transform -rotate-90';
+            }
+            
+            notification.innerHTML = `
+                <p class="text-2xl font-bold text-red-600 mb-2">${playerName} 答错了</p>
+                <p class="text-lg text-gray-600 mb-2">正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span></p>
+                <p class="text-sm text-gray-500">继续加油！</p>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 1.5秒后移除提示
+            setTimeout(() => {
+                notification.remove();
+            }, 1500);
+        }
+        
+        // 开始倒计时
+        function startCountdown() {
+            clearInterval(timerInterval);
+            countdown = 10;
+            countdownEl.textContent = countdown;
+            countdownPlayer1El.textContent = countdown;
+            countdownPlayer2El.textContent = countdown;
+            
+            timerInterval = setInterval(() => {
+                countdown--;
+                countdownEl.textContent = countdown;
+                countdownPlayer1El.textContent = countdown;
+                countdownPlayer2El.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(timerInterval);
+                    if (gameActive) {
+                        // 时间到，无人回答
+                        gameActive = false;
+                        
+                        // 显示正确答案
+                        const correctButtons = document.querySelectorAll(`[data-option="${currentAntonym}"]`);
+                        correctButtons.forEach(btn => {
+                            btn.classList.add('bg-green-100', 'border-2', 'border-green-500');
+                        });
+                        
+                        // 延迟进入下一轮
+                        setTimeout(() => {
+                            round++;
+                            nextRound();
+                        }, 2000);
+                    }
+                }
+            }, 1000);
+        }
+        
+        // 更新分数显示
+        function updateScores() {
+            score1El.textContent = score1;
+            score2El.textContent = score2;
+        }
+        
+        // 结束游戏
+        function endGame() {
+            clearInterval(timerInterval);
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            // 显示最终分数
+            finalScore1El.textContent = score1;
+            finalScore2El.textContent = score2;
+            
+            // 显示获胜者
+            if (score1 > score2) {
+                winnerMessageEl.textContent = "玩家1获胜！太棒了！";
+                winnerMessageEl.className = "text-xl font-bold mb-8 p-4 rounded-xl bg-player1/20 text-player1";
+            } else if (score2 > score1) {
+                winnerMessageEl.textContent = "玩家2获胜！太厉害了！";
+                winnerMessageEl.className = "text-xl font-bold mb-8 p-4 rounded-xl bg-player2/20 text-player2";
+            } else {
+                winnerMessageEl.textContent = "平局！你们都很棒！";
+                winnerMessageEl.className = "text-xl font-bold mb-8 p-4 rounded-xl bg-accent/20 text-text";
+            }
+        }
+        
+        // 打乱数组顺序的工具函数
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        // 适配iPad旋转
+        window.addEventListener('resize', () => {
+            // 可以添加旋转屏幕的提示
+        });
+    </script>
+</body>
+</html>
