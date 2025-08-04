@@ -135,7 +135,7 @@
                 
                 <!-- 玩家1选项区域 -->
                 <div class="flex-1 flex items-center justify-center p-4">
-                    <div id="options-player1" class="grid grid-cols-2 gap-3 w-64 h-64">
+                    <div id="options-player1" class="grid grid-cols-2 gap-2 w-48 h-48">
                         <!-- 选项会动态生成 -->
                     </div>
                 </div>
@@ -181,7 +181,7 @@
                 
                 <!-- 玩家2选项区域 -->
                 <div class="flex-1 flex items-center justify-center p-4">
-                    <div id="options-player2" class="grid grid-cols-2 gap-3 w-64 h-64">
+                    <div id="options-player2" class="grid grid-cols-2 gap-2 w-48 h-48">
                         <!-- 选项会动态生成 -->
                     </div>
                 </div>
@@ -610,7 +610,7 @@
                 fontSize = 'text-[clamp(0.8rem,2vw,1.5rem)]';
             }
             
-            button.className = `bg-white rounded-2xl shadow-lg p-3 ${fontSize} font-bold transition-all duration-200 hover:scale-105 active:scale-95 min-w-[120px] min-h-[120px] ${
+            button.className = `bg-white rounded-2xl shadow-lg p-2 ${fontSize} font-bold transition-all duration-200 hover:scale-105 active:scale-95 min-w-[100px] min-h-[100px] ${
                 player === 'player1' ? 'text-player1 hover:bg-player1/10 border-4 border-player1/30' : 'text-player2 hover:bg-player2/10 border-4 border-player2/30'
             }`;
             button.textContent = text;
