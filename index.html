@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>儿童学习游戏 - 数学与语文练习</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        danger: '#EF4444',
+                        neutral: '#F7FFF7',
+                        text: '#1F2937',
+                        math: '#8B5CF6',
+                        chinese: '#06B6D4'
+                    },
+                    fontFamily: {
+                        kids: ['"Comic Sans MS"', '"Marker Felt"', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .bounce-light {
+                animation: bounce-light 0.5s ease infinite alternate;
+            }
+            .pulse-slow {
+                animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .scale-hover {
+                transition: transform 0.2s;
+            }
+            .scale-hover:hover {
+                transform: scale(1.05);
+            }
+            .float-animation {
+                animation: float 3s ease-in-out infinite;
+            }
+            @keyframes bounce-light {
+                from { transform: translateY(0); }
+                to { transform: translateY(-5px); }
+            }
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen font-kids text-text overflow-hidden">
+    
+    <!-- 主界面 -->
+    <div class="flex flex-col items-center justify-center h-screen p-6 relative">
+        <div class="text-center max-w-4xl mx-auto">
+            <!-- 标题区域 -->
+            <div class="mb-12">
+                <h1 class="text-[clamp(2.5rem,8vw,4rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-math to-chinese mb-4">
+                    儿童学习游戏
+                </h1>
+                <p class="text-xl text-gray-600 mb-2">让学习变得更有趣！</p>
+                <p class="text-lg text-gray-500">适合6-12岁儿童</p>
+            </div>
+            
+            <!-- 游戏选择区域 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                
+                <!-- 数学练习 -->
+                <div class="game-card bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-math/20 hover:border-math/40">
+                    <div class="text-center mb-6">
+                        <div class="w-24 h-24 bg-gradient-to-br from-math to-purple-600 rounded-full flex items-center justify-center text-white text-4xl shadow-lg mx-auto mb-4 float-animation">
+                            <i class="fa fa-calculator"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-math mb-2">数学练习</h2>
+                        <p class="text-gray-600 text-sm">加减乘除，提升计算能力</p>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-star text-yellow-400 mr-2"></i>
+                            <span>适合年龄：6-9岁</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-clock-o text-blue-400 mr-2"></i>
+                            <span>练习时间：10-20分钟</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-trophy text-orange-400 mr-2"></i>
+                            <span>难度：可调节</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="window.location.href='math-practice.html'" class="w-full bg-gradient-to-r from-math to-purple-600 hover:from-purple-600 hover:to-math text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                        开始练习 <i class="fa fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- 反义词单人模式 -->
+                <div class="game-card bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-chinese/20 hover:border-chinese/40">
+                    <div class="text-center mb-6">
+                        <div class="w-24 h-24 bg-gradient-to-br from-chinese to-blue-500 rounded-full flex items-center justify-center text-white text-4xl shadow-lg mx-auto mb-4 float-animation" style="animation-delay: 0.2s">
+                            <i class="fa fa-user"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-chinese mb-2">反义词挑战</h2>
+                        <p class="text-gray-600 text-sm">单人闯关，挑战自我</p>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-star text-yellow-400 mr-2"></i>
+                            <span>适合年龄：6-12岁</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-clock-o text-blue-400 mr-2"></i>
+                            <span>游戏时间：5-15分钟</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-trophy text-orange-400 mr-2"></i>
+                            <span>关卡：19关</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="window.location.href='antonym-solo.html'" class="w-full bg-gradient-to-r from-chinese to-blue-500 hover:from-blue-500 hover:to-chinese text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                        开始挑战 <i class="fa fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- 反义词双人对战 -->
+                <div class="game-card bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-accent/20 hover:border-accent/40">
+                    <div class="text-center mb-6">
+                        <div class="w-24 h-24 bg-gradient-to-br from-accent to-orange-500 rounded-full flex items-center justify-center text-white text-4xl shadow-lg mx-auto mb-4 float-animation" style="animation-delay: 0.4s">
+                            <i class="fa fa-users"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-accent mb-2">反义词对战</h2>
+                        <p class="text-gray-600 text-sm">双人竞技，看谁更快</p>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-star text-yellow-400 mr-2"></i>
+                            <span>适合年龄：6-9岁</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-clock-o text-blue-400 mr-2"></i>
+                            <span>游戏时间：3-8分钟</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-trophy text-orange-400 mr-2"></i>
+                            <span>模式：双人对战</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="window.location.href='antonym-game.html'" class="w-full bg-gradient-to-r from-accent to-orange-500 hover:from-orange-500 hover:to-accent text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                        开始对战 <i class="fa fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 底部信息 -->
+            <div class="text-center text-gray-500 text-sm">
+                <p class="mb-2">🎮 专为儿童设计的学习游戏</p>
+                <p>💡 寓教于乐，快乐成长</p>
+            </div>
+        </div>
+        
+        <!-- 装饰元素 -->
+        <div class="absolute top-10 left-10 text-4xl text-math/30">
+            <i class="fa fa-star bounce-light"></i>
+        </div>
+        <div class="absolute bottom-10 right-10 text-4xl text-chinese/30">
+            <i class="fa fa-heart bounce-light" style="animation-delay: 0.3s"></i>
+        </div>
+        <div class="absolute top-1/4 right-20 text-3xl text-accent/30">
+            <i class="fa fa-trophy bounce-light" style="animation-delay: 0.6s"></i>
+        </div>
+        <div class="absolute bottom-1/4 left-20 text-3xl text-primary/30">
+            <i class="fa fa-graduation-cap bounce-light" style="animation-delay: 0.9s"></i>
+        </div>
+    </div>
+
+    <script>
+        // 添加页面加载动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const gameCards = document.querySelectorAll('.game-card');
+            gameCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease-out';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html> 
