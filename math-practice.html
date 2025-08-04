@@ -254,6 +254,27 @@
             visibility: visible;
         }
         
+        /* 错题记录按钮 */
+        .wrong-questions-btn {
+            background: #6B7280;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            transform: translateY(0);
+        }
+        
+        .wrong-questions-btn:hover {
+            background: #4B5563;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
         /* 开始按钮 */
         .start-btn {
             background: #EC4899;
@@ -427,6 +448,14 @@
         
         /* 结果区域 */
         .results-area {
+            display: none;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        
+        .wrong-questions-area {
             display: none;
             background: white;
             border-radius: 1rem;
@@ -753,6 +782,9 @@
                 </div>
             </div>
             <div style="text-align: center; margin-top: 2rem;">
+                <button id="wrong-questions-btn" class="wrong-questions-btn" style="margin-bottom: 1rem;">
+                    📝 错题记录
+                </button>
                 <button id="start-btn" class="start-btn">
                     开始练习 <i class="fa fa-play" style="margin-left: 0.5rem;"></i>
                 </button>
@@ -865,6 +897,24 @@
             <div style="text-align: center;">
                 <button id="restart-btn" class="start-btn" style="background: #4F46E5;">
                     再练一次 <i class="fa fa-refresh" style="margin-left: 0.5rem;"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 错题记录区域 -->
+        <div id="wrong-questions-area" class="wrong-questions-area" style="display: none;">
+            <h2 class="result-title">错题记录</h2>
+            
+            <div id="wrong-questions-list" style="margin-bottom: 2rem;">
+                <!-- 错题列表将通过JS动态填充 -->
+            </div>
+            
+            <div style="text-align: center;">
+                <button id="clear-wrong-questions-btn" class="start-btn" style="background: #EF4444; margin-right: 1rem;">
+                    清空错题记录
+                </button>
+                <button id="back-to-settings-btn" class="start-btn" style="background: #6B7280;">
+                    返回首页
                 </button>
             </div>
         </div>
@@ -1130,9 +1180,13 @@
         const settingsPanel = document.getElementById('settings-panel');
         const exerciseArea = document.getElementById('exercise-area');
         const resultsArea = document.getElementById('results-area');
+        const wrongQuestionsArea = document.getElementById('wrong-questions-area');
         const settingsBtn = document.getElementById('settings-btn');
         const startBtn = document.getElementById('start-btn');
         const restartBtn = document.getElementById('restart-btn');
+        const wrongQuestionsBtn = document.getElementById('wrong-questions-btn');
+        const clearWrongQuestionsBtn = document.getElementById('clear-wrong-questions-btn');
+        const backToSettingsBtn = document.getElementById('back-to-settings-btn');
         const questionDisplay = document.getElementById('question-display');
         const answerInput = document.getElementById('answer-input');
         const currentQuestionEl = document.getElementById('current-question');
@@ -1155,6 +1209,9 @@
             settingsBtn.addEventListener('click', showSettingsPanel);
             startBtn.addEventListener('click', startExercise);
             restartBtn.addEventListener('click', restartExercise);
+            wrongQuestionsBtn.addEventListener('click', showWrongQuestions);
+            clearWrongQuestionsBtn.addEventListener('click', clearWrongQuestions);
+            backToSettingsBtn.addEventListener('click', backToSettings);
             
             // 难度描述已集成到按钮中，无需额外显示
             
@@ -1389,6 +1446,44 @@
             const tenths = Math.floor((totalSeconds % 1) * 10);
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${tenths}`;
         }
+        
+        // 保存错题到本地存储
+        function saveWrongQuestion(wrongQuestion) {
+            try {
+                let wrongQuestions = JSON.parse(localStorage.getItem('mathWrongQuestions') || '[]');
+                wrongQuestions.push(wrongQuestion);
+                
+                // 只保留最近100道错题
+                if (wrongQuestions.length > 100) {
+                    wrongQuestions = wrongQuestions.slice(-100);
+                }
+                
+                localStorage.setItem('mathWrongQuestions', JSON.stringify(wrongQuestions));
+                console.log('错题已保存到本地存储');
+            } catch (error) {
+                console.error('保存错题失败:', error);
+            }
+        }
+        
+        // 获取所有错题
+        function getWrongQuestions() {
+            try {
+                return JSON.parse(localStorage.getItem('mathWrongQuestions') || '[]');
+            } catch (error) {
+                console.error('获取错题失败:', error);
+                return [];
+            }
+        }
+        
+        // 清除所有错题
+        function clearWrongQuestions() {
+            try {
+                localStorage.removeItem('mathWrongQuestions');
+                console.log('所有错题已清除');
+            } catch (error) {
+                console.error('清除错题失败:', error);
+            }
+        }
 
         // 追加数字到答案
         function appendNumber(num) {
@@ -1438,6 +1533,22 @@
                 isCorrect,
                 time: questionTime
             });
+            
+            // 保存错题到本地存储
+            if (!isCorrect) {
+                saveWrongQuestion({
+                    question: currentQuestion.expression,
+                    userAnswer: answer,
+                    correctAnswer: currentQuestion.result,
+                    timestamp: Date.now(),
+                    settings: {
+                        numberRange: currentSettings.numberRange,
+                        operationCount: currentSettings.operationCount,
+                        operators: currentSettings.operators,
+                        difficulty: currentSettings.difficulty
+                    }
+                });
+            }
             
             // 检查是否是最佳用时
             let isBestTime = false;
@@ -1546,6 +1657,67 @@
         function restartExercise() {
             resultsArea.classList.add('hidden');
             showSettingsPanel();
+        }
+        
+        // 显示错题记录
+        function showWrongQuestions() {
+            const wrongQuestions = getWrongQuestions();
+            const wrongQuestionsList = document.getElementById('wrong-questions-list');
+            
+            if (wrongQuestions.length === 0) {
+                wrongQuestionsList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #6B7280; font-size: 1.125rem;">
+                        📝 还没有错题记录哦！<br>
+                        <span style="font-size: 1rem; margin-top: 0.5rem; display: block;">
+                            答错题目时会自动记录在这里
+                        </span>
+                    </div>
+                `;
+            } else {
+                let html = '<div style="margin-bottom: 1rem;">';
+                wrongQuestions.forEach((item, index) => {
+                    const date = new Date(item.timestamp);
+                    const dateStr = `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    
+                    html += `
+                        <div style="background: #FEF3C7; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid #F59E0B;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span style="font-weight: bold; color: #92400E;">${item.question} = ?</span>
+                                <span style="font-size: 0.875rem; color: #6B7280;">${dateStr}</span>
+                            </div>
+                            <div style="color: #F59E0B; font-weight: bold;">
+                                你的答案: ${item.userAnswer} | 正确答案: ${item.correctAnswer}
+                            </div>
+                            <div style="font-size: 0.875rem; color: #6B7280; margin-top: 0.5rem;">
+                                设置: ${item.settings.numberRange}内 ${item.settings.operationCount}次运算 
+                                ${item.settings.operators.join('、')} | ${item.settings.difficulty === 'easy' ? '轻松' : item.settings.difficulty === 'medium' ? '挑战' : '高手'}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                wrongQuestionsList.innerHTML = html;
+            }
+            
+            // 隐藏设置面板，显示错题记录
+            settingsPanel.style.display = 'none';
+            wrongQuestionsArea.style.display = 'block';
+        }
+        
+        // 清空错题记录
+        function clearWrongQuestions() {
+            if (confirm('确定要清空所有错题记录吗？')) {
+                clearWrongQuestions();
+                showWrongQuestions(); // 重新显示（此时会显示空状态）
+            }
+        }
+        
+        // 返回首页（设置面板）
+        function backToSettings() {
+            wrongQuestionsArea.style.display = 'none';
+            settingsPanel.style.display = 'block';
+            settingsPanel.classList.remove('hidden');
+            settingsPanel.classList.add('show');
         }
         
         // PWA Service Worker 注册
