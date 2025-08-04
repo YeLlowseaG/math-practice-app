@@ -1790,7 +1790,7 @@
                 row.innerHTML = `
                     <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">（${index + 1}） ${result.question} = ?</td>
                     <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb; ${result.isCorrect ? 'color: #10B981;' : 'color: #F59E0B;'}">
-                        ${result.isCorrect ? '正确' : `错误 (你的答案: ${result.userAnswer})`}
+                        ${result.isCorrect ? '正确' : `错误 (你的答案: ${result.userAnswer}, 正确答案: ${result.correctAnswer})`}
                     </td>
                     <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">${formatTime(result.time)}</td>
                 `;
