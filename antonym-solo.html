@@ -100,6 +100,10 @@
                     opacity: 0;
                 }
             }
+            
+
+            
+
         }
     </style>
 </head>
@@ -162,7 +166,7 @@
     <!-- 游戏界面 -->
     <div id="game-screen" class="hidden h-screen flex flex-col">
         <!-- 顶部信息栏 -->
-        <div class="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-md">
+        <div class="flex justify-between items-center p-3 bg-white/80 backdrop-blur-sm shadow-md">
             <!-- 左侧信息 -->
             <div class="flex items-center gap-4">
                 <div class="bg-primary px-4 py-2 rounded-full text-white font-bold shadow-md">
@@ -176,7 +180,7 @@
             <!-- 中间计时器 -->
             <div id="timer" class="bg-accent text-white px-6 py-3 rounded-full shadow-md">
                 <i class="fa fa-clock-o mr-2"></i>
-                <span id="countdown" class="text-2xl font-bold">10</span>
+                <span id="countdown" class="text-xl font-bold">倒计时 10.0</span>
             </div>
             
             <!-- 右侧分数 -->
@@ -186,28 +190,36 @@
             </div>
         </div>
         
-        <!-- 进度条 -->
-        <div class="bg-gray-200 h-2">
-            <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-full transition-all duration-300" style="width: 0%"></div>
+        <!-- 关卡进度条 -->
+        <div class="bg-gray-100 border-b border-gray-200">
+            <div class="px-4 py-2">
+                <div class="flex items-center justify-between mb-2">
+                    <span id="progress-text" class="text-sm font-medium text-gray-600">第1关</span>
+                    <span id="progress-percentage" class="text-sm font-medium text-gray-600">0/10</span>
+                </div>
+                <div class="bg-gray-200 h-3 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-full transition-all duration-500 ease-out"></div>
+                </div>
+            </div>
         </div>
         
         <!-- 主要游戏区域 -->
-        <div class="flex-1 flex flex-col justify-center items-center p-8">
+        <div class="flex-1 flex flex-col items-center p-6">
+            <!-- 反馈信息 - 移到顶部 -->
+            <div id="feedback" class="mb-4 text-center text-3xl font-bold h-16 flex items-center justify-center">
+                <!-- 反馈信息显示区域 -->
+            </div>
+            
             <!-- 目标字显示 -->
-            <div class="bg-white rounded-3xl shadow-2xl p-12 text-center mb-12 transform transition-all duration-500">
+            <div class="bg-white rounded-3xl shadow-2xl p-8 text-center mb-6 transform transition-all duration-500">
                 <p class="text-gray-500 text-lg mb-2">找出它的反义词</p>
-                <p class="text-[clamp(3rem,8vw,5rem)] font-bold text-text" id="target-word">大</p>
+                <p class="text-[clamp(2.5rem,6vw,4rem)] font-bold text-text" id="target-word">大</p>
                 <p class="text-gray-400 text-lg mt-2" id="target-pinyin">dà</p>
             </div>
             
             <!-- 选项区域 -->
-            <div id="options-container" class="grid grid-cols-2 gap-6 max-w-2xl w-full">
+            <div id="options-container" class="grid grid-cols-2 gap-4 max-w-xl w-full mt-auto mb-4">
                 <!-- 选项会动态生成 -->
-            </div>
-            
-            <!-- 反馈信息 -->
-            <div id="feedback" class="mt-8 text-center text-2xl font-bold h-12 flex items-center justify-center">
-                <!-- 反馈信息显示区域 -->
             </div>
         </div>
     </div>
@@ -483,7 +495,10 @@
             currentQuestion: null,
             usedQuestions: [],
             timer: null,
-            achievements: []
+            achievements: [],
+            questionsPerLevel: 10, // 每关10题
+            currentLevelQuestions: 0, // 当前关卡已答题数
+            currentTimeLeft: 10 // 当前剩余时间
         };
         
         // 难度配置
@@ -548,7 +563,10 @@
                 currentQuestion: null,
                 usedQuestions: [],
                 timer: null,
-                achievements: []
+                achievements: [],
+                questionsPerLevel: 10, // 每关10题
+                currentLevelQuestions: 0, // 当前关卡已答题数
+                currentTimeLeft: difficultyConfig[gameState.currentDifficulty].timeLimit // 当前剩余时间
             };
             
             // 切换界面
@@ -558,10 +576,15 @@
             // 显示游戏开始提示
             showGameStartNotification();
             
-            // 延迟开始第一题
+            // 初始化进度条
+            updateProgressBar();
+            
+            // 如果用户15秒内没有点击按钮，自动开始游戏
             setTimeout(() => {
-                nextQuestion();
-            }, 2000);
+                if (document.querySelector('.fixed.inset-0.bg-black\\/50')) {
+                    nextQuestion();
+                }
+            }, 15000);
         }
         
         // 生成下一题
@@ -573,15 +596,21 @@
                 clearInterval(gameState.timer);
             }
             
+            // 重置计时器显示
+            resetTimerDisplay();
+            
             // 选择题目
             const difficulty = getCurrentDifficulty();
             const availableQuestions = antonymsList[difficulty].filter(
                 q => !gameState.usedQuestions.includes(q.word)
             );
             
-            // 如果当前难度的题目用完了，重置或升级难度
+            // 如果当前难度的题目用完了，游戏结束
             if (availableQuestions.length === 0) {
-                levelUp();
+                showGameStatus('题目已用完！');
+                setTimeout(() => {
+                    endGame();
+                }, 2000);
                 return;
             }
             
@@ -645,7 +674,7 @@
                 const pinyin = wordData ? (wordData.word === option ? wordData.pinyin : wordData.antonymPinyin) : '';
                 
                 const button = document.createElement('button');
-                button.className = 'option-btn bg-white hover:bg-blue-50 text-text font-bold py-6 px-8 rounded-2xl text-2xl shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95 border-4 border-gray-200 hover:border-blue-300 hover:shadow-xl flex flex-col items-center justify-center relative overflow-hidden';
+                button.className = 'option-btn bg-white hover:bg-blue-50 text-text font-bold py-4 px-6 rounded-2xl text-xl shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95 border-4 border-gray-200 hover:border-blue-300 hover:shadow-xl flex flex-col items-center justify-center relative overflow-hidden';
                 
                 // 添加涟漪效果容器
                 const rippleContainer = document.createElement('div');
@@ -700,8 +729,8 @@
                 const contentDiv = document.createElement('div');
                 contentDiv.className = 'flex flex-col items-center justify-center z-10 relative';
                 contentDiv.innerHTML = `
-                    <div class="text-2xl font-bold">${option}</div>
-                    <div class="text-gray-400 text-sm mt-1">${pinyin || ''}</div>
+                    <div class="text-xl font-bold">${option}</div>
+                    <div class="text-gray-400 text-xs mt-1">${pinyin || ''}</div>
                 `;
                 button.appendChild(contentDiv);
                 
@@ -716,21 +745,34 @@
             
             clearInterval(gameState.timer);
             gameState.totalQuestions++;
+            gameState.currentLevelQuestions++;
             
             const isCorrect = selectedAnswer === gameState.currentQuestion.antonym;
             
             if (isCorrect) {
+                showGameStatus('答对了！');
                 handleCorrectAnswer();
             } else {
+                showGameStatus('答错了！');
                 handleWrongAnswer(selectedAnswer);
             }
             
-            // 延迟显示下一题
-            setTimeout(() => {
-                if (gameState.isGameActive) {
-                    nextQuestion();
-                }
-            }, 1500);
+            // 检查是否完成当前关卡
+            if (gameState.currentLevelQuestions >= gameState.questionsPerLevel) {
+                // 完成当前关卡，升级
+                setTimeout(() => {
+                    if (gameState.isGameActive) {
+                        levelUp();
+                    }
+                }, 1500);
+            } else {
+                // 继续当前关卡
+                setTimeout(() => {
+                    if (gameState.isGameActive) {
+                        nextQuestion();
+                    }
+                }, 1500);
+            }
         }
         
         // 处理正确答案
@@ -743,16 +785,35 @@
             const config = difficultyConfig[gameState.currentDifficulty];
             const basePoints = config.pointsPerCorrect;
             const comboBonus = Math.floor(basePoints * (gameState.combo - 1) * 0.1);
-            const timeBonus = Math.floor((gameState.timeLimit - (gameState.timeLimit - parseInt(countdownEl.textContent))) * 2);
+            
+            // 使用保存的时间值计算时间奖励
+            const timeBonus = Math.floor((gameState.timeLimit - gameState.currentTimeLeft) * 2);
             const totalPoints = basePoints + comboBonus + timeBonus;
             
-            gameState.score += totalPoints;
+            // 调试信息
+            console.log('分数计算:', {
+                currentDifficulty: gameState.currentDifficulty,
+                basePoints,
+                comboBonus,
+                timeBonus,
+                totalPoints,
+                timeLimit: gameState.timeLimit,
+                currentTimeLeft: gameState.currentTimeLeft
+            });
+            
+            // 确保分数是有效数字
+            if (isNaN(totalPoints)) {
+                console.error('分数计算错误:', { basePoints, comboBonus, timeBonus, totalPoints });
+                const fallbackPoints = basePoints;
+                gameState.score += fallbackPoints;
+                showFeedback(`正确！+${fallbackPoints}分`, 'success');
+            } else {
+                gameState.score += totalPoints;
+                showFeedback(`正确！+${totalPoints}分`, 'success');
+            }
             
             // 更新显示
             updateGameDisplay();
-            
-            // 反馈
-            showFeedback(`正确！+${totalPoints}分`, 'success');
             
             // 高亮正确选项
             highlightCorrectOption();
@@ -769,7 +830,7 @@
             updateGameDisplay();
             
             // 反馈
-            showFeedback(`答案是：${gameState.currentQuestion.antonym}`, 'error');
+            showFeedback(`答错了！正确答案：${gameState.currentQuestion.antonym}`, 'error');
             
             // 高亮正确和错误选项
             highlightAnswers(selectedAnswer);
@@ -784,7 +845,14 @@
         // 升级关卡
         function levelUp() {
             gameState.level++;
-            gameState.usedQuestions = [];
+            gameState.currentLevelQuestions = 0; // 重置当前关卡答题数
+            
+            // 检查是否需要切换难度
+            const newDifficulty = getCurrentDifficulty();
+            if (newDifficulty !== gameState.currentDifficulty) {
+                gameState.currentDifficulty = newDifficulty;
+                gameState.usedQuestions = []; // 重置已用题目
+            }
             
             // 增加时间限制（难度递增）
             if (gameState.level % 3 === 0) {
@@ -801,8 +869,16 @@
             
             const timeText = gameState.timeLimit;
             
+            // 显示升级状态
+            showGameStatus('升级中...');
+            
             showLevelUpNotification(gameState.level, difficultyText, timeText);
             updateGameDisplay();
+            
+            // 重置进度条
+            setTimeout(() => {
+                updateProgressBar();
+            }, 1000);
             
             setTimeout(nextQuestion, 3000);
         }
@@ -810,11 +886,13 @@
         // 开始计时
         function startTimer() {
             let timeLeft = gameState.timeLimit;
-            countdownEl.textContent = timeLeft;
+            gameState.currentTimeLeft = timeLeft; // 保存当前时间
+            updateCountdownDisplay(timeLeft);
             
             gameState.timer = setInterval(() => {
-                timeLeft--;
-                countdownEl.textContent = timeLeft;
+                timeLeft -= 0.1;
+                gameState.currentTimeLeft = timeLeft; // 更新保存的时间
+                updateCountdownDisplay(timeLeft);
                 
                 // 时间警告效果
                 if (timeLeft <= 3) {
@@ -824,15 +902,39 @@
                 
                 if (timeLeft <= 0) {
                     clearInterval(gameState.timer);
-                    handleWrongAnswer('超时');
+                    showGameStatus('答题超时！');
+                    setTimeout(() => {
+                        handleWrongAnswer('超时');
+                    }, 1000);
                 }
-            }, 1000);
+            }, 100);
+        }
+        
+        // 更新倒计时显示
+        function updateCountdownDisplay(timeLeft) {
+            if (timeLeft <= 0) {
+                countdownEl.textContent = '倒计时 0.0';
+            } else {
+                countdownEl.textContent = `倒计时 ${timeLeft.toFixed(1)}`;
+            }
+        }
+        
+        // 显示游戏状态
+        function showGameStatus(status) {
+            countdownEl.textContent = status;
+            countdownEl.parentElement.style.backgroundColor = '#6B7280';
         }
         
         // 更新游戏显示
         function updateGameDisplay() {
             levelDisplay.textContent = gameState.level;
             comboDisplay.textContent = gameState.combo;
+            
+            // 确保分数是有效数字
+            if (isNaN(gameState.score)) {
+                console.error('总分显示错误:', gameState.score);
+                gameState.score = 0;
+            }
             scoreDisplay.textContent = gameState.score;
             
             // 重置计时器样式
@@ -840,13 +942,31 @@
             countdownEl.parentElement.style.backgroundColor = '#F59E0B';
         }
         
+        // 重置计时器显示
+        function resetTimerDisplay() {
+            countdownEl.parentElement.classList.remove('animate-pulse');
+            countdownEl.parentElement.style.backgroundColor = '#F59E0B';
+        }
+        
         // 更新进度条
         function updateProgressBar() {
-            const progress = (gameState.usedQuestions.length / antonymsList[getCurrentDifficulty()].length) * 100;
-            progressBar.style.width = `${progress}%`;
+            // 计算当前关卡进度
+            const currentProgress = (gameState.currentLevelQuestions / gameState.questionsPerLevel) * 100;
+            
+            // 更新进度条
+            progressBar.style.width = `${currentProgress}%`;
+            
+            // 更新进度文本
+            const progressTextEl = document.getElementById('progress-text');
+            const progressPercentageEl = document.getElementById('progress-percentage');
+            
+            if (progressTextEl && progressPercentageEl) {
+                progressTextEl.textContent = `第${gameState.level}关`;
+                progressPercentageEl.textContent = `${gameState.currentLevelQuestions}/${gameState.questionsPerLevel}`;
+            }
             
             // 当进度接近完成时显示提示
-            const remainingQuestions = antonymsList[getCurrentDifficulty()].length - gameState.usedQuestions.length;
+            const remainingQuestions = gameState.questionsPerLevel - gameState.currentLevelQuestions;
             if (remainingQuestions <= 3 && remainingQuestions > 0) {
                 showProgressNotification(remainingQuestions);
             }
@@ -855,23 +975,23 @@
         // 显示反馈
         function showFeedback(message, type) {
             feedbackEl.textContent = message;
-            feedbackEl.className = 'mt-8 text-center text-2xl font-bold h-12 flex items-center justify-center';
+            feedbackEl.className = 'mb-6 text-center text-3xl font-bold h-16 flex items-center justify-center';
             
             switch (type) {
                 case 'success':
-                    feedbackEl.classList.add('text-secondary', 'correct-animation');
+                    feedbackEl.classList.add('text-secondary', 'correct-animation', 'bg-green-50', 'rounded-2xl', 'px-6', 'py-3', 'shadow-lg');
                     break;
                 case 'error':
-                    feedbackEl.classList.add('text-danger', 'wrong-animation');
+                    feedbackEl.classList.add('text-danger', 'wrong-animation', 'bg-red-50', 'rounded-2xl', 'px-6', 'py-3', 'shadow-lg');
                     break;
                 case 'level-up':
-                    feedbackEl.classList.add('text-accent', 'level-complete');
+                    feedbackEl.classList.add('text-accent', 'level-complete', 'bg-yellow-50', 'rounded-2xl', 'px-6', 'py-3', 'shadow-lg');
                     break;
             }
             
             setTimeout(() => {
                 feedbackEl.textContent = '';
-                feedbackEl.className = 'mt-8 text-center text-2xl font-bold h-12 flex items-center justify-center';
+                feedbackEl.className = 'mb-6 text-center text-3xl font-bold h-16 flex items-center justify-center';
             }, 1400);
         }
         
@@ -886,34 +1006,40 @@
                     <div class="text-lg text-gray-700 mb-4">
                         <p class="font-bold">第 ${level} 关</p>
                         <p class="text-sm text-gray-500 mt-1">难度：${difficulty} | 时间：${timeLimit}秒/题</p>
+                        <p class="text-sm text-gray-500">每关10题，加油！</p>
                     </div>
                     <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 mb-4">
                         <p class="text-sm text-gray-600">
                             💡 <strong>游戏提示：</strong><br>
+                            • 每关10题，完成即可升级<br>
                             • 连续答对可获得连击加分<br>
                             • 答错会重置连击数<br>
-                            • 连续答错3题游戏结束
+                            • 连续答错3题游戏结束<br>
+                            • 每道题有时间限制，超时算答错
                         </p>
                     </div>
                     <button class="bg-accent hover:bg-yellow-400 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:scale-105">
                         继续挑战
                     </button>
+                    <div class="text-xs text-gray-400 mt-2">
+                        点击继续或8秒后自动开始
+                    </div>
                 </div>
             `;
             
             document.body.appendChild(notification);
             
-            // 点击继续按钮
+            // 点击继续按钮关闭提示
             notification.querySelector('button').addEventListener('click', () => {
                 notification.remove();
             });
             
-            // 3秒后自动关闭
+            // 8秒后自动关闭，给用户充足时间阅读
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.remove();
                 }
-            }, 3000);
+            }, 8000);
         }
         
         // 高亮正确选项
@@ -921,7 +1047,7 @@
             const buttons = optionsContainer.querySelectorAll('.option-btn');
             buttons.forEach(btn => {
                 if (btn.textContent === gameState.currentQuestion.antonym) {
-                    btn.className = 'option-btn bg-secondary text-white font-bold py-6 px-8 rounded-2xl text-2xl shadow-lg border-4 border-secondary correct-animation';
+                    btn.className = 'option-btn bg-secondary text-white font-bold py-4 px-6 rounded-2xl text-xl shadow-lg border-4 border-secondary correct-animation';
                 } else {
                     btn.disabled = true;
                     btn.classList.add('opacity-50');
@@ -934,9 +1060,9 @@
             const buttons = optionsContainer.querySelectorAll('.option-btn');
             buttons.forEach(btn => {
                 if (btn.textContent === gameState.currentQuestion.antonym) {
-                    btn.className = 'option-btn bg-secondary text-white font-bold py-6 px-8 rounded-2xl text-2xl shadow-lg border-4 border-secondary correct-animation';
+                    btn.className = 'option-btn bg-secondary text-white font-bold py-4 px-6 rounded-2xl text-xl shadow-lg border-4 border-secondary correct-animation';
                 } else if (btn.textContent === selectedAnswer) {
-                    btn.className = 'option-btn bg-danger text-white font-bold py-6 px-8 rounded-2xl text-2xl shadow-lg border-4 border-danger wrong-animation';
+                    btn.className = 'option-btn bg-danger text-white font-bold py-4 px-6 rounded-2xl text-xl shadow-lg border-4 border-danger wrong-animation';
                 } else {
                     btn.disabled = true;
                     btn.classList.add('opacity-50');
@@ -971,20 +1097,31 @@
                             • 连续答错3题游戏结束
                         </p>
                     </div>
-                    <div class="text-sm text-gray-500">
+                    <div class="text-sm text-gray-500 mb-4">
                         即将显示最终结果...
+                    </div>
+                    <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 hover:scale-105 text-sm">
+                        立即查看结果
+                    </button>
+                    <div class="text-xs text-gray-400 mt-2">
+                        点击查看或5秒后自动显示
                     </div>
                 </div>
             `;
             
             document.body.appendChild(notification);
             
-            // 2秒后自动关闭
+            // 点击立即查看结果按钮
+            notification.querySelector('button').addEventListener('click', () => {
+                notification.remove();
+            });
+            
+            // 5秒后自动关闭，给用户时间了解游戏结束原因
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.remove();
                 }
-            }, 2000);
+            }, 5000);
         }
         
         // 显示进度提示
@@ -997,21 +1134,29 @@
             notification.innerHTML = `
                 <div class="flex items-center">
                     <span class="text-2xl mr-3">🎯</span>
-                    <div>
+                    <div class="mr-4">
                         <div class="font-bold">即将升级！</div>
                         <div class="text-sm opacity-90">还剩 ${remainingQuestions} 题</div>
                     </div>
+                    <button class="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full text-xs transition-all duration-300">
+                        知道了
+                    </button>
                 </div>
             `;
             
             document.body.appendChild(notification);
             
-            // 3秒后自动关闭
+            // 点击知道了按钮关闭提示
+            notification.querySelector('button').addEventListener('click', () => {
+                notification.remove();
+            });
+            
+            // 5秒后自动关闭，给用户时间了解即将升级
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.remove();
                 }
-            }, 3000);
+            }, 5000);
         }
         
         // 显示游戏开始提示
@@ -1025,31 +1170,45 @@
                     <div class="text-lg text-gray-700 mb-4">
                         <p class="font-bold">第 1 关 - 简单难度</p>
                         <p class="text-sm text-gray-500 mt-1">时间限制：${gameState.timeLimit}秒/题</p>
+                        <p class="text-sm text-gray-500">每关10题，完成即可升级！</p>
                     </div>
                     <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 mb-4">
                         <p class="text-sm text-gray-600">
                             💡 <strong>游戏规则：</strong><br>
+                            • 每关10题，完成即可升级<br>
                             • 点击正确答案获得分数<br>
                             • 连续答对可获得连击加分<br>
                             • 答错会重置连击数<br>
                             • 连续答错3题游戏结束<br>
-                            • 完成当前难度所有题目后自动升级
+                            • 每道题有时间限制，超时算答错<br>
+                            • 快速答题可获得时间奖励<br>
+                            • 简单：9关，中等：6关，困难：4关
                         </p>
                     </div>
-                    <div class="text-sm text-gray-500">
-                        准备开始挑战...
+                    <div class="text-sm text-gray-500 mb-4">
+                        请仔细阅读游戏规则，准备好后点击开始
                     </div>
+                    <button class="bg-accent hover:bg-yellow-400 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:scale-105">
+                        开始游戏
+                    </button>
                 </div>
             `;
             
             document.body.appendChild(notification);
             
-            // 2秒后自动关闭
+            // 点击开始游戏按钮关闭提示并开始游戏
+            notification.querySelector('button').addEventListener('click', () => {
+                notification.remove();
+                // 立即开始第一题
+                nextQuestion();
+            });
+            
+            // 15秒后自动关闭，给用户充足时间阅读
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.remove();
                 }
-            }, 2000);
+            }, 15000);
         }
         
         // 检查成就
@@ -1105,12 +1264,18 @@
             gameState.isGameActive = false;
             clearInterval(gameState.timer);
             
-            // 切换到结果界面
-            gameScreen.classList.add('hidden');
-            resultScreen.classList.remove('hidden');
+            // 显示游戏结束状态
+            showGameStatus('游戏结束');
             
-            // 显示结果
-            displayResults();
+            // 延迟切换到结果界面
+            setTimeout(() => {
+                // 切换到结果界面
+                gameScreen.classList.add('hidden');
+                resultScreen.classList.remove('hidden');
+                
+                // 显示结果
+                displayResults();
+            }, 2000);
         }
         
         // 显示结果
@@ -1188,6 +1353,9 @@
                     <button class="bg-accent hover:bg-yellow-400 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:scale-105">
                         查看最终结果
                     </button>
+                    <div class="text-xs text-gray-400 mt-2">
+                        点击查看或10秒后自动关闭
+                    </div>
                 </div>
             `;
             
@@ -1198,12 +1366,12 @@
                 statsNotification.remove();
             });
             
-            // 5秒后自动关闭
+            // 10秒后自动关闭，给用户充足时间查看统计数据
             setTimeout(() => {
                 if (statsNotification.parentNode) {
                     statsNotification.remove();
                 }
-            }, 5000);
+            }, 10000);
         }
         
         // 显示成就
