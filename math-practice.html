@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学小天才 - 儿童计算练习</title>
+    
+    <!-- 内联Tailwind CSS样式 -->
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Marker Felt', cursive, sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+        
+        /* 容器样式 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* 头部样式 */
+        header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo i {
+            color: #4F46E5;
+            font-size: 1.875rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4F46E5;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .time-display {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f3f4f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+        }
+        
+        .time-display i {
+            color: #EC4899;
+        }
+        
+        .settings-btn {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8B5CF6;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .settings-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+        }
+        
+        /* 主内容区域 */
+        main {
+            padding: 1rem;
+        }
+        
+        /* 设置面板 */
+        .settings-panel {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            transform: scale(1);
+            opacity: 1;
+            transition: all 0.5s;
+        }
+        
+        .settings-panel.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .settings-panel h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .settings-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .setting-card {
+            background: #f3f4f6;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+        }
+        
+        .setting-card h3 {
+            font-weight: bold;
+            font-size: 1.125rem;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+        
+        .setting-card p {
+            font-size: 0.875rem;
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 0.75rem;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        /* 运算次数按钮特殊样式 - 保持在一行 */
+        .setting-card:first-child .button-group {
+            flex-wrap: nowrap;
+            gap: 0.25rem;
+        }
+        
+        .setting-card:first-child .option-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .option-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            border: 2px solid #d1d5db;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .option-btn.active {
+            background: #4F46E5;
+            color: white;
+            border-color: #4F46E5;
+        }
+        
+        /* 未选中状态下"内"字的颜色 */
+        .option-btn span {
+            color: #6b7280;
+        }
+        
+        /* 选中状态下"内"字的颜色 */
+        .option-btn.active span {
+            color: white;
+        }
+        
+        .operator-wrapper {
+            position: relative;
+        }
+        
+        .operator-select {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 2px solid #d1d5db;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .operator-select.active {
+            background: #4F46E5;
+            color: white;
+            border-color: #4F46E5;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            margin-top: -2.5rem;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* 开始按钮 */
+        .start-btn {
+            background: #EC4899;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-size: 1.125rem;
+            font-weight: bold;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            transform: translateY(0);
+            margin-top: 2rem;
+        }
+        
+        .start-btn:hover {
+            background: rgba(236, 72, 153, 0.9);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* 练习区域 */
+        .exercise-area {
+            display: none;
+        }
+        
+        .question-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 左右布局容器 */
+        .exercise-layout {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            height: calc(100vh - 200px);
+            max-height: 600px;
+        }
+        
+        /* 左侧算式区域 */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .question-display {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 2rem 1.5rem;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.5s;
+            min-height: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        .answer-input {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .answer-input .label {
+            font-size: 1.25rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .answer-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px dashed #e5e7eb;
+            border-radius: 0.75rem;
+            background: #f9fafb;
+        }
+        
+        /* 右侧键盘区域 */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .number-keyboard {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            flex: 1;
+        }
+        
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            height: 100%;
+        }
+        
+        .number-btn {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 0.75rem;
+            background: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            font-size: 1.25rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .number-btn:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .number-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .number-btn.clear {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .number-btn.submit {
+            background: #EC4899;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .number-btn.submit:hover {
+            background: #db2777;
+        }
+        
+        /* 结果区域 */
+        .results-area {
+            display: none;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        
+        .result-title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: #f3f4f6;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: bold;
+        }
+        
+        .accuracy {
+            color: #4F46E5;
+        }
+        
+        .total-time {
+            color: #EC4899;
+        }
+        
+        .results-table {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .results-table th {
+            background: #f3f4f6;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+        
+        .results-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .correct-row {
+            background: #f0fdf4;
+        }
+        
+        .incorrect-row {
+            background: #fef3c7;
+        }
+        
+        .text-success {
+            color: #10B981;
+        }
+        
+        .text-warning {
+            color: #F59E0B;
+        }
+        
+        /* 页脚 */
+        footer {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            text-align: center;
+            color: #6b7280;
+        }
+        
+        /* 响应式设计 */
+        @media (min-width: 768px) {
+            .logo h1 {
+                font-size: 1.875rem;
+            }
+            
+            .time-display {
+                display: flex;
+            }
+            
+            .settings-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .question-display {
+                font-size: 3rem;
+            }
+            
+            .answer-display {
+                font-size: 3.5rem;
+            }
+            
+            .number-btn {
+                width: 5rem;
+                height: 5rem;
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* iPad 横屏优化 */
+        @media (min-width: 1024px) and (orientation: landscape) {
+            .exercise-layout {
+                gap: 3rem;
+                min-height: 80vh;
+            }
+            
+            .question-display {
+                font-size: 3.5rem;
+                min-height: 400px;
+            }
+            
+            .answer-display {
+                font-size: 4rem;
+                min-height: 120px;
+            }
+            
+            .number-btn {
+                width: 6rem;
+                height: 6rem;
+                font-size: 2.5rem;
+            }
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 767px) {
+            .exercise-layout {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .question-display {
+                font-size: 2rem;
+                min-height: 200px;
+                padding: 2rem 1rem;
+            }
+            
+            .answer-display {
+                font-size: 2.5rem;
+                min-height: 80px;
+            }
+            
+            .number-btn {
+                width: 3.5rem;
+                height: 3.5rem;
+                font-size: 1.25rem;
+            }
+            
+            .number-grid {
+                gap: 1rem;
+            }
+        }
+        
+        /* 隐藏类 */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* 成功和警告颜色 */
+        .text-success {
+            color: #10B981;
+        }
+        
+        .text-warning {
+            color: #F59E0B;
+        }
+    </style>
+    
+    <!-- 内联Font Awesome图标 -->
+    <style>
+        /* Font Awesome 图标样式 */
+        .fa {
+            display: inline-block;
+            font: normal normal normal 14px/1 FontAwesome;
+            font-size: inherit;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .fa-calculator:before { content: "🔢"; }
+        .fa-clock-o:before { content: "⏰"; }
+        .fa-cog:before { content: "⚙️"; }
+        .fa-play:before { content: "▶️"; }
+        .fa-refresh:before { content: "🔄"; }
+        .fa-eraser:before { content: "🧽"; }
+        .fa-check:before { content: "✅"; }
+        .fa-smile-o:before { content: "😊"; }
+        .fa-frown-o:before { content: "😞"; }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fa fa-calculator"></i>
+                    <h1>数学小天才</h1>
+                </div>
+                <div class="header-controls">
+                    <button id="settings-btn" class="settings-btn">
+                        <i class="fa fa-cog"></i>
+                        <span>设置</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <!-- 设置面板 -->
+        <div id="settings-panel" class="settings-panel">
+            <h2>练习设置</h2>
+            <div class="settings-grid">
+                <!-- 运算次数 -->
+                <div class="setting-card">
+                    <h3>运算次数</h3>
+                    <p>每个算式包含的运算步骤</p>
+                    <div class="button-group">
+                        <button class="option-btn operation-count-btn active" data-count="1">1次</button>
+                        <button class="option-btn operation-count-btn" data-count="2">2次</button>
+                        <button class="option-btn operation-count-btn" data-count="3">3次</button>
+                        <button class="option-btn operation-count-btn" data-count="4">4次</button>
+                    </div>
+                </div>
+                
+                <!-- 数字范围 -->
+                <div class="setting-card">
+                    <h3>数字范围</h3>
+                    <p>算式中数字的最大值</p>
+                    <div class="button-group">
+                        <button class="option-btn number-range-btn active" data-range="10">10<span style="font-size: 0.75rem;">内</span></button>
+                        <button class="option-btn number-range-btn" data-range="20">20<span style="font-size: 0.75rem;">内</span></button>
+                        <button class="option-btn number-range-btn" data-range="50">50<span style="font-size: 0.75rem;">内</span></button>
+                        <button class="option-btn number-range-btn" data-range="100">100<span style="font-size: 0.75rem;">内</span></button>
+                        <button class="option-btn number-range-btn" data-range="150">150<span style="font-size: 0.75rem;">内</span></button>
+                        <button class="option-btn number-range-btn" data-range="200">200<span style="font-size: 0.75rem;">内</span></button>
+                    </div>
+                </div>
+                
+                <!-- 运算类型 -->
+                <div class="setting-card">
+                    <h3>运算类型</h3>
+                    <p>最多选择 <span id="max-operators">2</span> 种（与运算次数相同）</p>
+                    <div class="button-group">
+                        <div class="operator-wrapper">
+                            <div class="operator-select active" data-op="+">
+                                <span style="font-size: 1.25rem; font-weight: bold;">+</span>
+                                <span style="font-size: 0.75rem;">加法</span>
+                            </div>
+                            <span class="tooltip">提示信息</span>
+                        </div>
+                        <div class="operator-wrapper">
+                            <div class="operator-select active" data-op="-">
+                                <span style="font-size: 1.25rem; font-weight: bold;">-</span>
+                                <span style="font-size: 0.75rem;">减法</span>
+                            </div>
+                            <span class="tooltip">提示信息</span>
+                        </div>
+                        <div class="operator-wrapper">
+                            <div class="operator-select" data-op="×">
+                                <span style="font-size: 1.25rem; font-weight: bold;">×</span>
+                                <span style="font-size: 0.75rem;">乘法</span>
+                            </div>
+                            <span class="tooltip">提示信息</span>
+                        </div>
+                        <div class="operator-wrapper">
+                            <div class="operator-select" data-op="÷">
+                                <span style="font-size: 1.25rem; font-weight: bold;">÷</span>
+                                <span style="font-size: 0.75rem;">除法</span>
+                            </div>
+                            <span class="tooltip">提示信息</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 难度选择 - 单独一行 -->
+            <div class="setting-card" style="grid-column: 1 / -1; margin-top: 1.5rem;">
+                <h3>难度等级</h3>
+                <p>选择适合的难度，自动调整设置</p>
+                <div class="button-group">
+                    <button class="option-btn difficulty-btn active" data-difficulty="easy">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
+                            <span style="font-size: 1rem; font-weight: bold;">轻松</span>
+                            <span style="font-size: 0.625rem;">小数字，简单运算</span>
+                        </div>
+                    </button>
+                    <button class="option-btn difficulty-btn" data-difficulty="medium">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
+                            <span style="font-size: 1rem; font-weight: bold;">挑战</span>
+                            <span style="font-size: 0.625rem;">适中数字，有趣运算</span>
+                        </div>
+                    </button>
+                    <button class="option-btn difficulty-btn" data-difficulty="hard">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
+                            <span style="font-size: 1rem; font-weight: bold;">高手</span>
+                            <span style="font-size: 0.625rem;">大数字，精彩组合</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <button id="start-btn" class="start-btn">
+                    开始练习 <i class="fa fa-play" style="margin-left: 0.5rem;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 练习区域 -->
+        <div id="exercise-area" class="exercise-area">
+            <!-- 题目信息 -->
+            <div class="question-info">
+                <div class="info-card">
+                    <span>第 <span id="current-question" style="font-weight: bold; color: #4F46E5; font-size: 1.25rem;">1</span> / 10 题</span>
+                </div>
+            </div>
+            
+            <!-- 左右布局 -->
+            <div class="exercise-layout">
+                <!-- 左侧：算式和答案 -->
+                <div class="left-panel">
+                    <!-- 题目显示 -->
+                    <div class="question-display">
+                        <div id="question-display">准备开始啦！</div>
+                    </div>
+                    
+                    <!-- 答案输入区 -->
+                    <div class="answer-input">
+                        <span class="label">答案:</span>
+                        <div id="answer-input" class="answer-display">
+                            <span style="color: #9ca3af;">点击数字输入答案</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧：数字键盘 -->
+                <div class="right-panel">
+                    <div class="number-keyboard">
+                        <div class="number-grid">
+                            <div class="number-btn" data-num="1">1</div>
+                            <div class="number-btn" data-num="2">2</div>
+                            <div class="number-btn" data-num="3">3</div>
+                            <div class="number-btn" data-num="4">4</div>
+                            <div class="number-btn" data-num="5">5</div>
+                            <div class="number-btn" data-num="6">6</div>
+                            <div class="number-btn" data-num="7">7</div>
+                            <div class="number-btn" data-num="8">8</div>
+                            <div class="number-btn" data-num="9">9</div>
+                            <div class="number-btn clear" data-action="clear">
+                                <i class="fa fa-eraser" style="color: #6b7280;"></i>
+                            </div>
+                            <div class="number-btn" data-num="0">0</div>
+                            <div class="number-btn submit" data-action="submit">
+                                <i class="fa fa-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 数字键盘下方的用时显示区域 -->
+                    <div style="display: flex; justify-content: space-between; margin-top: 1rem; gap: 0.75rem;">
+                        <div style="flex: 1; background: white; border-radius: 0.75rem; padding: 0.75rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                            <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">当前用时</div>
+                            <div id="current-question-time" style="font-size: 1.125rem; font-weight: bold; color: #4F46E5;">00:00</div>
+                        </div>
+                        <div style="flex: 1; background: white; border-radius: 0.75rem; padding: 0.75rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                            <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">总用时</div>
+                            <div id="current-total-time" style="font-size: 1.125rem; font-weight: bold; color: #4F46E5;">00:00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 结果区域 -->
+        <div id="results-area" class="results-area">
+            <h2 class="result-title" id="result-title">练习完成！</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>正确率</h3>
+                    <div id="accuracy" class="stat-value accuracy">0%</div>
+                </div>
+                <div class="stat-card">
+                    <h3>总用时</h3>
+                    <div id="final-total-time" class="stat-value total-time">00:00</div>
+                </div>
+            </div>
+            
+            <!-- 奖励信息 -->
+            <div style="text-align: center; margin: 1.5rem 0; padding: 1rem; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 1rem; border: 2px solid #f59e0b;">
+                <div id="reward-message" style="font-size: 1.25rem; font-weight: bold; color: #92400e;">
+                    完成练习，真棒！
+                </div>
+            </div>
+            
+            <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; text-align: center;">每道题用时</h3>
+            <div style="overflow-x: auto; margin-bottom: 2rem;">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th style="border-radius: 0.5rem 0 0 0.5rem;">题目</th>
+                            <th>结果</th>
+                            <th style="border-radius: 0 0.5rem 0.5rem 0;">用时</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailed-results">
+                        <!-- 结果将通过JS动态填充 -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="text-align: center;">
+                <button id="restart-btn" class="start-btn" style="background: #4F46E5;">
+                    再练一次 <i class="fa fa-refresh" style="margin-left: 0.5rem;"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>数学小天才 &copy; 让计算练习更有趣</p>
+    </footer>
+
+    <script>
+        // 全局变量
+        let currentSettings = {
+            operationCount: 1,
+            numberRange: 10, // 默认10以内，适合一年级
+            operators: ['+', '-'], // 默认只有加减法，适合一年级
+            difficulty: 'easy' // 默认简单难度
+        };
+        
+        // 难度配置 - 影响题目生成逻辑，不改变运算条件
+        const difficultyConfigs = {
+            easy: {
+                description: '简单题目，数字小，运算简单',
+                // 简单难度：优先使用小数字，避免复杂运算
+                generateQuestion: function(settings) {
+                    const { operationCount, numberRange, operators } = settings;
+                    let numbers = [];
+                    let ops = [];
+                    let maxAttempts = 50;
+                    let attempts = 0;
+                    
+                    do {
+                        attempts++;
+                        numbers = [];
+                        ops = [];
+                        
+                        // 简单难度：优先使用小数字
+                        const maxNum = Math.min(numberRange, 10); // 限制最大数字
+                        numbers.push(Math.floor(Math.random() * maxNum) + 1);
+                        
+                        for (let i = 0; i < operationCount; i++) {
+                            // 简单难度：优先选择加减法
+                            const availableOps = operators.filter(op => op === '+' || op === '-');
+                            const randomOp = availableOps.length > 0 ? 
+                                availableOps[Math.floor(Math.random() * availableOps.length)] :
+                                operators[Math.floor(Math.random() * operators.length)];
+                            ops.push(randomOp);
+                            
+                            // 生成下一个数字，确保运算简单
+                            let nextNum;
+                            if (randomOp === '-') {
+                                // 减法：确保结果非负且不太复杂
+                                nextNum = Math.floor(Math.random() * Math.min(numbers[i], 8)) + 1;
+                            } else if (randomOp === '×') {
+                                // 乘法：使用小数字
+                                nextNum = Math.floor(Math.random() * 6) + 1;
+                            } else if (randomOp === '÷') {
+                                // 除法：确保整除且简单
+                                const factors = [];
+                                for (let j = 1; j <= numbers[i]; j++) {
+                                    if (numbers[i] % j === 0) factors.push(j);
+                                }
+                                nextNum = factors[Math.floor(Math.random() * factors.length)] || 1;
+                            } else {
+                                // 加法：使用小数字
+                                nextNum = Math.floor(Math.random() * Math.min(maxNum, 8)) + 1;
+                            }
+                            numbers.push(nextNum);
+                        }
+                        
+                        // 构建表达式并计算结果
+                        let expression = '';
+                        for (let i = 0; i < numbers.length; i++) {
+                            expression += numbers[i];
+                            if (i < ops.length) {
+                                expression += ' ' + ops[i] + ' ';
+                            }
+                        }
+                        
+                        let result = 0;
+                        try {
+                            result = eval(expression.replace(/×/g, '*').replace(/÷/g, '/'));
+                        } catch (e) {
+                            continue;
+                        }
+                        
+                        // 简单难度：结果不要太大
+                        if (result >= 0 && result <= numberRange && Number.isInteger(result)) {
+                            return { expression, result };
+                        }
+                    } while (attempts < maxAttempts);
+                    
+                    // 备用方案：简单加法
+                    const simpleNum1 = Math.floor(Math.random() * 5) + 1;
+                    const simpleNum2 = Math.floor(Math.random() * 5) + 1;
+                    return { expression: `${simpleNum1} + ${simpleNum2}`, result: simpleNum1 + simpleNum2 };
+                }
+            },
+            medium: {
+                description: '中等题目，数字适中，运算稍复杂',
+                // 中等难度：平衡的数字和运算复杂度
+                generateQuestion: function(settings) {
+                    const { operationCount, numberRange, operators } = settings;
+                    let numbers = [];
+                    let ops = [];
+                    let maxAttempts = 50;
+                    let attempts = 0;
+                    
+                    do {
+                        attempts++;
+                        numbers = [];
+                        ops = [];
+                        
+                        // 中等难度：使用适中的数字范围
+                        const maxNum = Math.min(numberRange, 20);
+                        numbers.push(Math.floor(Math.random() * maxNum) + 1);
+                        
+                        for (let i = 0; i < operationCount; i++) {
+                            // 中等难度：可以使用所有运算类型
+                            const randomOp = operators[Math.floor(Math.random() * operators.length)];
+                            ops.push(randomOp);
+                            
+                            let nextNum;
+                            if (randomOp === '-') {
+                                // 减法：确保结果非负
+                                nextNum = Math.floor(Math.random() * Math.min(numbers[i], 15)) + 1;
+                            } else if (randomOp === '×') {
+                                // 乘法：适中的数字
+                                nextNum = Math.floor(Math.random() * 10) + 1;
+                            } else if (randomOp === '÷') {
+                                // 除法：确保整除
+                                const factors = [];
+                                for (let j = 1; j <= numbers[i]; j++) {
+                                    if (numbers[i] % j === 0) factors.push(j);
+                                }
+                                nextNum = factors[Math.floor(Math.random() * factors.length)] || 1;
+                            } else {
+                                // 加法：适中数字
+                                nextNum = Math.floor(Math.random() * Math.min(maxNum, 15)) + 1;
+                            }
+                            numbers.push(nextNum);
+                        }
+                        
+                        let expression = '';
+                        for (let i = 0; i < numbers.length; i++) {
+                            expression += numbers[i];
+                            if (i < ops.length) {
+                                expression += ' ' + ops[i] + ' ';
+                            }
+                        }
+                        
+                        let result = 0;
+                        try {
+                            result = eval(expression.replace(/×/g, '*').replace(/÷/g, '/'));
+                        } catch (e) {
+                            continue;
+                        }
+                        
+                        // 中等难度：结果范围适中
+                        if (result >= 0 && result <= numberRange * 1.5 && Number.isInteger(result)) {
+                            return { expression, result };
+                        }
+                    } while (attempts < maxAttempts);
+                    
+                    // 备用方案：中等加法
+                    const simpleNum1 = Math.floor(Math.random() * 10) + 1;
+                    const simpleNum2 = Math.floor(Math.random() * 10) + 1;
+                    return { expression: `${simpleNum1} + ${simpleNum2}`, result: simpleNum1 + simpleNum2 };
+                }
+            },
+            hard: {
+                description: '困难题目，数字大，运算复杂',
+                // 困难难度：使用较大数字和复杂运算
+                generateQuestion: function(settings) {
+                    const { operationCount, numberRange, operators } = settings;
+                    let numbers = [];
+                    let ops = [];
+                    let maxAttempts = 50;
+                    let attempts = 0;
+                    
+                    do {
+                        attempts++;
+                        numbers = [];
+                        ops = [];
+                        
+                        // 困难难度：使用较大数字
+                        const maxNum = Math.min(numberRange, 50);
+                        numbers.push(Math.floor(Math.random() * maxNum) + 1);
+                        
+                        for (let i = 0; i < operationCount; i++) {
+                            // 困难难度：可以使用所有运算类型，包括复杂组合
+                            const randomOp = operators[Math.floor(Math.random() * operators.length)];
+                            ops.push(randomOp);
+                            
+                            let nextNum;
+                            if (randomOp === '-') {
+                                // 减法：允许较大数字
+                                nextNum = Math.floor(Math.random() * Math.min(numbers[i], 25)) + 1;
+                            } else if (randomOp === '×') {
+                                // 乘法：较大数字
+                                nextNum = Math.floor(Math.random() * 15) + 1;
+                            } else if (randomOp === '÷') {
+                                // 除法：确保整除
+                                const factors = [];
+                                for (let j = 1; j <= numbers[i]; j++) {
+                                    if (numbers[i] % j === 0) factors.push(j);
+                                }
+                                nextNum = factors[Math.floor(Math.random() * factors.length)] || 1;
+                            } else {
+                                // 加法：较大数字
+                                nextNum = Math.floor(Math.random() * Math.min(maxNum, 25)) + 1;
+                            }
+                            numbers.push(nextNum);
+                        }
+                        
+                        let expression = '';
+                        for (let i = 0; i < numbers.length; i++) {
+                            expression += numbers[i];
+                            if (i < ops.length) {
+                                expression += ' ' + ops[i] + ' ';
+                            }
+                        }
+                        
+                        let result = 0;
+                        try {
+                            result = eval(expression.replace(/×/g, '*').replace(/÷/g, '/'));
+                        } catch (e) {
+                            continue;
+                        }
+                        
+                        // 困难难度：允许较大结果
+                        if (result >= 0 && result <= numberRange * 2 && Number.isInteger(result)) {
+                            return { expression, result };
+                        }
+                    } while (attempts < maxAttempts);
+                    
+                    // 备用方案：困难加法
+                    const simpleNum1 = Math.floor(Math.random() * 20) + 1;
+                    const simpleNum2 = Math.floor(Math.random() * 20) + 1;
+                    return { expression: `${simpleNum1} + ${simpleNum2}`, result: simpleNum1 + simpleNum2 };
+                }
+            }
+        };
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let answer = '';
+        let questionStartTime = 0;
+        let questionTimes = [];
+        let totalStartTime = 0;
+        let results = [];
+        let questionTimer = null;
+        let totalTimer = null;
+        let bestTime = Infinity; // 记录最佳用时
+        let encouragements = [
+            "太棒了！你是最快的！🏆",
+            "哇！破纪录了！🌟",
+            "超级快！继续保持！⚡",
+            "你是数学小天才！🎯",
+            "速度真快！真厉害！🚀"
+        ];
+
+        // DOM 元素
+        const settingsPanel = document.getElementById('settings-panel');
+        const exerciseArea = document.getElementById('exercise-area');
+        const resultsArea = document.getElementById('results-area');
+        const settingsBtn = document.getElementById('settings-btn');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const questionDisplay = document.getElementById('question-display');
+        const answerInput = document.getElementById('answer-input');
+        const currentQuestionEl = document.getElementById('current-question');
+
+
+        const finalTotalTimeEl = document.getElementById('final-total-time');
+        const accuracyEl = document.getElementById('accuracy');
+        const detailedResultsEl = document.getElementById('detailed-results');
+        const resultTitleEl = document.getElementById('result-title');
+        const maxOperatorsEl = document.getElementById('max-operators');
+        const operatorSelects = document.querySelectorAll('.operator-select');
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            // 显示设置面板
+            settingsPanel.classList.remove('hidden');
+            settingsPanel.classList.add('show');
+            
+            // 事件监听
+            settingsBtn.addEventListener('click', showSettingsPanel);
+            startBtn.addEventListener('click', startExercise);
+            restartBtn.addEventListener('click', restartExercise);
+            
+            // 难度描述已集成到按钮中，无需额外显示
+            
+            // 运算次数选择
+            document.querySelectorAll('.operation-count-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.operation-count-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    
+                    // 更新运算次数并限制运算类型数量
+                    currentSettings.operationCount = parseInt(btn.dataset.count);
+                    maxOperatorsEl.textContent = currentSettings.operationCount;
+                    enforceOperatorLimit();
+                });
+            });
+            
+            // 数字范围选择
+            document.querySelectorAll('.number-range-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.number-range-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    currentSettings.numberRange = parseInt(btn.dataset.range);
+                });
+            });
+            
+            // 难度选择
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 更新按钮状态
+                    document.querySelectorAll('.difficulty-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    
+                    // 获取难度配置
+                    const difficulty = btn.dataset.difficulty;
+                    const config = difficultyConfigs[difficulty];
+                    
+                    // 更新设置
+                    currentSettings.difficulty = difficulty;
+                    
+                    // 难度描述已集成到按钮中，无需额外显示
+                });
+            });
+            
+            // 运算类型选择 - 核心修改部分
+            document.querySelectorAll('.operator-select').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 获取当前选中的运算类型数量
+                    const activeCount = document.querySelectorAll('.operator-select.active').length;
+                    
+                    // 关键逻辑：如果当前要取消选中，且是最后一个选中的，则不允许
+                    if (btn.classList.contains('active') && activeCount === 1) {
+                        const tooltip = btn.nextElementSibling;
+                        tooltip.textContent = "至少保留一种运算类型";
+                        tooltip.classList.add('show');
+                        setTimeout(() => tooltip.classList.remove('show'), 2000);
+                        return; // 阻止取消
+                    }
+                    
+                    // 如果要选中，但已达到最大数量，则不允许
+                    if (!btn.classList.contains('active') && activeCount >= currentSettings.operationCount) {
+                        const tooltip = btn.nextElementSibling;
+                        tooltip.textContent = `最多只能选择${currentSettings.operationCount}种运算类型`;
+                        tooltip.classList.add('show');
+                        setTimeout(() => tooltip.classList.remove('show'), 2000);
+                        return; // 阻止选择
+                    }
+                    
+                    // 正常切换选择状态（包括加减法）
+                    btn.classList.toggle('active');
+                    
+                    // 更新选择的运算符
+                    currentSettings.operators = Array.from(
+                        document.querySelectorAll('.operator-select.active')
+                    ).map(el => el.dataset.op);
+                });
+            });
+            
+            // 数字键盘事件
+            document.querySelectorAll('.number-btn[data-num]').forEach(btn => {
+                btn.addEventListener('click', () => appendNumber(btn.dataset.num));
+            });
+            
+            // 清除按钮
+            document.querySelector('.number-btn[data-action="clear"]').addEventListener('click', clearAnswer);
+            
+            // 提交按钮
+            document.querySelector('.number-btn[data-action="submit"]').addEventListener('click', submitAnswer);
+        });
+
+        // 显示难度描述（已移除，不再需要）
+        function showDifficultyDescription(description) {
+            // 此函数已不再使用
+        }
+        
+        // 强制限制运算类型数量不超过运算次数
+        function enforceOperatorLimit() {
+            const activeOperators = document.querySelectorAll('.operator-select.active');
+            
+            // 如果当前选择的运算类型超过运算次数，取消多余的选择
+            if (activeOperators.length > currentSettings.operationCount) {
+                // 从后往前取消选择，保留前面的
+                for (let i = activeOperators.length - 1; i >= currentSettings.operationCount; i--) {
+                    const op = activeOperators[i];
+                    op.classList.remove('active');
+                }
+                
+                // 更新设置
+                currentSettings.operators = Array.from(
+                    document.querySelectorAll('.operator-select.active')
+                ).map(el => el.dataset.op);
+            }
+        }
+
+        // 显示设置面板
+        function showSettingsPanel() {
+            settingsPanel.classList.remove('hidden');
+            setTimeout(() => {
+                settingsPanel.classList.add('show');
+            }, 10);
+            exerciseArea.classList.add('hidden');
+            resultsArea.classList.add('hidden');
+        }
+
+        // 生成题目
+        function generateQuestions() {
+            questions = [];
+            for (let i = 0; i < 10; i++) {
+                questions.push(generateQuestion());
+            }
+        }
+
+        // 生成单个题目
+        function generateQuestion() {
+            const { difficulty } = currentSettings;
+            const config = difficultyConfigs[difficulty];
+            
+            // 直接调用难度特定的生成函数，传入当前设置
+            return config.generateQuestion(currentSettings);
+        }
+
+        // 开始练习
+        function startExercise() {
+            // 隐藏设置面板
+            settingsPanel.classList.remove('show');
+            setTimeout(() => settingsPanel.classList.add('hidden'), 300);
+            
+            // 初始化变量
+            generateQuestions();
+            currentQuestionIndex = 0;
+            questionTimes = [];
+            results = [];
+            answer = '';
+            bestTime = Infinity; // 重置最佳用时
+            
+            // 显示练习区域
+            exerciseArea.classList.remove('hidden');
+            exerciseArea.style.display = 'block';
+            answerInput.innerHTML = '<span style="color: #9ca3af;">点击数字输入答案</span>';
+            
+            // 开始总计时
+            totalStartTime = Date.now();
+            startTotalTimer();
+            
+            // 显示第一题
+            showNextQuestion();
+        }
+
+        // 显示下一题
+        function showNextQuestion() {
+            console.log('显示下一题，当前索引:', currentQuestionIndex);
+            
+            if (currentQuestionIndex >= 10) {
+                // 所有题目完成，显示结果
+                console.log('所有题目完成，调用finishExercise');
+                finishExercise();
+                return;
+            }
+            
+            // 更新题目索引显示
+            currentQuestionEl.textContent = currentQuestionIndex + 1;
+            
+            // 显示当前题目
+            const question = questions[currentQuestionIndex];
+            questionDisplay.textContent = question.expression;
+            
+            // 清空答案
+            answer = '';
+            answerInput.innerHTML = '<span style="color: #9ca3af;">点击数字输入答案</span>';
+            
+            // 开始计时
+            questionStartTime = Date.now();
+            startQuestionTimer();
+        }
+
+        // 开始题目计时器
+        function startQuestionTimer() {
+            clearInterval(questionTimer);
+            questionTimer = setInterval(() => {
+                const elapsed = Date.now() - questionStartTime;
+                // 更新底部当前用时显示
+                const currentQuestionTimeEl = document.getElementById('current-question-time');
+                if (currentQuestionTimeEl) {
+                    currentQuestionTimeEl.textContent = formatTime(elapsed);
+                }
+            }, 100); // 每100毫秒更新一次，让第三位数更频繁变化
+        }
+
+        // 开始总计时器
+        function startTotalTimer() {
+            clearInterval(totalTimer);
+            totalTimer = setInterval(() => {
+                const elapsed = Date.now() - totalStartTime;
+                // 更新底部总用时显示
+                const currentTotalTimeEl = document.getElementById('current-total-time');
+                if (currentTotalTimeEl) {
+                    currentTotalTimeEl.textContent = formatTime(elapsed);
+                }
+            }, 100); // 每100毫秒更新一次，让第三位数更频繁变化
+        }
+
+        // 格式化时间（毫秒转分:秒.毫秒）
+        function formatTime(ms) {
+            const totalSeconds = ms / 1000;
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = Math.floor(totalSeconds % 60);
+            const tenths = Math.floor((totalSeconds % 1) * 10);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${tenths}`;
+        }
+
+        // 追加数字到答案
+        function appendNumber(num) {
+            answer += num;
+            answerInput.textContent = answer;
+        }
+
+        // 清除答案
+        function clearAnswer() {
+            answer = '';
+            answerInput.innerHTML = '<span style="color: #9ca3af;">点击数字输入答案</span>';
+        }
+
+        // 提交答案
+        function submitAnswer() {
+            if (!answer) return; // 空答案不提交
+            
+            // 停止当前题计时
+            clearInterval(questionTimer);
+            const questionTime = Date.now() - questionStartTime;
+            questionTimes.push(questionTime);
+            
+            // 检查答案
+            const currentQuestion = questions[currentQuestionIndex];
+            const isCorrect = parseInt(answer) === currentQuestion.result;
+            
+            // 记录结果
+            results.push({
+                question: currentQuestion.expression,
+                userAnswer: answer,
+                correctAnswer: currentQuestion.result,
+                isCorrect,
+                time: questionTime
+            });
+            
+            // 检查是否是最佳用时
+            let isBestTime = false;
+            let encouragement = "";
+            if (isCorrect && questionTime < bestTime) {
+                bestTime = questionTime;
+                isBestTime = true;
+                encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+            }
+            
+            // 显示反馈
+            let feedback = "";
+            if (isCorrect) {
+                feedback = `<span style="color: #10B981;"><i class="fa fa-smile-o" style="margin-right: 0.5rem;"></i> 正确！</span>`;
+                feedback += `<br><span style="font-size: 1.5rem; color: #6b7280;">用时: ${formatTime(questionTime)}</span>`;
+                if (isBestTime) {
+                    feedback += `<br><span style="font-size: 1.25rem; color: #F59E0B; font-weight: bold;">${encouragement}</span>`;
+                }
+            } else {
+                feedback = `<span style="color: #F59E0B;"><i class="fa fa-frown-o" style="margin-right: 0.5rem;"></i> 答案是 ${currentQuestion.result}</span>`;
+                feedback += `<br><span style="font-size: 1.5rem; color: #6b7280;">用时: ${formatTime(questionTime)}</span>`;
+            }
+            
+            questionDisplay.innerHTML = feedback;
+            
+            // 延迟显示下一题
+            currentQuestionIndex++;
+            setTimeout(showNextQuestion, 2000);
+        }
+
+        // 完成练习，显示结果
+        function finishExercise() {
+            console.log('完成练习函数被调用');
+            
+            // 停止计时器
+            clearInterval(questionTimer);
+            clearInterval(totalTimer);
+            
+            // 隐藏练习区域，显示结果区域
+            exerciseArea.classList.add('hidden');
+            exerciseArea.style.display = 'none';
+            resultsArea.classList.remove('hidden');
+            resultsArea.style.display = 'block';
+            
+            console.log('练习区域隐藏，结果区域显示');
+            
+            // 计算统计数据
+            const correctCount = results.filter(r => r.isCorrect).length;
+            const accuracy = Math.round((correctCount / 10) * 100);
+            const totalTime = Date.now() - totalStartTime;
+            const avgTime = questionTimes.length > 0 ? questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length : 0;
+            
+            // 更新结果显示
+            accuracyEl.textContent = `${accuracy}%`;
+            finalTotalTimeEl.textContent = formatTime(totalTime);
+            
+            // 生成鼓励和奖励信息
+            let title = '';
+            let reward = '';
+            
+            if (accuracy === 100) {
+                if (avgTime < 5000) { // 平均每题5秒内
+                    title = '🏆 数学小天才！';
+                    reward = '你太厉害了！全部正确且速度超快！';
+                } else {
+                    title = '🎉 完美表现！';
+                    reward = '全部答对！你是数学小能手！';
+                }
+            } else if (accuracy >= 80) {
+                title = '🌟 很棒的表现！';
+                reward = `答对了 ${correctCount} 题，继续加油！`;
+            } else if (accuracy >= 60) {
+                title = '👍 不错哦！';
+                reward = `答对了 ${correctCount} 题，多练习会更好！`;
+            } else {
+                title = '💪 继续努力！';
+                reward = `答对了 ${correctCount} 题，不要灰心，下次会更好！`;
+            }
+            
+            // 显示结果标题
+            resultTitleEl.textContent = title;
+            
+            // 添加奖励信息到结果区域
+            const rewardEl = document.getElementById('reward-message');
+            if (rewardEl) {
+                rewardEl.textContent = reward;
+            }
+            
+            // 显示详细结果
+            detailedResultsEl.innerHTML = '';
+            results.forEach((result, index) => {
+                const row = document.createElement('tr');
+                row.className = result.isCorrect ? 'correct-row' : 'incorrect-row';
+                row.innerHTML = `
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">（${index + 1}） ${result.question} = ?</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb; ${result.isCorrect ? 'color: #10B981;' : 'color: #F59E0B;'}">
+                        ${result.isCorrect ? '正确' : `错误 (你的答案: ${result.userAnswer})`}
+                    </td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">${formatTime(result.time)}</td>
+                `;
+                detailedResultsEl.appendChild(row);
+            });
+        }
+
+        // 重新开始练习
+        function restartExercise() {
+            resultsArea.classList.add('hidden');
+            showSettingsPanel();
+        }
+    </script>
+</body>
+</html>
