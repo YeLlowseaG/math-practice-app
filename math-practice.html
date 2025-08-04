@@ -524,6 +524,14 @@
             padding: 2rem;
         }
         
+        .exercise-records-area {
+            display: none;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        
         .settings-options {
             display: grid;
             gap: 1.5rem;
@@ -1050,11 +1058,39 @@
                         查看错题记录
                     </button>
                 </div>
+                
+                <div class="settings-option-card">
+                    <div class="settings-option-header">
+                        <i class="fa fa-history" style="color: #10B981; font-size: 1.5rem;"></i>
+                        <h3>答题记录查看</h3>
+                    </div>
+                    <p style="color: #6B7280; margin: 0.5rem 0 1rem 0;">
+                        查看所有练习记录和成绩
+                    </p>
+                    <button id="view-exercise-records-page-btn" class="settings-action-btn" style="background: #10B981;">
+                        查看答题记录
+                    </button>
+                </div>
             </div>
             
             <div style="text-align: center; margin-top: 2rem;">
                 <button id="back-to-home-btn" class="start-btn" style="background: #6B7280;">
                     返回首页
+                </button>
+            </div>
+        </div>
+        
+        <!-- 答题记录页面区域 -->
+        <div id="exercise-records-area" class="exercise-records-area" style="display: none;">
+            <h2 class="result-title">答题记录</h2>
+            
+            <div id="exercise-records-list" style="margin-bottom: 2rem;">
+                <!-- 答题记录列表将通过JS动态填充 -->
+            </div>
+            
+            <div style="text-align: center;">
+                <button id="back-to-settings-from-records-btn" class="start-btn" style="background: #6B7280;">
+                    返回设置
                 </button>
             </div>
         </div>
@@ -1322,14 +1358,17 @@
         const resultsArea = document.getElementById('results-area');
         const wrongQuestionsArea = document.getElementById('wrong-questions-area');
         const settingsPageArea = document.getElementById('settings-page-area');
+        const exerciseRecordsArea = document.getElementById('exercise-records-area');
         const settingsBtn = document.getElementById('settings-btn');
         const startBtn = document.getElementById('start-btn');
         const restartBtn = document.getElementById('restart-btn');
         const wrongQuestionsBtn = document.getElementById('wrong-questions-btn');
         const clearWrongQuestionsPageBtn = document.getElementById('clear-wrong-questions-page-btn');
         const viewWrongQuestionsPageBtn = document.getElementById('view-wrong-questions-page-btn');
+        const viewExerciseRecordsPageBtn = document.getElementById('view-exercise-records-page-btn');
         const backToSettingsBtn = document.getElementById('back-to-settings-btn');
         const backToHomeBtn = document.getElementById('back-to-home-btn');
+        const backToSettingsFromRecordsBtn = document.getElementById('back-to-settings-from-records-btn');
         const questionDisplay = document.getElementById('question-display');
         const answerInput = document.getElementById('answer-input');
         const currentQuestionEl = document.getElementById('current-question');
@@ -1355,8 +1394,10 @@
             wrongQuestionsBtn.addEventListener('click', showWrongQuestions);
             clearWrongQuestionsPageBtn.addEventListener('click', clearWrongQuestions);
             viewWrongQuestionsPageBtn.addEventListener('click', showWrongQuestions);
+            viewExerciseRecordsPageBtn.addEventListener('click', showExerciseRecords);
             backToSettingsBtn.addEventListener('click', backToSettings);
             backToHomeBtn.addEventListener('click', backToHome);
+            backToSettingsFromRecordsBtn.addEventListener('click', backToSettingsFromRecords);
             
             // 难度描述已集成到按钮中，无需额外显示
             
@@ -1629,6 +1670,44 @@
                 console.error('清除错题失败:', error);
             }
         }
+        
+        // 保存答题记录到本地存储
+        function saveExerciseRecord(exerciseRecord) {
+            try {
+                let exerciseRecords = JSON.parse(localStorage.getItem('mathExerciseRecords') || '[]');
+                exerciseRecords.push(exerciseRecord);
+                
+                // 只保留最近50次练习记录
+                if (exerciseRecords.length > 50) {
+                    exerciseRecords = exerciseRecords.slice(-50);
+                }
+                
+                localStorage.setItem('mathExerciseRecords', JSON.stringify(exerciseRecords));
+                console.log('答题记录已保存到本地存储');
+            } catch (error) {
+                console.error('保存答题记录失败:', error);
+            }
+        }
+        
+        // 获取所有答题记录
+        function getExerciseRecords() {
+            try {
+                return JSON.parse(localStorage.getItem('mathExerciseRecords') || '[]');
+            } catch (error) {
+                console.error('获取答题记录失败:', error);
+                return [];
+            }
+        }
+        
+        // 清除所有答题记录
+        function clearExerciseRecords() {
+            try {
+                localStorage.removeItem('mathExerciseRecords');
+                console.log('所有答题记录已清除');
+            } catch (error) {
+                console.error('清除答题记录失败:', error);
+            }
+        }
 
         // 追加数字到答案
         function appendNumber(num) {
@@ -1782,6 +1861,18 @@
                 rewardEl.textContent = reward;
             }
             
+            // 保存答题记录
+            saveExerciseRecord({
+                timestamp: Date.now(),
+                accuracy: accuracy,
+                totalTime: totalTime,
+                avgTime: avgTime,
+                correctCount: correctCount,
+                totalQuestions: results.length,
+                settings: currentSettings,
+                results: results
+            });
+            
             // 显示详细结果
             detailedResultsEl.innerHTML = '';
             results.forEach((result, index) => {
@@ -1875,6 +1966,64 @@
             exerciseArea.style.display = 'none';
             resultsArea.style.display = 'none';
             settingsPanel.style.display = 'none';
+            settingsPageArea.style.display = 'block';
+        }
+        
+        // 显示答题记录
+        function showExerciseRecords() {
+            const exerciseRecords = getExerciseRecords();
+            const exerciseRecordsList = document.getElementById('exercise-records-list');
+            
+            if (exerciseRecords.length === 0) {
+                exerciseRecordsList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #6B7280; font-size: 1.125rem;">
+                        📊 还没有答题记录哦！<br>
+                        <span style="font-size: 1rem; margin-top: 0.5rem; display: block;">
+                            完成练习后会记录在这里
+                        </span>
+                    </div>
+                `;
+            } else {
+                let html = '<div style="margin-bottom: 1rem;">';
+                exerciseRecords.forEach((record, index) => {
+                    const date = new Date(record.timestamp);
+                    const dateStr = `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    
+                    html += `
+                        <div style="background: #F0FDF4; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid #10B981;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span style="font-weight: bold; color: #065F46;">练习记录 ${exerciseRecords.length - index}</span>
+                                <span style="font-size: 0.875rem; color: #6B7280;">${dateStr}</span>
+                            </div>
+                            <div style="color: #10B981; font-weight: bold; margin-bottom: 0.5rem;">
+                                正确率: ${record.accuracy}% | 答对: ${record.correctCount}/${record.totalQuestions} 题
+                            </div>
+                            <div style="color: #10B981; font-weight: bold; margin-bottom: 0.5rem;">
+                                总用时: ${formatTime(record.totalTime)} | 平均用时: ${formatTime(record.avgTime)}
+                            </div>
+                            <div style="font-size: 0.875rem; color: #6B7280; margin-top: 0.5rem;">
+                                设置: ${record.settings.numberRange}内 ${record.settings.operationCount}次运算 
+                                ${record.settings.operators.join('、')} | ${record.settings.difficulty === 'easy' ? '轻松' : record.settings.difficulty === 'medium' ? '挑战' : '高手'}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                exerciseRecordsList.innerHTML = html;
+            }
+            
+            // 隐藏设置页面，显示答题记录
+            settingsPageArea.style.display = 'none';
+            exerciseArea.style.display = 'none';
+            resultsArea.style.display = 'none';
+            wrongQuestionsArea.style.display = 'none';
+            settingsPanel.style.display = 'none';
+            exerciseRecordsArea.style.display = 'block';
+        }
+        
+        // 返回设置页面（从答题记录）
+        function backToSettingsFromRecords() {
+            exerciseRecordsArea.style.display = 'none';
             settingsPageArea.style.display = 'block';
         }
         
