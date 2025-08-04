@@ -781,7 +781,7 @@
                     <div class="answer-input">
                         <span class="label">答案:</span>
                         <div id="answer-input" class="answer-display">
-                            <span style="color: #9ca3af;">点击数字输入答案</span>
+                            <span style="color: #9ca3af; font-size: 1rem;">点击数字输入答案</span>
                         </div>
                     </div>
                 </div>
@@ -1318,7 +1318,7 @@
             // 显示练习区域
             exerciseArea.classList.remove('hidden');
             exerciseArea.style.display = 'block';
-            answerInput.innerHTML = '<span style="color: #9ca3af;">点击数字输入答案</span>';
+            answerInput.innerHTML = '<span style="color: #9ca3af; font-size: 1rem;">点击数字输入答案</span>';
             
             // 开始总计时
             totalStartTime = Date.now();
@@ -1348,7 +1348,7 @@
             
             // 清空答案
             answer = '';
-            answerInput.innerHTML = '<span style="color: #9ca3af;">点击数字输入答案</span>';
+            answerInput.innerHTML = '<span style="color: #9ca3af; font-size: 1rem;">点击数字输入答案</span>';
             
             // 开始计时
             questionStartTime = Date.now();
@@ -1394,17 +1394,32 @@
         function appendNumber(num) {
             answer += num;
             answerInput.textContent = answer;
+            
+            // 触觉反馈
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10); // 轻微震动10毫秒
+            }
         }
 
         // 清除答案
         function clearAnswer() {
             answer = '';
-            answerInput.innerHTML = '<span style="color: #9ca3af;">点击数字输入答案</span>';
+            answerInput.innerHTML = '<span style="color: #9ca3af; font-size: 1rem;">点击数字输入答案</span>';
+            
+            // 触觉反馈
+            if ('vibrate' in navigator) {
+                navigator.vibrate(20); // 清除按钮震动稍长一些
+            }
         }
 
         // 提交答案
         function submitAnswer() {
             if (!answer) return; // 空答案不提交
+            
+            // 触觉反馈
+            if ('vibrate' in navigator) {
+                navigator.vibrate(30); // 提交按钮震动稍长一些
+            }
             
             // 停止当前题计时
             clearInterval(questionTimer);
