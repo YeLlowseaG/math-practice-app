@@ -115,6 +115,55 @@
             background: rgba(139, 92, 246, 0.2);
         }
         
+        /* 设置下拉菜单 */
+        .settings-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .settings-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            min-width: 180px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+        
+        .settings-dropdown:hover .settings-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .settings-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            color: #374151;
+            font-size: 0.875rem;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .settings-menu-item:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+        
         /* 主内容区域 */
         main {
             padding: 1rem;
@@ -678,10 +727,19 @@
                     <h1>数学小天才</h1>
                 </div>
                 <div class="header-controls">
-                    <button id="settings-btn" class="settings-btn">
-                        <i class="fa fa-cog"></i>
-                        <span>设置</span>
-                    </button>
+                    <div class="settings-dropdown">
+                        <button id="settings-btn" class="settings-btn">
+                            <i class="fa fa-cog"></i>
+                            <span>设置</span>
+                            <i class="fa fa-chevron-down" style="font-size: 0.75rem; margin-left: 0.25rem;"></i>
+                        </button>
+                        <div class="settings-menu" id="settings-menu">
+                            <button class="settings-menu-item" id="clear-wrong-questions-menu-btn">
+                                <i class="fa fa-trash" style="color: #EF4444;"></i>
+                                <span>清空错题记录</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -910,9 +968,6 @@
             </div>
             
             <div style="text-align: center;">
-                <button id="clear-wrong-questions-btn" class="start-btn" style="background: #EF4444; margin-right: 1rem;">
-                    清空错题记录
-                </button>
                 <button id="back-to-settings-btn" class="start-btn" style="background: #6B7280;">
                     返回首页
                 </button>
@@ -1185,7 +1240,7 @@
         const startBtn = document.getElementById('start-btn');
         const restartBtn = document.getElementById('restart-btn');
         const wrongQuestionsBtn = document.getElementById('wrong-questions-btn');
-        const clearWrongQuestionsBtn = document.getElementById('clear-wrong-questions-btn');
+        const clearWrongQuestionsMenuBtn = document.getElementById('clear-wrong-questions-menu-btn');
         const backToSettingsBtn = document.getElementById('back-to-settings-btn');
         const questionDisplay = document.getElementById('question-display');
         const answerInput = document.getElementById('answer-input');
@@ -1210,7 +1265,7 @@
             startBtn.addEventListener('click', startExercise);
             restartBtn.addEventListener('click', restartExercise);
             wrongQuestionsBtn.addEventListener('click', showWrongQuestions);
-            clearWrongQuestionsBtn.addEventListener('click', clearWrongQuestions);
+            clearWrongQuestionsMenuBtn.addEventListener('click', clearWrongQuestions);
             backToSettingsBtn.addEventListener('click', backToSettings);
             
             // 难度描述已集成到按钮中，无需额外显示
