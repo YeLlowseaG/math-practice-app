@@ -119,6 +119,7 @@
         .settings-dropdown {
             position: relative;
             display: inline-block;
+            z-index: 100000;
         }
         
         .settings-menu {
@@ -130,7 +131,7 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
             padding: 0.5rem;
             min-width: 180px;
-            z-index: 1000;
+            z-index: 100000;
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
@@ -157,6 +158,8 @@
             transition: all 0.2s;
             width: 100%;
             text-align: left;
+            position: relative;
+            z-index: 10000;
         }
         
         .settings-menu-item:hover {
@@ -179,6 +182,7 @@
             transform: scale(1);
             opacity: 1;
             transition: all 0.5s;
+            z-index: 1;
         }
         
         .settings-panel.show {
@@ -512,6 +516,57 @@
             padding: 2rem;
         }
         
+        .settings-page-area {
+            display: none;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        
+        .settings-options {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .settings-option-card {
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .settings-option-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .settings-option-header h3 {
+            font-size: 1.125rem;
+            font-weight: bold;
+            margin: 0;
+            color: #1f2937;
+        }
+        
+        .settings-action-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+        }
+        
+        .settings-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
         .result-title {
             font-size: 1.875rem;
             font-weight: bold;
@@ -727,19 +782,10 @@
                     <h1>数学小天才</h1>
                 </div>
                 <div class="header-controls">
-                    <div class="settings-dropdown">
-                        <button id="settings-btn" class="settings-btn">
-                            <i class="fa fa-cog"></i>
-                            <span>设置</span>
-                            <i class="fa fa-chevron-down" style="font-size: 0.75rem; margin-left: 0.25rem;"></i>
-                        </button>
-                        <div class="settings-menu" id="settings-menu">
-                            <button class="settings-menu-item" id="clear-wrong-questions-menu-btn">
-                                <i class="fa fa-trash" style="color: #EF4444;"></i>
-                                <span>清空错题记录</span>
-                            </button>
-                        </div>
-                    </div>
+                    <button id="settings-btn" class="settings-btn">
+                        <i class="fa fa-cog"></i>
+                        <span>设置</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -969,6 +1015,45 @@
             
             <div style="text-align: center;">
                 <button id="back-to-settings-btn" class="start-btn" style="background: #6B7280;">
+                    返回设置
+                </button>
+            </div>
+        </div>
+        
+        <!-- 设置页面区域 -->
+        <div id="settings-page-area" class="settings-page-area" style="display: none;">
+            <h2 class="result-title">设置</h2>
+            
+            <div class="settings-options">
+                <div class="settings-option-card">
+                    <div class="settings-option-header">
+                        <i class="fa fa-trash" style="color: #EF4444; font-size: 1.5rem;"></i>
+                        <h3>错题记录管理</h3>
+                    </div>
+                    <p style="color: #6B7280; margin: 0.5rem 0 1rem 0;">
+                        管理您的错题记录，可以清空所有记录
+                    </p>
+                    <button id="clear-wrong-questions-page-btn" class="settings-action-btn" style="background: #EF4444;">
+                        清空错题记录
+                    </button>
+                </div>
+                
+                <div class="settings-option-card">
+                    <div class="settings-option-header">
+                        <i class="fa fa-book" style="color: #4F46E5; font-size: 1.5rem;"></i>
+                        <h3>错题记录查看</h3>
+                    </div>
+                    <p style="color: #6B7280; margin: 0.5rem 0 1rem 0;">
+                        查看所有保存的错题记录
+                    </p>
+                    <button id="view-wrong-questions-page-btn" class="settings-action-btn" style="background: #4F46E5;">
+                        查看错题记录
+                    </button>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <button id="back-to-home-btn" class="start-btn" style="background: #6B7280;">
                     返回首页
                 </button>
             </div>
@@ -1236,12 +1321,15 @@
         const exerciseArea = document.getElementById('exercise-area');
         const resultsArea = document.getElementById('results-area');
         const wrongQuestionsArea = document.getElementById('wrong-questions-area');
+        const settingsPageArea = document.getElementById('settings-page-area');
         const settingsBtn = document.getElementById('settings-btn');
         const startBtn = document.getElementById('start-btn');
         const restartBtn = document.getElementById('restart-btn');
         const wrongQuestionsBtn = document.getElementById('wrong-questions-btn');
-        const clearWrongQuestionsMenuBtn = document.getElementById('clear-wrong-questions-menu-btn');
+        const clearWrongQuestionsPageBtn = document.getElementById('clear-wrong-questions-page-btn');
+        const viewWrongQuestionsPageBtn = document.getElementById('view-wrong-questions-page-btn');
         const backToSettingsBtn = document.getElementById('back-to-settings-btn');
+        const backToHomeBtn = document.getElementById('back-to-home-btn');
         const questionDisplay = document.getElementById('question-display');
         const answerInput = document.getElementById('answer-input');
         const currentQuestionEl = document.getElementById('current-question');
@@ -1261,12 +1349,14 @@
             settingsPanel.classList.add('show');
             
             // 事件监听
-            settingsBtn.addEventListener('click', showSettingsPanel);
+            settingsBtn.addEventListener('click', showSettingsPage);
             startBtn.addEventListener('click', startExercise);
             restartBtn.addEventListener('click', restartExercise);
             wrongQuestionsBtn.addEventListener('click', showWrongQuestions);
-            clearWrongQuestionsMenuBtn.addEventListener('click', clearWrongQuestions);
+            clearWrongQuestionsPageBtn.addEventListener('click', clearWrongQuestions);
+            viewWrongQuestionsPageBtn.addEventListener('click', showWrongQuestions);
             backToSettingsBtn.addEventListener('click', backToSettings);
+            backToHomeBtn.addEventListener('click', backToHome);
             
             // 难度描述已集成到按钮中，无需额外显示
             
@@ -1754,8 +1844,11 @@
                 wrongQuestionsList.innerHTML = html;
             }
             
-            // 隐藏设置面板，显示错题记录
+            // 隐藏所有其他页面，显示错题记录
             settingsPanel.style.display = 'none';
+            exerciseArea.style.display = 'none';
+            resultsArea.style.display = 'none';
+            settingsPageArea.style.display = 'none';
             wrongQuestionsArea.style.display = 'block';
         }
         
@@ -1767,9 +1860,27 @@
             }
         }
         
-        // 返回首页（设置面板）
+        // 显示设置页面
+        function showSettingsPage() {
+            settingsPanel.style.display = 'none';
+            exerciseArea.style.display = 'none';
+            resultsArea.style.display = 'none';
+            wrongQuestionsArea.style.display = 'none';
+            settingsPageArea.style.display = 'block';
+        }
+        
+        // 返回设置页面
         function backToSettings() {
             wrongQuestionsArea.style.display = 'none';
+            exerciseArea.style.display = 'none';
+            resultsArea.style.display = 'none';
+            settingsPanel.style.display = 'none';
+            settingsPageArea.style.display = 'block';
+        }
+        
+        // 返回首页
+        function backToHome() {
+            settingsPageArea.style.display = 'none';
             settingsPanel.style.display = 'block';
             settingsPanel.classList.remove('hidden');
             settingsPanel.classList.add('show');
