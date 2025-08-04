@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数学小天才 - 儿童计算练习</title>
     
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="一年级数学练习应用，让计算练习更有趣">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="数学小天才">
+    <meta name="msapplication-TileColor" content="#4F46E5">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiM0RjQ2RTUiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0tMiAxNWMtLjU1IDAtMS0uNDUtMS0xczEuNDUtMSAxLTEgMSAuNDUgMSAxLTEgMS0xIDF6bTAtN2MtLjU1IDAtMS0uNDUtMS0xczEuNDUtMSAxLTEgMSAuNDUgMSAxLTEgMS0xIDF6bTQgN2MtLjU1IDAtMS0uNDUtMS0xczEuNDUtMSAxLTEgMSAuNDUgMSAxLTEgMS0xIDF6bTAtN2MtLjU1IDAtMS0uNDUtMS0xczEuNDUtMSAxLTEgMSAuNDUgMSAxLTEgMS0xIDF6Ii8+Cjwvc3ZnPgo8L3N2Zz4K">
+    
     <!-- 内联Tailwind CSS样式 -->
     <style>
         /* 基础样式重置 */
@@ -1509,6 +1524,73 @@
         function restartExercise() {
             resultsArea.classList.add('hidden');
             showSettingsPanel();
+        }
+        
+        // PWA Service Worker 注册
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+        
+        // 安装提示
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // 显示安装提示
+            setTimeout(() => {
+                if (deferredPrompt) {
+                    showInstallPrompt();
+                }
+            }, 3000);
+        });
+        
+        function showInstallPrompt() {
+            const installPrompt = document.createElement('div');
+            installPrompt.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #4F46E5;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 0.75rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                font-size: 0.875rem;
+            `;
+            installPrompt.innerHTML = `
+                <span>📱 安装到手机桌面</span>
+                <button onclick="installApp()" style="background: white; color: #4F46E5; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: bold; cursor: pointer;">安装</button>
+                <button onclick="this.parentElement.remove()" style="background: transparent; color: white; border: 1px solid white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">稍后</button>
+            `;
+            document.body.appendChild(installPrompt);
+        }
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
         }
     </script>
 </body>
