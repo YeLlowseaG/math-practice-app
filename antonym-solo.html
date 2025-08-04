@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>反义词挑战 - 单人闯关</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        danger: '#EF4444',
+                        neutral: '#F7FFF7',
+                        text: '#1F2937'
+                    },
+                    fontFamily: {
+                        kids: ['"Comic Sans MS"', '"Marker Felt"', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .bounce-light {
+                animation: bounce-light 0.5s ease infinite alternate;
+            }
+            .pulse-slow {
+                animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .scale-hover {
+                transition: transform 0.2s;
+            }
+            .scale-hover:hover {
+                transform: scale(1.05);
+            }
+            .correct-animation {
+                animation: correct 0.6s ease-in-out;
+            }
+            .wrong-animation {
+                animation: wrong 0.6s ease-in-out;
+            }
+            .level-complete {
+                animation: levelComplete 1s ease-in-out;
+            }
+            @keyframes bounce-light {
+                from { transform: translateY(0); }
+                to { transform: translateY(-5px); }
+            }
+            @keyframes correct {
+                0% { transform: scale(1); background-color: #10B981; }
+                50% { transform: scale(1.1); background-color: #34D399; }
+                100% { transform: scale(1); background-color: #10B981; }
+            }
+            @keyframes wrong {
+                0% { transform: translateX(0); background-color: #EF4444; }
+                25% { transform: translateX(-5px); background-color: #F87171; }
+                75% { transform: translateX(5px); background-color: #F87171; }
+                100% { transform: translateX(0); background-color: #EF4444; }
+            }
+            @keyframes levelComplete {
+                0% { transform: scale(1) rotate(0deg); }
+                25% { transform: scale(1.2) rotate(5deg); }
+                75% { transform: scale(1.2) rotate(-5deg); }
+                100% { transform: scale(1) rotate(0deg); }
+            }
+            @keyframes button-press {
+                0% { transform: scale(1); }
+                50% { transform: scale(0.95); }
+                100% { transform: scale(1); }
+            }
+            
+            .button-press {
+                animation: button-press 0.2s ease-in-out;
+            }
+            
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(59, 130, 246, 0.3);
+                transform: scale(0);
+                animation: ripple-animation 0.6s linear;
+                pointer-events: none;
+            }
+            
+            @keyframes ripple-animation {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-kids text-text overflow-hidden">
+    
+    <!-- 开始界面 -->
+    <div id="start-screen" class="flex flex-col items-center justify-center h-screen p-6 relative">
+        <div class="text-center max-w-lg mx-auto bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-500">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-4">反义词挑战</h1>
+            <p class="text-lg mb-6 text-gray-600">单人闯关模式<br>挑战你的反义词知识！</p>
+            
+            <div class="flex justify-center mb-8">
+                <div class="w-32 h-32 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-5xl shadow-lg relative overflow-hidden">
+                    <i class="fa fa-user"></i>
+                    <div class="absolute inset-0 bg-white opacity-20 rounded-full animate-ping"></div>
+                </div>
+            </div>
+            
+            <!-- 难度选择 -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold mb-4">选择难度</h3>
+                <div class="flex justify-center gap-3">
+                    <button class="difficulty-btn active" data-difficulty="easy">
+                        <span class="text-lg">😊 简单</span>
+                        <span class="text-xs">10秒/题</span>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="medium">
+                        <span class="text-lg">🤔 中等</span>
+                        <span class="text-xs">8秒/题</span>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="hard">
+                        <span class="text-lg">🔥 困难</span>
+                        <span class="text-xs">6秒/题</span>
+                    </button>
+                </div>
+            </div>
+            
+            <button id="start-btn" class="bg-accent hover:bg-yellow-400 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                开始挑战 <i class="fa fa-play ml-2"></i>
+            </button>
+            
+            <div class="mt-6 text-sm text-gray-500">
+                <p>适合年龄：6-12岁</p>
+                <p>目标：连续答对获得高分！</p>
+            </div>
+        </div>
+        
+        <!-- 装饰元素 -->
+        <div class="absolute top-10 left-10 text-5xl text-primary/30">
+            <i class="fa fa-star bounce-light"></i>
+        </div>
+        <div class="absolute bottom-10 right-10 text-5xl text-secondary/30">
+            <i class="fa fa-heart bounce-light" style="animation-delay: 0.3s"></i>
+        </div>
+        <div class="absolute top-1/4 right-20 text-4xl text-accent/30">
+            <i class="fa fa-trophy bounce-light" style="animation-delay: 0.6s"></i>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="hidden h-screen flex flex-col">
+        <!-- 顶部信息栏 -->
+        <div class="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-md">
+            <!-- 左侧信息 -->
+            <div class="flex items-center gap-4">
+                <div class="bg-primary px-4 py-2 rounded-full text-white font-bold shadow-md">
+                    <span>关卡 </span><span id="level-display">1</span>
+                </div>
+                <div class="bg-secondary px-4 py-2 rounded-full text-white font-bold shadow-md">
+                    <span>连击 </span><span id="combo-display">0</span>
+                </div>
+            </div>
+            
+            <!-- 中间计时器 -->
+            <div id="timer" class="bg-accent text-white px-6 py-3 rounded-full shadow-md">
+                <i class="fa fa-clock-o mr-2"></i>
+                <span id="countdown" class="text-2xl font-bold">10</span>
+            </div>
+            
+            <!-- 右侧分数 -->
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 rounded-full text-white font-bold shadow-md">
+                <i class="fa fa-star mr-2"></i>
+                <span id="score-display">0</span>
+            </div>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="bg-gray-200 h-2">
+            <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        
+        <!-- 主要游戏区域 -->
+        <div class="flex-1 flex flex-col justify-center items-center p-8">
+            <!-- 目标字显示 -->
+            <div class="bg-white rounded-3xl shadow-2xl p-12 text-center mb-12 transform transition-all duration-500">
+                <p class="text-gray-500 text-lg mb-2">找出它的反义词</p>
+                <p class="text-[clamp(3rem,8vw,5rem)] font-bold text-text" id="target-word">大</p>
+                <p class="text-gray-400 text-lg mt-2" id="target-pinyin">dà</p>
+            </div>
+            
+            <!-- 选项区域 -->
+            <div id="options-container" class="grid grid-cols-2 gap-6 max-w-2xl w-full">
+                <!-- 选项会动态生成 -->
+            </div>
+            
+            <!-- 反馈信息 -->
+            <div id="feedback" class="mt-8 text-center text-2xl font-bold h-12 flex items-center justify-center">
+                <!-- 反馈信息显示区域 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 结果界面 -->
+    <div id="result-screen" class="hidden flex flex-col items-center justify-center h-screen p-6 bg-white/90 backdrop-blur-md">
+        <div class="text-center max-w-lg mx-auto">
+            <div id="result-icon" class="text-8xl mb-6">🎉</div>
+            <h2 id="result-title" class="text-[clamp(2rem,5vw,3rem)] font-bold mb-6">太棒了！</h2>
+            
+            <div class="bg-neutral rounded-2xl shadow-lg p-8 mb-8">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="text-center">
+                        <div class="text-primary text-3xl font-bold" id="final-score">0</div>
+                        <div class="text-gray-600">总分数</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-secondary text-3xl font-bold" id="final-level">1</div>
+                        <div class="text-gray-600">到达关卡</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-accent text-3xl font-bold" id="final-accuracy">0%</div>
+                        <div class="text-gray-600">准确率</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-purple-500 text-3xl font-bold" id="max-combo">0</div>
+                        <div class="text-gray-600">最高连击</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 成就显示 -->
+            <div id="achievements" class="mb-8">
+                <!-- 成就徽章会动态生成 -->
+            </div>
+            
+            <div class="flex gap-4 justify-center">
+                <button id="restart-btn" class="bg-primary hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                    再来一次 <i class="fa fa-refresh ml-2"></i>
+                </button>
+                <button id="home-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                    返回首页 <i class="fa fa-home ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 反义词数据库 - 按难度分级（含拼音）- 200对反义词
+        const antonymsList = {
+            easy: [
+                // 基础形容词类
+                { word: "大", pinyin: "dà", antonym: "小", antonymPinyin: "xiǎo" },
+                { word: "多", pinyin: "duō", antonym: "少", antonymPinyin: "shǎo" },
+                { word: "高", pinyin: "gāo", antonym: "矮", antonymPinyin: "ǎi" },
+                { word: "胖", pinyin: "pàng", antonym: "瘦", antonymPinyin: "shòu" },
+                { word: "长", pinyin: "cháng", antonym: "短", antonymPinyin: "duǎn" },
+                { word: "宽", pinyin: "kuān", antonym: "窄", antonymPinyin: "zhǎi" },
+                { word: "厚", pinyin: "hòu", antonym: "薄", antonymPinyin: "báo" },
+                { word: "粗", pinyin: "cū", antonym: "细", antonymPinyin: "xì" },
+                { word: "快", pinyin: "kuài", antonym: "慢", antonymPinyin: "màn" },
+                { word: "远", pinyin: "yuǎn", antonym: "近", antonymPinyin: "jìn" },
+                { word: "黑", pinyin: "hēi", antonym: "白", antonymPinyin: "bái" },
+                { word: "红", pinyin: "hóng", antonym: "绿", antonymPinyin: "lǜ" },
+                { word: "明", pinyin: "míng", antonym: "暗", antonymPinyin: "àn" },
+                { word: "亮", pinyin: "liàng", antonym: "暗", antonymPinyin: "àn" },
+                { word: "甜", pinyin: "tián", antonym: "苦", antonymPinyin: "kǔ" },
+                { word: "酸", pinyin: "suān", antonym: "甜", antonymPinyin: "tián" },
+                { word: "咸", pinyin: "xián", antonym: "淡", antonymPinyin: "dàn" },
+                { word: "冷", pinyin: "lěng", antonym: "热", antonymPinyin: "rè" },
+                { word: "温", pinyin: "wēn", antonym: "凉", antonymPinyin: "liáng" },
+                { word: "干", pinyin: "gān", antonym: "湿", antonymPinyin: "shī" },
+                { word: "软", pinyin: "ruǎn", antonym: "硬", antonymPinyin: "yìng" },
+                { word: "松", pinyin: "sōng", antonym: "紧", antonymPinyin: "jǐn" },
+                { word: "新", pinyin: "xīn", antonym: "旧", antonymPinyin: "jiù" },
+                { word: "好", pinyin: "hǎo", antonym: "坏", antonymPinyin: "huài" },
+                { word: "真", pinyin: "zhēn", antonym: "假", antonymPinyin: "jiǎ" },
+                { word: "美", pinyin: "měi", antonym: "丑", antonymPinyin: "chǒu" },
+                { word: "香", pinyin: "xiāng", antonym: "臭", antonymPinyin: "chòu" },
+                { word: "轻", pinyin: "qīng", antonym: "重", antonymPinyin: "zhòng" },
+                { word: "深", pinyin: "shēn", antonym: "浅", antonymPinyin: "qiǎn" },
+                { word: "浓", pinyin: "nóng", antonym: "淡", antonymPinyin: "dàn" },
+                { word: "熟", pinyin: "shú", antonym: "生", antonymPinyin: "shēng" },
+                { word: "正", pinyin: "zhèng", antonym: "歪", antonymPinyin: "wāi" },
+                { word: "直", pinyin: "zhí", antonym: "弯", antonymPinyin: "wān" },
+                { word: "满", pinyin: "mǎn", antonym: "空", antonymPinyin: "kōng" },
+                { word: "尖", pinyin: "jiān", antonym: "钝", antonymPinyin: "dùn" },
+                // 基础动词类
+                { word: "开", pinyin: "kāi", antonym: "关", antonymPinyin: "guān" },
+                { word: "进", pinyin: "jìn", antonym: "出", antonymPinyin: "chū" },
+                { word: "来", pinyin: "lái", antonym: "去", antonymPinyin: "qù" },
+                { word: "上", pinyin: "shàng", antonym: "下", antonymPinyin: "xià" },
+                { word: "升", pinyin: "shēng", antonym: "降", antonymPinyin: "jiàng" },
+                { word: "起", pinyin: "qǐ", antonym: "落", antonymPinyin: "luò" },
+                { word: "推", pinyin: "tuī", antonym: "拉", antonymPinyin: "lā" },
+                { word: "涨", pinyin: "zhǎng", antonym: "落", antonymPinyin: "luò" },
+                { word: "得", pinyin: "dé", antonym: "失", antonymPinyin: "shī" },
+                { word: "买", pinyin: "mǎi", antonym: "卖", antonymPinyin: "mài" },
+                { word: "爱", pinyin: "ài", antonym: "恨", antonymPinyin: "hèn" },
+                { word: "哭", pinyin: "kū", antonym: "笑", antonymPinyin: "xiào" },
+                { word: "醒", pinyin: "xǐng", antonym: "睡", antonymPinyin: "shuì" },
+                { word: "迎", pinyin: "yíng", antonym: "送", antonymPinyin: "sòng" },
+                { word: "问", pinyin: "wèn", antonym: "答", antonymPinyin: "dá" },
+                { word: "分", pinyin: "fēn", antonym: "合", antonymPinyin: "hé" },
+                { word: "死", pinyin: "sǐ", antonym: "活", antonymPinyin: "huó" },
+                { word: "存", pinyin: "cún", antonym: "亡", antonymPinyin: "wáng" },
+                { word: "收", pinyin: "shōu", antonym: "放", antonymPinyin: "fàng" },
+                { word: "伸", pinyin: "shēn", antonym: "缩", antonymPinyin: "suō" },
+                { word: "举", pinyin: "jǔ", antonym: "放", antonymPinyin: "fàng" },
+                { word: "加", pinyin: "jiā", antonym: "减", antonymPinyin: "jiǎn" },
+                { word: "胜", pinyin: "shèng", antonym: "败", antonymPinyin: "bài" },
+                { word: "输", pinyin: "shū", antonym: "赢", antonymPinyin: "yíng" },
+                { word: "有", pinyin: "yǒu", antonym: "无", antonymPinyin: "wú" },
+                { word: "动", pinyin: "dòng", antonym: "静", antonymPinyin: "jìng" },
+                { word: "攻", pinyin: "gōng", antonym: "守", antonymPinyin: "shǒu" },
+                { word: "传", pinyin: "chuán", antonym: "接", antonymPinyin: "jiē" },
+                { word: "涨", pinyin: "zhǎng", antonym: "跌", antonymPinyin: "diē" },
+                { word: "增", pinyin: "zēng", antonym: "减", antonymPinyin: "jiǎn" },
+                { word: "生", pinyin: "shēng", antonym: "灭", antonymPinyin: "miè" },
+                { word: "始", pinyin: "shǐ", antonym: "终", antonymPinyin: "zhōng" },
+                { word: "止", pinyin: "zhǐ", antonym: "行", antonymPinyin: "xíng" },
+                { word: "追", pinyin: "zhuī", antonym: "逃", antonymPinyin: "táo" },
+                { word: "落", pinyin: "luò", antonym: "升", antonymPinyin: "shēng" },
+                { word: "借", pinyin: "jiè", antonym: "还", antonymPinyin: "huán" },
+                { word: "取", pinyin: "qǔ", antonym: "舍", antonymPinyin: "shě" },
+                { word: "吞", pinyin: "tūn", antonym: "吐", antonymPinyin: "tǔ" },
+                { word: "吸", pinyin: "xī", antonym: "呼", antonymPinyin: "hū" },
+                // 方位词类
+                { word: "前", pinyin: "qián", antonym: "后", antonymPinyin: "hòu" },
+                { word: "左", pinyin: "zuǒ", antonym: "右", antonymPinyin: "yòu" },
+                { word: "里", pinyin: "lǐ", antonym: "外", antonymPinyin: "wài" },
+                { word: "东", pinyin: "dōng", antonym: "西", antonymPinyin: "xī" },
+                { word: "南", pinyin: "nán", antonym: "北", antonymPinyin: "běi" },
+                { word: "内", pinyin: "nèi", antonym: "外", antonymPinyin: "wài" },
+                { word: "远", pinyin: "yuǎn", antonym: "近", antonymPinyin: "jìn" },
+                { word: "高", pinyin: "gāo", antonym: "低", antonymPinyin: "dī" },
+                { word: "横", pinyin: "héng", antonym: "竖", antonymPinyin: "shù" },
+                { word: "斜", pinyin: "xié", antonym: "正", antonymPinyin: "zhèng" },
+                { word: "天", pinyin: "tiān", antonym: "地", antonymPinyin: "dì" },
+                { word: "昼", pinyin: "zhòu", antonym: "夜", antonymPinyin: "yè" },
+                { word: "春", pinyin: "chūn", antonym: "秋", antonymPinyin: "qiū" },
+                { word: "夏", pinyin: "xià", antonym: "冬", antonymPinyin: "dōng" },
+                { word: "早", pinyin: "zǎo", antonym: "晚", antonymPinyin: "wǎn" },
+                { word: "晨", pinyin: "chén", antonym: "昏", antonymPinyin: "hūn" },
+                { word: "古", pinyin: "gǔ", antonym: "今", antonymPinyin: "jīn" },
+                { word: "朝", pinyin: "zhāo", antonym: "暮", antonymPinyin: "mù" },
+                { word: "首", pinyin: "shǒu", antonym: "尾", antonymPinyin: "wěi" }
+            ],
+            medium: [
+                // 复杂形容词类
+                { word: "光滑", pinyin: "guāng huá", antonym: "粗糙", antonymPinyin: "cū cāo" },
+                { word: "整齐", pinyin: "zhěng qí", antonym: "凌乱", antonymPinyin: "líng luàn" },
+                { word: "干净", pinyin: "gān jìng", antonym: "肮脏", antonymPinyin: "āng zāng" },
+                { word: "安静", pinyin: "ān jìng", antonym: "热闹", antonymPinyin: "rè nào" },
+                { word: "勤劳", pinyin: "qín láo", antonym: "懒惰", antonymPinyin: "lǎn duò" },
+                { word: "聪明", pinyin: "cōng míng", antonym: "愚蠢", antonymPinyin: "yú chǔn" },
+                { word: "勇敢", pinyin: "yǒng gǎn", antonym: "胆小", antonymPinyin: "dǎn xiǎo" },
+                { word: "诚实", pinyin: "chéng shí", antonym: "虚伪", antonymPinyin: "xū wěi" },
+                { word: "热情", pinyin: "rè qíng", antonym: "冷漠", antonymPinyin: "lěng mò" },
+                { word: "善良", pinyin: "shàn liáng", antonym: "凶恶", antonymPinyin: "xiōng è" },
+                { word: "谦虚", pinyin: "qiān xū", antonym: "骄傲", antonymPinyin: "jiāo ào" },
+                { word: "活泼", pinyin: "huó pō", antonym: "呆板", antonymPinyin: "dāi bǎn" },
+                { word: "机灵", pinyin: "jī líng", antonym: "笨拙", antonymPinyin: "bèn zhuō" },
+                { word: "温柔", pinyin: "wēn róu", antonym: "粗暴", antonymPinyin: "cū bào" },
+                // 其他类别
+                { word: "是", pinyin: "shì", antonym: "否", antonymPinyin: "fǒu" },
+                { word: "对", pinyin: "duì", antonym: "错", antonymPinyin: "cuò" },
+                { word: "该", pinyin: "gāi", antonym: "不该", antonymPinyin: "bù gāi" },
+                { word: "能", pinyin: "néng", antonym: "不能", antonymPinyin: "bù néng" },
+                { word: "会", pinyin: "huì", antonym: "不会", antonymPinyin: "bù huì" },
+                { word: "可以", pinyin: "kě yǐ", antonym: "不可以", antonymPinyin: "bù kě yǐ" },
+                { word: "应该", pinyin: "yīng gāi", antonym: "不应该", antonymPinyin: "bù yīng gāi" },
+                { word: "必须", pinyin: "bì xū", antonym: "不必", antonymPinyin: "bù bì" },
+                { word: "也许", pinyin: "yě xǔ", antonym: "一定", antonymPinyin: "yī dìng" },
+                { word: "可能", pinyin: "kě néng", antonym: "不可能", antonymPinyin: "bù kě néng" },
+                { word: "经常", pinyin: "jīng cháng", antonym: "偶尔", antonymPinyin: "ǒu ěr" },
+                { word: "有时", pinyin: "yǒu shí", antonym: "永远", antonymPinyin: "yǒng yuǎn" },
+                { word: "许多", pinyin: "xǔ duō", antonym: "很少", antonymPinyin: "hěn shǎo" },
+                { word: "全部", pinyin: "quán bù", antonym: "部分", antonymPinyin: "bù fèn" },
+                { word: "一起", pinyin: "yī qǐ", antonym: "分开", antonymPinyin: "fēn kāi" },
+                { word: "容易", pinyin: "róng yì", antonym: "困难", antonymPinyin: "kùn nán" },
+                { word: "简单", pinyin: "jiǎn dān", antonym: "复杂", antonymPinyin: "fù zá" },
+                { word: "高兴", pinyin: "gāo xìng", antonym: "难过", antonymPinyin: "nán guò" },
+                { word: "安全", pinyin: "ān quán", antonym: "危险", antonymPinyin: "wēi xiǎn" },
+                { word: "成功", pinyin: "chéng gōng", antonym: "失败", antonymPinyin: "shī bài" },
+                { word: "同意", pinyin: "tóng yì", antonym: "反对", antonymPinyin: "fǎn duì" },
+                { word: "熟悉", pinyin: "shú xī", antonym: "陌生", antonymPinyin: "mò shēng" },
+                { word: "明白", pinyin: "míng bai", antonym: "糊涂", antonymPinyin: "hú tu" },
+                { word: "清楚", pinyin: "qīng chu", antonym: "模糊", antonymPinyin: "mó hu" },
+                { word: "紧张", pinyin: "jǐn zhāng", antonym: "轻松", antonymPinyin: "qīng sōng" },
+                { word: "忙碌", pinyin: "máng lù", antonym: "悠闲", antonymPinyin: "yōu xián" },
+                { word: "笔直", pinyin: "bǐ zhí", antonym: "弯曲", antonymPinyin: "wān qū" },
+                { word: "凸起", pinyin: "tū qǐ", antonym: "凹陷", antonymPinyin: "āo xiàn" },
+                { word: "新鲜", pinyin: "xīn xiān", antonym: "陈旧", antonymPinyin: "chén jiù" },
+                { word: "平坦", pinyin: "píng tǎn", antonym: "崎岖", antonymPinyin: "qí qū" },
+                { word: "聚合", pinyin: "jù hé", antonym: "分散", antonymPinyin: "fēn sàn" },
+                { word: "坚定", pinyin: "jiān dìng", antonym: "动摇", antonymPinyin: "dòng yáo" },
+                { word: "团结", pinyin: "tuán jié", antonym: "分裂", antonymPinyin: "fēn liè" },
+                { word: "丰富", pinyin: "fēng fù", antonym: "贫乏", antonymPinyin: "pín fá" },
+                { word: "坎坷", pinyin: "kǎn kě", antonym: "平坦", antonymPinyin: "píng tǎn" },
+                { word: "曲折", pinyin: "qū zhé", antonym: "平坦", antonymPinyin: "píng tǎn" },
+                { word: "和平", pinyin: "hé píng", antonym: "战争", antonymPinyin: "zhàn zhēng" },
+                { word: "富裕", pinyin: "fù yù", antonym: "贫穷", antonymPinyin: "pín qióng" },
+                { word: "强大", pinyin: "qiáng dà", antonym: "弱小", antonymPinyin: "ruò xiǎo" },
+                { word: "复杂", pinyin: "fù zá", antonym: "单一", antonymPinyin: "dān yī" },
+                { word: "糊涂", pinyin: "hú tu", antonym: "清醒", antonymPinyin: "qīng xǐng" },
+                { word: "完整", pinyin: "wán zhěng", antonym: "残缺", antonymPinyin: "cán quē" },
+                { word: "正常", pinyin: "zhèng cháng", antonym: "异常", antonymPinyin: "yì cháng" },
+                { word: "普通", pinyin: "pǔ tōng", antonym: "特殊", antonymPinyin: "tè shū" },
+                { word: "懵懂", pinyin: "měng dǒng", antonym: "明白", antonymPinyin: "míng bai" },
+                { word: "浑浊", pinyin: "hún zhuó", antonym: "清澈", antonymPinyin: "qīng chè" }
+            ],
+            hard: [
+                // 高级形容词类
+                { word: "繁荣", pinyin: "fán róng", antonym: "衰败", antonymPinyin: "shuāi bài" },
+                { word: "兴旺", pinyin: "xīng wàng", antonym: "萧条", antonymPinyin: "xiāo tiáo" },
+                { word: "宽阔", pinyin: "kuān kuò", antonym: "狭窄", antonymPinyin: "xiá zhǎi" },
+                { word: "锋利", pinyin: "fēng lì", antonym: "滞钝", antonymPinyin: "zhì dùn" },
+                { word: "宽敞", pinyin: "kuān chǎng", antonym: "狭小", antonymPinyin: "xiá xiǎo" },
+                { word: "舒展", pinyin: "shū zhǎn", antonym: "蜷缩", antonymPinyin: "quán suō" },
+                { word: "敏捷", pinyin: "mǐn jié", antonym: "迟缓", antonymPinyin: "chí huǎn" },
+                { word: "清晰", pinyin: "qīng xī", antonym: "朦胧", antonymPinyin: "méng lóng" },
+                { word: "陡峭", pinyin: "dǒu qiào", antonym: "平缓", antonymPinyin: "píng huǎn" },
+                { word: "缓和", pinyin: "huǎn hé", antonym: "激烈", antonymPinyin: "jī liè" },
+                { word: "嘈杂", pinyin: "cáo zá", antonym: "寂静", antonymPinyin: "jì jìng" },
+                { word: "松弛", pinyin: "sōng chí", antonym: "紧张", antonymPinyin: "jǐn zhāng" },
+                { word: "微弱", pinyin: "wēi ruò", antonym: "强烈", antonymPinyin: "qiáng liè" },
+                { word: "蓬勃", pinyin: "péng bó", antonym: "衰败", antonymPinyin: "shuāi bài" },
+                { word: "旺盛", pinyin: "wàng shèng", antonym: "枯萎", antonymPinyin: "kū wěi" },
+                { word: "镇静", pinyin: "zhèn jìng", antonym: "慌张", antonymPinyin: "huāng zhāng" },
+                { word: "沉着", pinyin: "chén zhuó", antonym: "慌张", antonymPinyin: "huāng zhāng" },
+                { word: "缓慢", pinyin: "huǎn màn", antonym: "快速", antonymPinyin: "kuài sù" },
+                { word: "永久", pinyin: "yǒng jiǔ", antonym: "暂时", antonymPinyin: "zàn shí" },
+                { word: "辽阔", pinyin: "liáo kuò", antonym: "狭窄", antonymPinyin: "xiá zhǎi" },
+                { word: "巨大", pinyin: "jù dà", antonym: "渺小", antonymPinyin: "miǎo xiǎo" },
+                { word: "光明", pinyin: "guāng míng", antonym: "黑暗", antonymPinyin: "hēi àn" },
+                { word: "温暖", pinyin: "wēn nuǎn", antonym: "寒冷", antonymPinyin: "hán lěng" },
+                { word: "拮据", pinyin: "jié jū", antonym: "富裕", antonymPinyin: "fù yù" },
+                { word: "愚笨", pinyin: "yú bèn", antonym: "聪明", antonymPinyin: "cōng míng" },
+                { word: "笨拙", pinyin: "bèn zhuō", antonym: "伶俐", antonymPinyin: "líng lì" },
+                { word: "狠毒", pinyin: "hěn dú", antonym: "善良", antonymPinyin: "shàn liáng" },
+                { word: "逼仄", pinyin: "bī zè", antonym: "宽阔", antonymPinyin: "kuān kuò" },
+                { word: "吝啬", pinyin: "lìn sè", antonym: "慷慨", antonymPinyin: "kāng kǎi" },
+                { word: "潮湿", pinyin: "cháo shī", antonym: "干燥", antonymPinyin: "gān zào" },
+                { word: "短暂", pinyin: "duǎn zàn", antonym: "永久", antonymPinyin: "yǒng jiǔ" },
+                { word: "漆黑", pinyin: "qī hēi", antonym: "明亮", antonymPinyin: "míng liàng" },
+                { word: "喧闹", pinyin: "xuān nào", antonym: "寂静", antonymPinyin: "jì jìng" },
+                { word: "柔软", pinyin: "róu ruǎn", antonym: "坚硬", antonymPinyin: "jiān yìng" },
+                { word: "清澈", pinyin: "qīng chè", antonym: "浑浊", antonymPinyin: "hún zhuó" },
+                { word: "蜿蜒", pinyin: "wān yán", antonym: "笔直", antonymPinyin: "bǐ zhí" },
+                { word: "生疏", pinyin: "shēng shū", antonym: "熟悉", antonymPinyin: "shú xī" },
+                { word: "轻盈", pinyin: "qīng yíng", antonym: "笨重", antonymPinyin: "bèn zhòng" },
+                { word: "腐烂", pinyin: "fǔ làn", antonym: "新鲜", antonymPinyin: "xīn xiān" },
+                { word: "繁重", pinyin: "fán zhòng", antonym: "轻松", antonymPinyin: "qīng sōng" },
+                { word: "悲伤", pinyin: "bēi shāng", antonym: "愉快", antonymPinyin: "yú kuài" },
+                { word: "炎热", pinyin: "yán rè", antonym: "寒冷", antonymPinyin: "hán lěng" },
+                { word: "犹豫", pinyin: "yóu yù", antonym: "果断", antonymPinyin: "guǒ duàn" },
+                { word: "软弱", pinyin: "ruǎn ruò", antonym: "坚强", antonymPinyin: "jiān qiáng" }
+            ]
+        };
+        
+        // 游戏状态变量
+        let gameState = {
+            currentDifficulty: 'easy',
+            level: 1,
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            totalQuestions: 0,
+            correctAnswers: 0,
+            timeLimit: 10,
+            isGameActive: false,
+            currentQuestion: null,
+            usedQuestions: [],
+            timer: null,
+            achievements: []
+        };
+        
+        // 难度配置
+        const difficultyConfig = {
+            easy: { timeLimit: 10, pointsPerCorrect: 10, comboMultiplier: 1.2 },
+            medium: { timeLimit: 8, pointsPerCorrect: 15, comboMultiplier: 1.5 },
+            hard: { timeLimit: 6, pointsPerCorrect: 20, comboMultiplier: 2.0 }
+        };
+        
+        // 成就系统
+        const achievements = [
+            { id: 'first_correct', name: '初试身手', desc: '答对第一题', icon: '🎯', unlocked: false },
+            { id: 'combo_5', name: '连击达人', desc: '连续答对5题', icon: '🔥', unlocked: false },
+            { id: 'level_5', name: '闯关高手', desc: '到达第5关', icon: '🏆', unlocked: false },
+            { id: 'speed_demon', name: '闪电侠', desc: '3秒内答对', icon: '⚡', unlocked: false },
+            { id: 'perfect_level', name: '完美关卡', desc: '一关内全部答对', icon: '💎', unlocked: false }
+        ];
+        
+        // DOM元素
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const homeBtn = document.getElementById('home-btn');
+        const targetWordEl = document.getElementById('target-word');
+        const optionsContainer = document.getElementById('options-container');
+        const levelDisplay = document.getElementById('level-display');
+        const comboDisplay = document.getElementById('combo-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const countdownEl = document.getElementById('countdown');
+        const progressBar = document.getElementById('progress-bar');
+        const feedbackEl = document.getElementById('feedback');
+        
+        // 事件监听
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', restartGame);
+        homeBtn.addEventListener('click', goHome);
+        
+        // 难度选择
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                gameState.currentDifficulty = btn.dataset.difficulty;
+            });
+        });
+        
+        // 开始游戏
+        function startGame() {
+            // 重置游戏状态
+            gameState = {
+                currentDifficulty: gameState.currentDifficulty,
+                level: 1,
+                score: 0,
+                combo: 0,
+                maxCombo: 0,
+                totalQuestions: 0,
+                correctAnswers: 0,
+                timeLimit: difficultyConfig[gameState.currentDifficulty].timeLimit,
+                isGameActive: true,
+                currentQuestion: null,
+                usedQuestions: [],
+                timer: null,
+                achievements: []
+            };
+            
+            // 切换界面
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            // 开始第一题
+            nextQuestion();
+        }
+        
+        // 生成下一题
+        function nextQuestion() {
+            if (!gameState.isGameActive) return;
+            
+            // 清除之前的计时器
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+            }
+            
+            // 选择题目
+            const difficulty = getCurrentDifficulty();
+            const availableQuestions = antonymsList[difficulty].filter(
+                q => !gameState.usedQuestions.includes(q.word)
+            );
+            
+            // 如果当前难度的题目用完了，重置或升级难度
+            if (availableQuestions.length === 0) {
+                levelUp();
+                return;
+            }
+            
+            // 随机选择一个题目
+            const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+            gameState.currentQuestion = availableQuestions[randomIndex];
+            gameState.usedQuestions.push(gameState.currentQuestion.word);
+            
+            // 显示题目
+            targetWordEl.textContent = gameState.currentQuestion.word;
+            
+            // 显示拼音
+            const targetPinyinEl = document.getElementById('target-pinyin');
+            const currentPinyin = gameState.currentQuestion.pinyin || '';
+            targetPinyinEl.textContent = currentPinyin;
+            
+            // 生成选项
+            generateOptions();
+            
+            // 开始计时
+            startTimer();
+            
+            // 更新进度条
+            updateProgressBar();
+        }
+        
+        // 获取当前难度
+        function getCurrentDifficulty() {
+            // 根据关卡自动调整难度
+            if (gameState.level <= 3) return 'easy';
+            if (gameState.level <= 7) return 'medium';
+            return 'hard';
+        }
+        
+        // 生成选项
+        function generateOptions() {
+            const correctAnswer = gameState.currentQuestion.antonym;
+            const difficulty = getCurrentDifficulty();
+            const allWords = antonymsList[difficulty];
+            
+            // 生成干扰项
+            const distractors = [];
+            while (distractors.length < 3) {
+                const randomWord = allWords[Math.floor(Math.random() * allWords.length)];
+                if (randomWord.antonym !== correctAnswer && !distractors.includes(randomWord.antonym)) {
+                    distractors.push(randomWord.antonym);
+                }
+            }
+            
+            // 混合正确答案和干扰项
+            let options = [correctAnswer, ...distractors];
+            options = shuffleArray(options);
+            
+            // 生成选项按钮
+            optionsContainer.innerHTML = '';
+            options.forEach(option => {
+                // 查找拼音信息
+                const difficulty = getCurrentDifficulty();
+                const allWords = antonymsList[difficulty];
+                const wordData = allWords.find(item => item.word === option || item.antonym === option);
+                const pinyin = wordData ? (wordData.word === option ? wordData.pinyin : wordData.antonymPinyin) : '';
+                
+                const button = document.createElement('button');
+                button.className = 'option-btn bg-white hover:bg-blue-50 text-text font-bold py-6 px-8 rounded-2xl text-2xl shadow-lg transform transition-all duration-200 hover:scale-105 active:scale-95 border-4 border-gray-200 hover:border-blue-300 hover:shadow-xl flex flex-col items-center justify-center relative overflow-hidden';
+                
+                // 添加涟漪效果容器
+                const rippleContainer = document.createElement('div');
+                rippleContainer.className = 'absolute inset-0 rounded-2xl overflow-hidden pointer-events-none';
+                button.appendChild(rippleContainer);
+                
+                // 添加选中态效果
+                button.addEventListener('mousedown', () => {
+                    button.classList.add('bg-blue-100', 'border-blue-400', 'scale-95', 'button-press');
+                });
+                
+                button.addEventListener('mouseup', () => {
+                    button.classList.remove('bg-blue-100', 'border-blue-400', 'scale-95');
+                });
+                
+                button.addEventListener('mouseleave', () => {
+                    button.classList.remove('bg-blue-100', 'border-blue-400', 'scale-95');
+                });
+                
+                // 添加触摸设备支持
+                button.addEventListener('touchstart', () => {
+                    button.classList.add('bg-blue-100', 'border-blue-400', 'scale-95', 'button-press');
+                });
+                
+                button.addEventListener('touchend', () => {
+                    button.classList.remove('bg-blue-100', 'border-blue-400', 'scale-95');
+                });
+                
+                // 添加涟漪效果
+                function createRipple(event) {
+                    const ripple = document.createElement('span');
+                    const rect = button.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = event.clientX - rect.left - size / 2;
+                    const y = event.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+                    
+                    rippleContainer.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                }
+                
+                button.addEventListener('click', createRipple);
+                
+                // 创建汉字和拼音元素
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'flex flex-col items-center justify-center z-10 relative';
+                contentDiv.innerHTML = `
+                    <div class="text-2xl font-bold">${option}</div>
+                    <div class="text-gray-400 text-sm mt-1">${pinyin || ''}</div>
+                `;
+                button.appendChild(contentDiv);
+                
+                button.addEventListener('click', () => handleAnswer(option));
+                optionsContainer.appendChild(button);
+            });
+        }
+        
+        // 处理答案
+        function handleAnswer(selectedAnswer) {
+            if (!gameState.isGameActive) return;
+            
+            clearInterval(gameState.timer);
+            gameState.totalQuestions++;
+            
+            const isCorrect = selectedAnswer === gameState.currentQuestion.antonym;
+            
+            if (isCorrect) {
+                handleCorrectAnswer();
+            } else {
+                handleWrongAnswer(selectedAnswer);
+            }
+            
+            // 延迟显示下一题
+            setTimeout(() => {
+                if (gameState.isGameActive) {
+                    nextQuestion();
+                }
+            }, 1500);
+        }
+        
+        // 处理正确答案
+        function handleCorrectAnswer() {
+            gameState.correctAnswers++;
+            gameState.combo++;
+            gameState.maxCombo = Math.max(gameState.maxCombo, gameState.combo);
+            
+            // 计算分数
+            const config = difficultyConfig[gameState.currentDifficulty];
+            const basePoints = config.pointsPerCorrect;
+            const comboBonus = Math.floor(basePoints * (gameState.combo - 1) * 0.1);
+            const timeBonus = Math.floor((gameState.timeLimit - (gameState.timeLimit - parseInt(countdownEl.textContent))) * 2);
+            const totalPoints = basePoints + comboBonus + timeBonus;
+            
+            gameState.score += totalPoints;
+            
+            // 更新显示
+            updateGameDisplay();
+            
+            // 反馈
+            showFeedback(`正确！+${totalPoints}分`, 'success');
+            
+            // 高亮正确选项
+            highlightCorrectOption();
+            
+            // 检查成就
+            checkAchievements();
+        }
+        
+        // 处理错误答案
+        function handleWrongAnswer(selectedAnswer) {
+            gameState.combo = 0;
+            
+            // 更新显示
+            updateGameDisplay();
+            
+            // 反馈
+            showFeedback(`答案是：${gameState.currentQuestion.antonym}`, 'error');
+            
+            // 高亮正确和错误选项
+            highlightAnswers(selectedAnswer);
+            
+            // 检查游戏是否结束
+            if (shouldEndGame()) {
+                setTimeout(endGame, 1500);
+            }
+        }
+        
+        // 升级关卡
+        function levelUp() {
+            gameState.level++;
+            gameState.usedQuestions = [];
+            
+            // 增加时间限制（难度递增）
+            if (gameState.level % 3 === 0) {
+                gameState.timeLimit = Math.max(4, gameState.timeLimit - 1);
+            }
+            
+            showFeedback(`关卡 ${gameState.level}！`, 'level-up');
+            updateGameDisplay();
+            
+            setTimeout(nextQuestion, 2000);
+        }
+        
+        // 开始计时
+        function startTimer() {
+            let timeLeft = gameState.timeLimit;
+            countdownEl.textContent = timeLeft;
+            
+            gameState.timer = setInterval(() => {
+                timeLeft--;
+                countdownEl.textContent = timeLeft;
+                
+                // 时间警告效果
+                if (timeLeft <= 3) {
+                    countdownEl.parentElement.classList.add('animate-pulse');
+                    countdownEl.parentElement.style.backgroundColor = '#EF4444';
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    handleWrongAnswer('超时');
+                }
+            }, 1000);
+        }
+        
+        // 更新游戏显示
+        function updateGameDisplay() {
+            levelDisplay.textContent = gameState.level;
+            comboDisplay.textContent = gameState.combo;
+            scoreDisplay.textContent = gameState.score;
+            
+            // 重置计时器样式
+            countdownEl.parentElement.classList.remove('animate-pulse');
+            countdownEl.parentElement.style.backgroundColor = '#F59E0B';
+        }
+        
+        // 更新进度条
+        function updateProgressBar() {
+            const progress = (gameState.usedQuestions.length / antonymsList[getCurrentDifficulty()].length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        // 显示反馈
+        function showFeedback(message, type) {
+            feedbackEl.textContent = message;
+            feedbackEl.className = 'mt-8 text-center text-2xl font-bold h-12 flex items-center justify-center';
+            
+            switch (type) {
+                case 'success':
+                    feedbackEl.classList.add('text-secondary', 'correct-animation');
+                    break;
+                case 'error':
+                    feedbackEl.classList.add('text-danger', 'wrong-animation');
+                    break;
+                case 'level-up':
+                    feedbackEl.classList.add('text-accent', 'level-complete');
+                    break;
+            }
+            
+            setTimeout(() => {
+                feedbackEl.textContent = '';
+                feedbackEl.className = 'mt-8 text-center text-2xl font-bold h-12 flex items-center justify-center';
+            }, 1400);
+        }
+        
+        // 高亮正确选项
+        function highlightCorrectOption() {
+            const buttons = optionsContainer.querySelectorAll('.option-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent === gameState.currentQuestion.antonym) {
+                    btn.className = 'option-btn bg-secondary text-white font-bold py-6 px-8 rounded-2xl text-2xl shadow-lg border-4 border-secondary correct-animation';
+                } else {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50');
+                }
+            });
+        }
+        
+        // 高亮答案（正确和错误）
+        function highlightAnswers(selectedAnswer) {
+            const buttons = optionsContainer.querySelectorAll('.option-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent === gameState.currentQuestion.antonym) {
+                    btn.className = 'option-btn bg-secondary text-white font-bold py-6 px-8 rounded-2xl text-2xl shadow-lg border-4 border-secondary correct-animation';
+                } else if (btn.textContent === selectedAnswer) {
+                    btn.className = 'option-btn bg-danger text-white font-bold py-6 px-8 rounded-2xl text-2xl shadow-lg border-4 border-danger wrong-animation';
+                } else {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50');
+                }
+            });
+        }
+        
+        // 检查是否应该结束游戏
+        function shouldEndGame() {
+            // 连续答错3题结束游戏
+            return gameState.combo === 0 && gameState.correctAnswers < gameState.totalQuestions - 2;
+        }
+        
+        // 检查成就
+        function checkAchievements() {
+            achievements.forEach(achievement => {
+                if (achievement.unlocked) return;
+                
+                let shouldUnlock = false;
+                
+                switch (achievement.id) {
+                    case 'first_correct':
+                        shouldUnlock = gameState.correctAnswers === 1;
+                        break;
+                    case 'combo_5':
+                        shouldUnlock = gameState.combo >= 5;
+                        break;
+                    case 'level_5':
+                        shouldUnlock = gameState.level >= 5;
+                        break;
+                    case 'speed_demon':
+                        shouldUnlock = parseInt(countdownEl.textContent) >= gameState.timeLimit - 3;
+                        break;
+                    case 'perfect_level':
+                        shouldUnlock = gameState.combo >= 5;
+                        break;
+                }
+                
+                if (shouldUnlock) {
+                    achievement.unlocked = true;
+                    gameState.achievements.push(achievement);
+                    showAchievement(achievement);
+                }
+            });
+        }
+        
+        // 显示成就
+        function showAchievement(achievement) {
+            const achievementEl = document.createElement('div');
+            achievementEl.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-bounce';
+            achievementEl.innerHTML = `
+                <span class="text-2xl mr-2">${achievement.icon}</span>
+                <span class="font-bold">${achievement.name}</span>
+            `;
+            document.body.appendChild(achievementEl);
+            
+            setTimeout(() => {
+                achievementEl.remove();
+            }, 3000);
+        }
+        
+        // 结束游戏
+        function endGame() {
+            gameState.isGameActive = false;
+            clearInterval(gameState.timer);
+            
+            // 切换到结果界面
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            // 显示结果
+            displayResults();
+        }
+        
+        // 显示结果
+        function displayResults() {
+            const accuracy = gameState.totalQuestions > 0 ? Math.round((gameState.correctAnswers / gameState.totalQuestions) * 100) : 0;
+            
+            document.getElementById('final-score').textContent = gameState.score;
+            document.getElementById('final-level').textContent = gameState.level;
+            document.getElementById('final-accuracy').textContent = `${accuracy}%`;
+            document.getElementById('max-combo').textContent = gameState.maxCombo;
+            
+            // 根据表现显示不同的结果
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            
+            if (accuracy >= 90) {
+                resultIcon.textContent = '🏆';
+                resultTitle.textContent = '完美表现！';
+            } else if (accuracy >= 70) {
+                resultIcon.textContent = '🎉';
+                resultTitle.textContent = '很棒！';
+            } else if (accuracy >= 50) {
+                resultIcon.textContent = '👍';
+                resultTitle.textContent = '不错哦！';
+            } else {
+                resultIcon.textContent = '💪';
+                resultTitle.textContent = '继续努力！';
+            }
+            
+            // 显示成就
+            displayAchievements();
+        }
+        
+        // 显示成就
+        function displayAchievements() {
+            const achievementsEl = document.getElementById('achievements');
+            
+            if (gameState.achievements.length > 0) {
+                achievementsEl.innerHTML = `
+                    <h3 class="text-lg font-bold mb-4">获得成就</h3>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        ${gameState.achievements.map(achievement => `
+                            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm">
+                                <span class="mr-2">${achievement.icon}</span>
+                                <span>${achievement.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                achievementsEl.innerHTML = '';
+            }
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            resultScreen.classList.add('hidden');
+            startGame();
+        }
+        
+        // 返回首页
+        function goHome() {
+            resultScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+        
+        // 工具函数：打乱数组
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        // 初始化难度按钮样式
+        document.addEventListener('DOMContentLoaded', () => {
+            const style = document.createElement('style');
+            style.textContent = `
+                .difficulty-btn {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.25rem;
+                    padding: 1rem;
+                    border-radius: 1rem;
+                    border: 2px solid #e5e7eb;
+                    background: white;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .difficulty-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+                }
+                .difficulty-btn.active {
+                    border-color: #4F46E5;
+                    background: linear-gradient(135deg, #4F46E5, #10B981);
+                    color: white;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>

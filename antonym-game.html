@@ -161,14 +161,16 @@
             <div class="w-1/3 bg-white flex flex-col justify-center items-center p-4">
                 <!-- 上方目标字卡片 - 跟玩家1方向一致（顺时针旋转90度） -->
                 <div class="bg-white rounded-3xl shadow-2xl p-8 text-center mb-4 transform rotate-90">
+                    <p class="text-gray-500 text-sm mb-1">找出它的反义词！</p>
                     <p class="text-[clamp(1.8rem,6vw,3rem)] font-bold text-text whitespace-nowrap" id="target-word">大</p>
-                    <p class="text-gray-500 mt-2 text-sm">找出它的反义词！</p>
+                    <p class="text-gray-400 text-xs mt-1" id="target-pinyin">dà</p>
                 </div>
                 
                 <!-- 下方目标字卡片 - 跟玩家2方向一致（逆时针旋转90度） -->
                 <div class="bg-white rounded-3xl shadow-2xl p-8 text-center transform -rotate-90">
+                    <p class="text-gray-500 text-sm mb-1">找出它的反义词！</p>
                     <p class="text-[clamp(1.8rem,6vw,3rem)] font-bold text-text whitespace-nowrap" id="target-word-2">大</p>
-                    <p class="text-gray-500 mt-2 text-sm">找出它的反义词！</p>
+                    <p class="text-gray-400 text-xs mt-1" id="target-pinyin-2">dà</p>
                 </div>
             </div>
             
@@ -237,212 +239,212 @@
     </div>
 
     <script>
-        // 反义词数据库 - 200对反义词
+        // 反义词数据库 - 200对反义词（含拼音）
         const antonymsList = [
             // 形容词类
-            { word: "大", antonym: "小" },
-            { word: "多", antonym: "少" },
-            { word: "高", antonym: "矮" },
-            { word: "胖", antonym: "瘦" },
-            { word: "长", antonym: "短" },
-            { word: "宽", antonym: "窄" },
-            { word: "厚", antonym: "薄" },
-            { word: "粗", antonym: "细" },
-            { word: "快", antonym: "慢" },
-            { word: "远", antonym: "近" },
-            { word: "黑", antonym: "白" },
-            { word: "红", antonym: "绿" },
-            { word: "明", antonym: "暗" },
-            { word: "亮", antonym: "暗" },
-            { word: "甜", antonym: "苦" },
-            { word: "酸", antonym: "甜" },
-            { word: "咸", antonym: "淡" },
-            { word: "冷", antonym: "热" },
-            { word: "温", antonym: "凉" },
-            { word: "干", antonym: "湿" },
-            { word: "软", antonym: "硬" },
-            { word: "松", antonym: "紧" },
-            { word: "新", antonym: "旧" },
-            { word: "好", antonym: "坏" },
-            { word: "真", antonym: "假" },
-            { word: "美", antonym: "丑" },
-            { word: "香", antonym: "臭" },
-            { word: "轻", antonym: "重" },
-            { word: "深", antonym: "浅" },
-            { word: "浓", antonym: "淡" },
-            { word: "熟", antonym: "生" },
-            { word: "正", antonym: "歪" },
-            { word: "直", antonym: "弯" },
-            { word: "满", antonym: "空" },
-            { word: "尖", antonym: "钝" },
-            { word: "光滑", antonym: "粗糙" },
-            { word: "整齐", antonym: "凌乱" },
-            { word: "干净", antonym: "肮脏" },
-            { word: "安静", antonym: "热闹" },
-            { word: "勤劳", antonym: "懒惰" },
-            { word: "聪明", antonym: "愚蠢" },
-            { word: "勇敢", antonym: "胆小" },
-            { word: "诚实", antonym: "虚伪" },
-            { word: "热情", antonym: "冷漠" },
-            { word: "善良", antonym: "凶恶" },
-            { word: "谦虚", antonym: "骄傲" },
-            { word: "活泼", antonym: "呆板" },
-            { word: "机灵", antonym: "笨拙" },
-            { word: "温柔", antonym: "粗暴" },
+            { word: "大", pinyin: "dà", antonym: "小", antonymPinyin: "xiǎo" },
+            { word: "多", pinyin: "duō", antonym: "少", antonymPinyin: "shǎo" },
+            { word: "高", pinyin: "gāo", antonym: "矮", antonymPinyin: "ǎi" },
+            { word: "胖", pinyin: "pàng", antonym: "瘦", antonymPinyin: "shòu" },
+            { word: "长", pinyin: "cháng", antonym: "短", antonymPinyin: "duǎn" },
+            { word: "宽", pinyin: "kuān", antonym: "窄", antonymPinyin: "zhǎi" },
+            { word: "厚", pinyin: "hòu", antonym: "薄", antonymPinyin: "báo" },
+            { word: "粗", pinyin: "cū", antonym: "细", antonymPinyin: "xì" },
+            { word: "快", pinyin: "kuài", antonym: "慢", antonymPinyin: "màn" },
+            { word: "远", pinyin: "yuǎn", antonym: "近", antonymPinyin: "jìn" },
+            { word: "黑", pinyin: "hēi", antonym: "白", antonymPinyin: "bái" },
+            { word: "红", pinyin: "hóng", antonym: "绿", antonymPinyin: "lǜ" },
+            { word: "明", pinyin: "míng", antonym: "暗", antonymPinyin: "àn" },
+            { word: "亮", pinyin: "liàng", antonym: "暗", antonymPinyin: "àn" },
+            { word: "甜", pinyin: "tián", antonym: "苦", antonymPinyin: "kǔ" },
+            { word: "酸", pinyin: "suān", antonym: "甜", antonymPinyin: "tián" },
+            { word: "咸", pinyin: "xián", antonym: "淡", antonymPinyin: "dàn" },
+            { word: "冷", pinyin: "lěng", antonym: "热", antonymPinyin: "rè" },
+            { word: "温", pinyin: "wēn", antonym: "凉", antonymPinyin: "liáng" },
+            { word: "干", pinyin: "gān", antonym: "湿", antonymPinyin: "shī" },
+            { word: "软", pinyin: "ruǎn", antonym: "硬", antonymPinyin: "yìng" },
+            { word: "松", pinyin: "sōng", antonym: "紧", antonymPinyin: "jǐn" },
+            { word: "新", pinyin: "xīn", antonym: "旧", antonymPinyin: "jiù" },
+            { word: "好", pinyin: "hǎo", antonym: "坏", antonymPinyin: "huài" },
+            { word: "真", pinyin: "zhēn", antonym: "假", antonymPinyin: "jiǎ" },
+            { word: "美", pinyin: "měi", antonym: "丑", antonymPinyin: "chǒu" },
+            { word: "香", pinyin: "xiāng", antonym: "臭", antonymPinyin: "chòu" },
+            { word: "轻", pinyin: "qīng", antonym: "重", antonymPinyin: "zhòng" },
+            { word: "深", pinyin: "shēn", antonym: "浅", antonymPinyin: "qiǎn" },
+            { word: "浓", pinyin: "nóng", antonym: "淡", antonymPinyin: "dàn" },
+            { word: "熟", pinyin: "shú", antonym: "生", antonymPinyin: "shēng" },
+            { word: "正", pinyin: "zhèng", antonym: "歪", antonymPinyin: "wāi" },
+            { word: "直", pinyin: "zhí", antonym: "弯", antonymPinyin: "wān" },
+            { word: "满", pinyin: "mǎn", antonym: "空", antonymPinyin: "kōng" },
+            { word: "尖", pinyin: "jiān", antonym: "钝", antonymPinyin: "dùn" },
+            { word: "光滑", pinyin: "guāng huá", antonym: "粗糙", antonymPinyin: "cū cāo" },
+            { word: "整齐", pinyin: "zhěng qí", antonym: "凌乱", antonymPinyin: "líng luàn" },
+            { word: "干净", pinyin: "gān jìng", antonym: "肮脏", antonymPinyin: "āng zāng" },
+            { word: "安静", pinyin: "ān jìng", antonym: "热闹", antonymPinyin: "rè nào" },
+            { word: "勤劳", pinyin: "qín láo", antonym: "懒惰", antonymPinyin: "lǎn duò" },
+            { word: "聪明", pinyin: "cōng míng", antonym: "愚蠢", antonymPinyin: "yú chǔn" },
+            { word: "勇敢", pinyin: "yǒng gǎn", antonym: "胆小", antonymPinyin: "dǎn xiǎo" },
+            { word: "诚实", pinyin: "chéng shí", antonym: "虚伪", antonymPinyin: "xū wěi" },
+            { word: "热情", pinyin: "rè qíng", antonym: "冷漠", antonymPinyin: "lěng mò" },
+            { word: "善良", pinyin: "shàn liáng", antonym: "凶恶", antonymPinyin: "xiōng è" },
+            { word: "谦虚", pinyin: "qiān xū", antonym: "骄傲", antonymPinyin: "jiāo ào" },
+            { word: "活泼", pinyin: "huó pō", antonym: "呆板", antonymPinyin: "dāi bǎn" },
+            { word: "机灵", pinyin: "jī líng", antonym: "笨拙", antonymPinyin: "bèn zhuō" },
+            { word: "温柔", pinyin: "wēn róu", antonym: "粗暴", antonymPinyin: "cū bào" },
             
             // 动词类
-            { word: "开", antonym: "关" },
-            { word: "进", antonym: "出" },
-            { word: "来", antonym: "去" },
-            { word: "上", antonym: "下" },
-            { word: "升", antonym: "降" },
-            { word: "起", antonym: "落" },
-            { word: "推", antonym: "拉" },
-            { word: "涨", antonym: "落" },
-            { word: "得", antonym: "失" },
-            { word: "买", antonym: "卖" },
-            { word: "爱", antonym: "恨" },
-            { word: "哭", antonym: "笑" },
-            { word: "醒", antonym: "睡" },
-            { word: "迎", antonym: "送" },
-            { word: "问", antonym: "答" },
-            { word: "分", antonym: "合" },
-            { word: "死", antonym: "活" },
-            { word: "存", antonym: "亡" },
-            { word: "收", antonym: "放" },
-            { word: "伸", antonym: "缩" },
-            { word: "举", antonym: "放" },
-            { word: "加", antonym: "减" },
-            { word: "胜", antonym: "败" },
-            { word: "输", antonym: "赢" },
-            { word: "有", antonym: "无" },
-            { word: "动", antonym: "静" },
-            { word: "攻", antonym: "守" },
-            { word: "传", antonym: "接" },
-            { word: "涨", antonym: "跌" },
-            { word: "增", antonym: "减" },
-            { word: "生", antonym: "灭" },
-            { word: "始", antonym: "终" },
-            { word: "止", antonym: "行" },
-            { word: "追", antonym: "逃" },
-            { word: "落", antonym: "升" },
-            { word: "借", antonym: "还" },
-            { word: "取", antonym: "舍" },
-            { word: "吞", antonym: "吐" },
-            { word: "吸", antonym: "呼" },
+            { word: "开", pinyin: "kāi", antonym: "关", antonymPinyin: "guān" },
+            { word: "进", pinyin: "jìn", antonym: "出", antonymPinyin: "chū" },
+            { word: "来", pinyin: "lái", antonym: "去", antonymPinyin: "qù" },
+            { word: "上", pinyin: "shàng", antonym: "下", antonymPinyin: "xià" },
+            { word: "升", pinyin: "shēng", antonym: "降", antonymPinyin: "jiàng" },
+            { word: "起", pinyin: "qǐ", antonym: "落", antonymPinyin: "luò" },
+            { word: "推", pinyin: "tuī", antonym: "拉", antonymPinyin: "lā" },
+            { word: "涨", pinyin: "zhǎng", antonym: "落", antonymPinyin: "luò" },
+            { word: "得", pinyin: "dé", antonym: "失", antonymPinyin: "shī" },
+            { word: "买", pinyin: "mǎi", antonym: "卖", antonymPinyin: "mài" },
+            { word: "爱", pinyin: "ài", antonym: "恨", antonymPinyin: "hèn" },
+            { word: "哭", pinyin: "kū", antonym: "笑", antonymPinyin: "xiào" },
+            { word: "醒", pinyin: "xǐng", antonym: "睡", antonymPinyin: "shuì" },
+            { word: "迎", pinyin: "yíng", antonym: "送", antonymPinyin: "sòng" },
+            { word: "问", pinyin: "wèn", antonym: "答", antonymPinyin: "dá" },
+            { word: "分", pinyin: "fēn", antonym: "合", antonymPinyin: "hé" },
+            { word: "死", pinyin: "sǐ", antonym: "活", antonymPinyin: "huó" },
+            { word: "存", pinyin: "cún", antonym: "亡", antonymPinyin: "wáng" },
+            { word: "收", pinyin: "shōu", antonym: "放", antonymPinyin: "fàng" },
+            { word: "伸", pinyin: "shēn", antonym: "缩", antonymPinyin: "suō" },
+            { word: "举", pinyin: "jǔ", antonym: "放", antonymPinyin: "fàng" },
+            { word: "加", pinyin: "jiā", antonym: "减", antonymPinyin: "jiǎn" },
+            { word: "胜", pinyin: "shèng", antonym: "败", antonymPinyin: "bài" },
+            { word: "输", pinyin: "shū", antonym: "赢", antonymPinyin: "yíng" },
+            { word: "有", pinyin: "yǒu", antonym: "无", antonymPinyin: "wú" },
+            { word: "动", pinyin: "dòng", antonym: "静", antonymPinyin: "jìng" },
+            { word: "攻", pinyin: "gōng", antonym: "守", antonymPinyin: "shǒu" },
+            { word: "传", pinyin: "chuán", antonym: "接", antonymPinyin: "jiē" },
+            { word: "涨", pinyin: "zhǎng", antonym: "跌", antonymPinyin: "diē" },
+            { word: "增", pinyin: "zēng", antonym: "减", antonymPinyin: "jiǎn" },
+            { word: "生", pinyin: "shēng", antonym: "灭", antonymPinyin: "miè" },
+            { word: "始", pinyin: "shǐ", antonym: "终", antonymPinyin: "zhōng" },
+            { word: "止", pinyin: "zhǐ", antonym: "行", antonymPinyin: "xíng" },
+            { word: "追", pinyin: "zhuī", antonym: "逃", antonymPinyin: "táo" },
+            { word: "落", pinyin: "luò", antonym: "升", antonymPinyin: "shēng" },
+            { word: "借", pinyin: "jiè", antonym: "还", antonymPinyin: "huán" },
+            { word: "取", pinyin: "qǔ", antonym: "舍", antonymPinyin: "shě" },
+            { word: "吞", pinyin: "tūn", antonym: "吐", antonymPinyin: "tǔ" },
+            { word: "吸", pinyin: "xī", antonym: "呼", antonymPinyin: "hū" },
             
             // 方位词类
-            { word: "前", antonym: "后" },
-            { word: "左", antonym: "右" },
-            { word: "里", antonym: "外" },
-            { word: "东", antonym: "西" },
-            { word: "南", antonym: "北" },
-            { word: "内", antonym: "外" },
-            { word: "远", antonym: "近" },
-            { word: "高", antonym: "低" },
-            { word: "横", antonym: "竖" },
-            { word: "斜", antonym: "正" },
-            { word: "天", antonym: "地" },
-            { word: "昼", antonym: "夜" },
-            { word: "春", antonym: "秋" },
-            { word: "夏", antonym: "冬" },
-            { word: "早", antonym: "晚" },
-            { word: "晨", antonym: "昏" },
-            { word: "古", antonym: "今" },
-            { word: "朝", antonym: "暮" },
-            { word: "首", antonym: "尾" },
+            { word: "前", pinyin: "qián", antonym: "后", antonymPinyin: "hòu" },
+            { word: "左", pinyin: "zuǒ", antonym: "右", antonymPinyin: "yòu" },
+            { word: "里", pinyin: "lǐ", antonym: "外", antonymPinyin: "wài" },
+            { word: "东", pinyin: "dōng", antonym: "西", antonymPinyin: "xī" },
+            { word: "南", pinyin: "nán", antonym: "北", antonymPinyin: "běi" },
+            { word: "内", pinyin: "nèi", antonym: "外", antonymPinyin: "wài" },
+            { word: "远", pinyin: "yuǎn", antonym: "近", antonymPinyin: "jìn" },
+            { word: "高", pinyin: "gāo", antonym: "低", antonymPinyin: "dī" },
+            { word: "横", pinyin: "héng", antonym: "竖", antonymPinyin: "shù" },
+            { word: "斜", pinyin: "xié", antonym: "正", antonymPinyin: "zhèng" },
+            { word: "天", pinyin: "tiān", antonym: "地", antonymPinyin: "dì" },
+            { word: "昼", pinyin: "zhòu", antonym: "夜", antonymPinyin: "yè" },
+            { word: "春", pinyin: "chūn", antonym: "秋", antonymPinyin: "qiū" },
+            { word: "夏", pinyin: "xià", antonym: "冬", antonymPinyin: "dōng" },
+            { word: "早", pinyin: "zǎo", antonym: "晚", antonymPinyin: "wǎn" },
+            { word: "晨", pinyin: "chén", antonym: "昏", antonymPinyin: "hūn" },
+            { word: "古", pinyin: "gǔ", antonym: "今", antonymPinyin: "jīn" },
+            { word: "朝", pinyin: "zhāo", antonym: "暮", antonymPinyin: "mù" },
+            { word: "首", pinyin: "shǒu", antonym: "尾", antonymPinyin: "wěi" },
             
             // 其他类别
-            { word: "是", antonym: "否" },
-            { word: "对", antonym: "错" },
-            { word: "该", antonym: "不该" },
-            { word: "能", antonym: "不能" },
-            { word: "会", antonym: "不会" },
-            { word: "可以", antonym: "不可以" },
-            { word: "应该", antonym: "不应该" },
-            { word: "必须", antonym: "不必" },
-            { word: "也许", antonym: "一定" },
-            { word: "可能", antonym: "不可能" },
-            { word: "经常", antonym: "偶尔" },
-            { word: "有时", antonym: "永远" },
-            { word: "许多", antonym: "很少" },
-            { word: "全部", antonym: "部分" },
-            { word: "一起", antonym: "分开" },
-            { word: "容易", antonym: "困难" },
-            { word: "简单", antonym: "复杂" },
-            { word: "高兴", antonym: "难过" },
-            { word: "安全", antonym: "危险" },
-            { word: "成功", antonym: "失败" },
-            { word: "同意", antonym: "反对" },
-            { word: "熟悉", antonym: "陌生" },
-            { word: "明白", antonym: "糊涂" },
-            { word: "清楚", antonym: "模糊" },
-            { word: "紧张", antonym: "轻松" },
-            { word: "忙碌", antonym: "悠闲" },
-            { word: "笔直", antonym: "弯曲" },
-            { word: "凸起", antonym: "凹陷" },
-            { word: "新鲜", antonym: "陈旧" },
-            { word: "平坦", antonym: "崎岖" },
-            { word: "聚合", antonym: "分散" },
-            { word: "坚定", antonym: "动摇" },
-            { word: "团结", antonym: "分裂" },
-            { word: "丰富", antonym: "贫乏" },
-            { word: "坎坷", antonym: "平坦" },
-            { word: "曲折", antonym: "平坦" },
-            { word: "和平", antonym: "战争" },
-            { word: "富裕", antonym: "贫穷" },
-            { word: "强大", antonym: "弱小" },
-            { word: "复杂", antonym: "单一" },
-            { word: "糊涂", antonym: "清醒" },
-            { word: "完整", antonym: "残缺" },
-            { word: "正常", antonym: "异常" },
-            { word: "普通", antonym: "特殊" },
-            { word: "懵懂", antonym: "明白" },
-            { word: "浑浊", antonym: "清澈" },
-            { word: "繁荣", antonym: "衰败" },
-            { word: "兴旺", antonym: "萧条" },
-            { word: "宽阔", antonym: "狭窄" },
-            { word: "锋利", antonym: "滞钝" },
-            { word: "宽敞", antonym: "狭小" },
-            { word: "舒展", antonym: "蜷缩" },
-            { word: "敏捷", antonym: "迟缓" },
-            { word: "清晰", antonym: "朦胧" },
-            { word: "陡峭", antonym: "平缓" },
-            { word: "缓和", antonym: "激烈" },
-            { word: "嘈杂", antonym: "寂静" },
-            { word: "松弛", antonym: "紧张" },
-            { word: "微弱", antonym: "强烈" },
-            { word: "蓬勃", antonym: "衰败" },
-            { word: "旺盛", antonym: "枯萎" },
-            { word: "镇静", antonym: "慌张" },
-            { word: "沉着", antonym: "慌张" },
-            { word: "缓慢", antonym: "快速" },
-            { word: "永久", antonym: "暂时" },
-            { word: "辽阔", antonym: "狭窄" },
-            { word: "巨大", antonym: "渺小" },
-            { word: "光明", antonym: "黑暗" },
-            { word: "温暖", antonym: "寒冷" },
-            { word: "拮据", antonym: "富裕" },
-            { word: "愚笨", antonym: "聪明" },
-            { word: "笨拙", antonym: "伶俐" },
-            { word: "狠毒", antonym: "善良" },
-            { word: "逼仄", antonym: "宽阔" },
-            { word: "吝啬", antonym: "慷慨" },
-            { word: "潮湿", antonym: "干燥" },
-            { word: "短暂", antonym: "永久" },
-            { word: "漆黑", antonym: "明亮" },
-            { word: "喧闹", antonym: "寂静" },
-            { word: "柔软", antonym: "坚硬" },
-            { word: "清澈", antonym: "浑浊" },
-            { word: "蜿蜒", antonym: "笔直" },
-            { word: "生疏", antonym: "熟悉" },
-            { word: "轻盈", antonym: "笨重" },
-            { word: "腐烂", antonym: "新鲜" },
-            { word: "繁重", antonym: "轻松" },
-            { word: "悲伤", antonym: "愉快" },
-            { word: "炎热", antonym: "寒冷" },
-            { word: "犹豫", antonym: "果断" },
-            { word: "软弱", antonym: "坚强" }
+            { word: "是", pinyin: "shì", antonym: "否", antonymPinyin: "fǒu" },
+            { word: "对", pinyin: "duì", antonym: "错", antonymPinyin: "cuò" },
+            { word: "该", pinyin: "gāi", antonym: "不该", antonymPinyin: "bù gāi" },
+            { word: "能", pinyin: "néng", antonym: "不能", antonymPinyin: "bù néng" },
+            { word: "会", pinyin: "huì", antonym: "不会", antonymPinyin: "bù huì" },
+            { word: "可以", pinyin: "kě yǐ", antonym: "不可以", antonymPinyin: "bù kě yǐ" },
+            { word: "应该", pinyin: "yīng gāi", antonym: "不应该", antonymPinyin: "bù yīng gāi" },
+            { word: "必须", pinyin: "bì xū", antonym: "不必", antonymPinyin: "bù bì" },
+            { word: "也许", pinyin: "yě xǔ", antonym: "一定", antonymPinyin: "yī dìng" },
+            { word: "可能", pinyin: "kě néng", antonym: "不可能", antonymPinyin: "bù kě néng" },
+            { word: "经常", pinyin: "jīng cháng", antonym: "偶尔", antonymPinyin: "ǒu ěr" },
+            { word: "有时", pinyin: "yǒu shí", antonym: "永远", antonymPinyin: "yǒng yuǎn" },
+            { word: "许多", pinyin: "xǔ duō", antonym: "很少", antonymPinyin: "hěn shǎo" },
+            { word: "全部", pinyin: "quán bù", antonym: "部分", antonymPinyin: "bù fèn" },
+            { word: "一起", pinyin: "yī qǐ", antonym: "分开", antonymPinyin: "fēn kāi" },
+            { word: "容易", pinyin: "róng yì", antonym: "困难", antonymPinyin: "kùn nán" },
+            { word: "简单", pinyin: "jiǎn dān", antonym: "复杂", antonymPinyin: "fù zá" },
+            { word: "高兴", pinyin: "gāo xìng", antonym: "难过", antonymPinyin: "nán guò" },
+            { word: "安全", pinyin: "ān quán", antonym: "危险", antonymPinyin: "wēi xiǎn" },
+            { word: "成功", pinyin: "chéng gōng", antonym: "失败", antonymPinyin: "shī bài" },
+            { word: "同意", pinyin: "tóng yì", antonym: "反对", antonymPinyin: "fǎn duì" },
+            { word: "熟悉", pinyin: "shú xī", antonym: "陌生", antonymPinyin: "mò shēng" },
+            { word: "明白", pinyin: "míng bai", antonym: "糊涂", antonymPinyin: "hú tu" },
+            { word: "清楚", pinyin: "qīng chu", antonym: "模糊", antonymPinyin: "mó hu" },
+            { word: "紧张", pinyin: "jǐn zhāng", antonym: "轻松", antonymPinyin: "qīng sōng" },
+            { word: "忙碌", pinyin: "máng lù", antonym: "悠闲", antonymPinyin: "yōu xián" },
+            { word: "笔直", pinyin: "bǐ zhí", antonym: "弯曲", antonymPinyin: "wān qū" },
+            { word: "凸起", pinyin: "tū qǐ", antonym: "凹陷", antonymPinyin: "āo xiàn" },
+            { word: "新鲜", pinyin: "xīn xiān", antonym: "陈旧", antonymPinyin: "chén jiù" },
+            { word: "平坦", pinyin: "píng tǎn", antonym: "崎岖", antonymPinyin: "qí qū" },
+            { word: "聚合", pinyin: "jù hé", antonym: "分散", antonymPinyin: "fēn sàn" },
+            { word: "坚定", pinyin: "jiān dìng", antonym: "动摇", antonymPinyin: "dòng yáo" },
+            { word: "团结", pinyin: "tuán jié", antonym: "分裂", antonymPinyin: "fēn liè" },
+            { word: "丰富", pinyin: "fēng fù", antonym: "贫乏", antonymPinyin: "pín fá" },
+            { word: "坎坷", pinyin: "kǎn kě", antonym: "平坦", antonymPinyin: "píng tǎn" },
+            { word: "曲折", pinyin: "qū zhé", antonym: "平坦", antonymPinyin: "píng tǎn" },
+            { word: "和平", pinyin: "hé píng", antonym: "战争", antonymPinyin: "zhàn zhēng" },
+            { word: "富裕", pinyin: "fù yù", antonym: "贫穷", antonymPinyin: "pín qióng" },
+            { word: "强大", pinyin: "qiáng dà", antonym: "弱小", antonymPinyin: "ruò xiǎo" },
+            { word: "复杂", pinyin: "fù zá", antonym: "单一", antonymPinyin: "dān yī" },
+            { word: "糊涂", pinyin: "hú tu", antonym: "清醒", antonymPinyin: "qīng xǐng" },
+            { word: "完整", pinyin: "wán zhěng", antonym: "残缺", antonymPinyin: "cán quē" },
+            { word: "正常", pinyin: "zhèng cháng", antonym: "异常", antonymPinyin: "yì cháng" },
+            { word: "普通", pinyin: "pǔ tōng", antonym: "特殊", antonymPinyin: "tè shū" },
+            { word: "懵懂", pinyin: "měng dǒng", antonym: "明白", antonymPinyin: "míng bai" },
+            { word: "浑浊", pinyin: "hún zhuó", antonym: "清澈", antonymPinyin: "qīng chè" },
+            { word: "繁荣", pinyin: "fán róng", antonym: "衰败", antonymPinyin: "shuāi bài" },
+            { word: "兴旺", pinyin: "xīng wàng", antonym: "萧条", antonymPinyin: "xiāo tiáo" },
+            { word: "宽阔", pinyin: "kuān kuò", antonym: "狭窄", antonymPinyin: "xiá zhǎi" },
+            { word: "锋利", pinyin: "fēng lì", antonym: "滞钝", antonymPinyin: "zhì dùn" },
+            { word: "宽敞", pinyin: "kuān chǎng", antonym: "狭小", antonymPinyin: "xiá xiǎo" },
+            { word: "舒展", pinyin: "shū zhǎn", antonym: "蜷缩", antonymPinyin: "quán suō" },
+            { word: "敏捷", pinyin: "mǐn jié", antonym: "迟缓", antonymPinyin: "chí huǎn" },
+            { word: "清晰", pinyin: "qīng xī", antonym: "朦胧", antonymPinyin: "méng lóng" },
+            { word: "陡峭", pinyin: "dǒu qiào", antonym: "平缓", antonymPinyin: "píng huǎn" },
+            { word: "缓和", pinyin: "huǎn hé", antonym: "激烈", antonymPinyin: "jī liè" },
+            { word: "嘈杂", pinyin: "cáo zá", antonym: "寂静", antonymPinyin: "jì jìng" },
+            { word: "松弛", pinyin: "sōng chí", antonym: "紧张", antonymPinyin: "jǐn zhāng" },
+            { word: "微弱", pinyin: "wēi ruò", antonym: "强烈", antonymPinyin: "qiáng liè" },
+            { word: "蓬勃", pinyin: "péng bó", antonym: "衰败", antonymPinyin: "shuāi bài" },
+            { word: "旺盛", pinyin: "wàng shèng", antonym: "枯萎", antonymPinyin: "kū wěi" },
+            { word: "镇静", pinyin: "zhèn jìng", antonym: "慌张", antonymPinyin: "huāng zhāng" },
+            { word: "沉着", pinyin: "chén zhuó", antonym: "慌张", antonymPinyin: "huāng zhāng" },
+            { word: "缓慢", pinyin: "huǎn màn", antonym: "快速", antonymPinyin: "kuài sù" },
+            { word: "永久", pinyin: "yǒng jiǔ", antonym: "暂时", antonymPinyin: "zàn shí" },
+            { word: "辽阔", pinyin: "liáo kuò", antonym: "狭窄", antonymPinyin: "xiá zhǎi" },
+            { word: "巨大", pinyin: "jù dà", antonym: "渺小", antonymPinyin: "miǎo xiǎo" },
+            { word: "光明", pinyin: "guāng míng", antonym: "黑暗", antonymPinyin: "hēi àn" },
+            { word: "温暖", pinyin: "wēn nuǎn", antonym: "寒冷", antonymPinyin: "hán lěng" },
+            { word: "拮据", pinyin: "jié jū", antonym: "富裕", antonymPinyin: "fù yù" },
+            { word: "愚笨", pinyin: "yú bèn", antonym: "聪明", antonymPinyin: "cōng míng" },
+            { word: "笨拙", pinyin: "bèn zhuō", antonym: "伶俐", antonymPinyin: "líng lì" },
+            { word: "狠毒", pinyin: "hěn dú", antonym: "善良", antonymPinyin: "shàn liáng" },
+            { word: "逼仄", pinyin: "bī zè", antonym: "宽阔", antonymPinyin: "kuān kuò" },
+            { word: "吝啬", pinyin: "lìn sè", antonym: "慷慨", antonymPinyin: "kāng kǎi" },
+            { word: "潮湿", pinyin: "cháo shī", antonym: "干燥", antonymPinyin: "gān zào" },
+            { word: "短暂", pinyin: "duǎn zàn", antonym: "永久", antonymPinyin: "yǒng jiǔ" },
+            { word: "漆黑", pinyin: "qī hēi", antonym: "明亮", antonymPinyin: "míng liàng" },
+            { word: "喧闹", pinyin: "xuān nào", antonym: "寂静", antonymPinyin: "jì jìng" },
+            { word: "柔软", pinyin: "róu ruǎn", antonym: "坚硬", antonymPinyin: "jiān yìng" },
+            { word: "清澈", pinyin: "qīng chè", antonym: "浑浊", antonymPinyin: "hún zhuó" },
+            { word: "蜿蜒", pinyin: "wān yán", antonym: "笔直", antonymPinyin: "bǐ zhí" },
+            { word: "生疏", pinyin: "shēng shū", antonym: "熟悉", antonymPinyin: "shú xī" },
+            { word: "轻盈", pinyin: "qīng yíng", antonym: "笨重", antonymPinyin: "bèn zhòng" },
+            { word: "腐烂", pinyin: "fǔ làn", antonym: "新鲜", antonymPinyin: "xīn xiān" },
+            { word: "繁重", pinyin: "fán zhòng", antonym: "轻松", antonymPinyin: "qīng sōng" },
+            { word: "悲伤", pinyin: "bēi shāng", antonym: "愉快", antonymPinyin: "yú kuài" },
+            { word: "炎热", pinyin: "yán rè", antonym: "寒冷", antonymPinyin: "hán lěng" },
+            { word: "犹豫", pinyin: "yóu yù", antonym: "果断", antonymPinyin: "guǒ duàn" },
+            { word: "软弱", pinyin: "ruǎn ruò", antonym: "坚强", antonymPinyin: "jiān qiáng" }
         ];
         
         // 游戏状态变量
@@ -568,6 +570,14 @@
             // 显示目标字（两个卡片）
             targetWordEl.textContent = currentWord;
             targetWord2El.textContent = currentWord;
+            
+            // 显示拼音
+            const targetPinyinEl = document.getElementById('target-pinyin');
+            const targetPinyin2El = document.getElementById('target-pinyin-2');
+            const currentPinyin = pair.pinyin || '';
+            targetPinyinEl.textContent = currentPinyin;
+            targetPinyin2El.textContent = currentPinyin;
+            
             targetWordEl.classList.remove('correct-animation');
             targetWord2El.classList.remove('correct-animation');
             void targetWordEl.offsetWidth; // 重置动画
@@ -630,13 +640,21 @@
             
             // 创建玩家1的选项按钮
             player1Options.forEach(option => {
-                const button = createOptionButton(option, 'player1');
+                // 查找拼音信息
+                const wordData = antonymsList.find(item => item.word === option || item.antonym === option);
+                const pinyin = wordData ? (wordData.word === option ? wordData.pinyin : wordData.antonymPinyin) : '';
+                
+                const button = createOptionButton(option, pinyin, 'player1');
                 optionsPlayer1.appendChild(button);
             });
             
             // 创建玩家2的选项按钮
             player2Options.forEach(option => {
-                const button = createOptionButton(option, 'player2');
+                // 查找拼音信息
+                const wordData = antonymsList.find(item => item.word === option || item.antonym === option);
+                const pinyin = wordData ? (wordData.word === option ? wordData.pinyin : wordData.antonymPinyin) : '';
+                
+                const button = createOptionButton(option, pinyin, 'player2');
                 optionsPlayer2.appendChild(button);
             });
             
@@ -647,23 +665,33 @@
         }
         
         // 创建选项按钮
-        function createOptionButton(text, player) {
+        function createOptionButton(text, pinyin, player) {
             const button = document.createElement('button');
             
             // 根据字数调整字体大小
             let fontSize = 'text-[clamp(1.5rem,4vw,2.5rem)]';
+            let pinyinSize = 'text-[clamp(0.6rem,1.5vw,0.8rem)]';
             if (text.length === 2) {
                 fontSize = 'text-[clamp(1.2rem,3vw,2rem)]';
+                pinyinSize = 'text-[clamp(0.55rem,1.2vw,0.75rem)]';
             } else if (text.length === 3) {
                 fontSize = 'text-[clamp(1rem,2.5vw,1.8rem)]';
+                pinyinSize = 'text-[clamp(0.5rem,1vw,0.7rem)]';
             } else if (text.length >= 4) {
                 fontSize = 'text-[clamp(0.8rem,2vw,1.5rem)]';
+                pinyinSize = 'text-[clamp(0.45rem,0.8vw,0.65rem)]';
             }
             
-            button.className = `bg-white rounded-2xl shadow-lg p-2 ${fontSize} font-bold transition-all duration-200 hover:scale-105 active:scale-95 min-w-[100px] min-h-[100px] ${
+            button.className = `bg-white rounded-2xl shadow-lg p-2 ${fontSize} font-bold transition-all duration-200 hover:scale-105 active:scale-95 min-w-[100px] min-h-[100px] flex flex-col items-center justify-center ${
                 player === 'player1' ? 'text-player1 hover:bg-player1/10 border-4 border-player1/30' : 'text-player2 hover:bg-player2/10 border-4 border-player2/30'
             }`;
-            button.textContent = text;
+            
+            // 创建汉字和拼音元素
+            button.innerHTML = `
+                <div class="${fontSize} font-bold">${text}</div>
+                <div class="${pinyinSize} text-gray-400 mt-1">${pinyin || ''}</div>
+            `;
+            
             button.dataset.option = text;
             button.addEventListener('click', () => handleAnswer(button, player));
             return button;
