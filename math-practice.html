@@ -9,10 +9,14 @@
     <meta name="description" content="一年级数学练习应用，让计算练习更有趣">
     <meta name="theme-color" content="#4F46E5">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="数学小天才">
     <meta name="msapplication-TileColor" content="#4F46E5">
     <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- Safari specific meta tags -->
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="format-detection" content="telephone=no">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
@@ -30,7 +34,7 @@
         }
         
         body {
-            font-family: 'Segoe UI', 'Helvetica Neue', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
             background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
             min-height: 100vh;
             color: #1f2937;
@@ -1544,6 +1548,8 @@
         
         // 安装提示
         let deferredPrompt;
+        let isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -1555,6 +1561,13 @@
                 }
             }, 3000);
         });
+        
+        // Safari安装提示
+        if (isSafari) {
+            setTimeout(() => {
+                showSafariInstallPrompt();
+            }, 3000);
+        }
         
         function showInstallPrompt() {
             const installPrompt = document.createElement('div');
@@ -1594,6 +1607,42 @@
                     deferredPrompt = null;
                 });
             }
+        }
+        
+        function showSafariInstallPrompt() {
+            const safariPrompt = document.createElement('div');
+            safariPrompt.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #4F46E5;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 0.75rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                font-size: 0.875rem;
+                max-width: 90%;
+            `;
+            safariPrompt.innerHTML = `
+                <span>📱 添加到主屏幕</span>
+                <div style="font-size: 0.75rem; opacity: 0.9;">
+                    点击分享按钮 → 添加到主屏幕
+                </div>
+                <button onclick="this.parentElement.remove()" style="background: transparent; color: white; border: 1px solid white; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">知道了</button>
+            `;
+            document.body.appendChild(safariPrompt);
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                if (safariPrompt.parentElement) {
+                    safariPrompt.remove();
+                }
+            }, 5000);
         }
     </script>
 </body>
