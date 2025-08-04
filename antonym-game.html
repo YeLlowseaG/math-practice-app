@@ -63,6 +63,19 @@
     </style>
 </head>
 <body class="bg-gradient-to-b from-blue-50 to-indigo-50 min-h-screen font-kids text-text overflow-hidden">
+    <!-- 提示框 - 放在body的直接子元素位置 -->
+    <!-- 玩家1提示框 -->
+    <div id="notification-player1" class="hidden fixed top-1/4 left-1/4 bg-white rounded-2xl shadow-2xl p-4 text-center z-[9999] transform rotate-90">
+        <p id="notification-text-player1" class="text-xl font-bold mb-1"></p>
+        <p id="notification-subtext-player1" class="text-lg text-gray-600 mb-1"></p>
+    </div>
+    
+    <!-- 玩家2提示框 -->
+    <div id="notification-player2" class="hidden fixed top-1/4 right-1/4 bg-white rounded-2xl shadow-2xl p-4 text-center z-[9999] transform -rotate-90">
+        <p id="notification-text-player2" class="text-xl font-bold mb-1"></p>
+        <p id="notification-subtext-player2" class="text-lg text-gray-600 mb-1"></p>
+    </div>
+    
     <!-- 开始界面 -->
     <div id="start-screen" class="flex flex-col items-center justify-center h-screen p-6 z-30 relative">
         <div class="text-center max-w-md mx-auto bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-500">
@@ -116,8 +129,8 @@
             <div class="w-1/3 bg-player1/10 flex flex-col transform rotate-90 origin-center mr-48">
                 <!-- 玩家1分数显示 -->
                 <div class="text-center p-2">
-                    <p class="text-player1 font-bold text-sm">玩家1</p>
-                    <p id="score1" class="text-player1 font-bold text-lg">0</p>
+                    <p class="text-player1 font-bold text-lg">玩家1</p>
+                    <p id="score1" class="text-player1 font-bold text-3xl">0</p>
                 </div>
                 
                 <!-- 玩家1倒计时显示 -->
@@ -126,11 +139,6 @@
                         <i class="fa fa-clock-o text-player1 mr-1"></i>
                         <span id="countdown-player1" class="text-player1 font-bold text-lg">5</span>
                     </div>
-                </div>
-                
-                <!-- 玩家1选择提示 -->
-                <div class="text-center p-0">
-                    <p class="text-player1 font-bold text-sm">玩家1选择</p>
                 </div>
                 
                 <!-- 玩家1选项区域 -->
@@ -149,8 +157,6 @@
                     <p class="text-gray-500 mt-2 text-sm">找出它的反义词！</p>
                 </div>
                 
-
-                
                 <!-- 下方目标字卡片 - 跟玩家2方向一致（逆时针旋转90度） -->
                 <div class="bg-white rounded-3xl shadow-2xl p-8 text-center transform -rotate-90">
                     <p class="text-[clamp(1.8rem,6vw,3rem)] font-bold text-text whitespace-nowrap" id="target-word-2">大</p>
@@ -162,8 +168,8 @@
             <div class="w-1/3 bg-player2/10 flex flex-col transform -rotate-90 origin-center ml-48">
                 <!-- 玩家2分数显示 -->
                 <div class="text-center p-2">
-                    <p class="text-player2 font-bold text-sm">玩家2</p>
-                    <p id="score2" class="text-player2 font-bold text-lg">0</p>
+                    <p class="text-player2 font-bold text-lg">玩家2</p>
+                    <p id="score2" class="text-player2 font-bold text-3xl">0</p>
                 </div>
                 
                 <!-- 玩家2倒计时显示 -->
@@ -174,11 +180,6 @@
                     </div>
                 </div>
                 
-                <!-- 玩家2选择提示 -->
-                <div class="text-center p-0">
-                    <p class="text-player2 font-bold text-sm">玩家2选择</p>
-                </div>
-                
                 <!-- 玩家2选项区域 -->
                 <div class="flex-1 flex items-start justify-center p-24">
                     <div id="options-player2" class="grid grid-cols-2 gap-4 w-48 h-32">
@@ -187,6 +188,7 @@
                 </div>
             </div>
         </div>
+        
     </div>
     
     <!-- 结果界面 -->
@@ -470,6 +472,41 @@
         startBtn.addEventListener('click', startGame);
         restartBtn.addEventListener('click', restartGame);
         
+        // 页面加载时检查提示框元素是否存在
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('页面加载完成，检查提示框元素...');
+            
+            // 尝试多种方法查找元素
+            const notification1 = document.getElementById('notification-player1');
+            const notification2 = document.getElementById('notification-player2');
+            const text1 = document.getElementById('notification-text-player1');
+            const text2 = document.getElementById('notification-text-player2');
+            const subtext1 = document.getElementById('notification-subtext-player1');
+            const subtext2 = document.getElementById('notification-subtext-player2');
+            
+            console.log('notification-player1:', notification1);
+            console.log('notification-player2:', notification2);
+            console.log('notification-text-player1:', text1);
+            console.log('notification-text-player2:', text2);
+            console.log('notification-subtext-player1:', subtext1);
+            console.log('notification-subtext-player2:', subtext2);
+            
+            // 尝试通过querySelector查找
+            console.log('通过querySelector查找:');
+            console.log('querySelector notification-player1:', document.querySelector('#notification-player1'));
+            console.log('querySelector notification-player2:', document.querySelector('#notification-player2'));
+            
+            // 检查所有div元素
+            console.log('所有div元素数量:', document.querySelectorAll('div').length);
+            
+            // 检查所有带有id的元素
+            const allElementsWithId = document.querySelectorAll('[id]');
+            console.log('所有带有id的元素:');
+            allElementsWithId.forEach(el => {
+                console.log('ID:', el.id, 'Tag:', el.tagName);
+            });
+        });
+        
         // 开始游戏
         function startGame() {
             startScreen.classList.add('hidden');
@@ -642,6 +679,9 @@
                 }
                 updateScores();
                 
+                // 显示答对提示
+                showCorrectAnswerHint(player);
+                
                 // 提示另一方正确答案
                 const otherPlayer = player === 'player1' ? 'player2' : 'player1';
                 showAnswerToOtherPlayer(otherPlayer);
@@ -667,32 +707,83 @@
             }, 3000);
         }
         
+        // 显示答对提示
+        function showCorrectAnswerHint(player) {
+            const playerName = player === 'player1' ? '玩家1' : '玩家2';
+            
+            // 获取提示框元素 - 修复ID问题
+            const playerNumber = player === 'player1' ? '1' : '2';
+            const notification = document.getElementById(`notification-player${playerNumber}`);
+            const textEl = document.getElementById(`notification-text-player${playerNumber}`);
+            const subtextEl = document.getElementById(`notification-subtext-player${playerNumber}`);
+
+            // 调试：检查元素是否存在
+            console.log('查找提示框元素:', `notification-player${playerNumber}`);
+            console.log('notification元素:', notification);
+            console.log('textEl元素:', textEl);
+            console.log('subtextEl元素:', subtextEl);
+
+            // 检查元素是否存在
+            if (!notification || !textEl || !subtextEl) {
+                console.error('提示框元素未找到！');
+                return;
+            }
+
+            // 设置样式（绿色边框表示答对）
+            notification.className = `fixed top-1/4 ${player === 'player1' ? 'left-1/4' : 'right-1/4'} bg-white rounded-2xl shadow-2xl p-4 text-center z-[9999] border-4 border-green-500 transform ${player === 'player1' ? 'rotate-90' : '-rotate-90'}`;
+            
+            // 设置文本内容
+            textEl.textContent = `恭喜你答对了！`;
+            textEl.className = `text-xl font-bold text-green-600 mb-1`;
+            subtextEl.innerHTML = `得 <span class="font-bold text-green-600">1</span> 分！`;
+            subtextEl.className = `text-lg text-gray-600 mb-1`;
+
+            // 显示提示
+            notification.classList.remove('hidden');
+            
+            // 2秒后移除提示
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 2000);
+        }
+        
         // 提示另一方正确答案
         function showAnswerToOtherPlayer(otherPlayer) {
             const otherPlayerName = otherPlayer === 'player1' ? '玩家1' : '玩家2';
             
-            // 创建提示元素
-            const notification = document.createElement('div');
-            notification.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 text-center z-50 border-4 border-blue-500`;
-            
-            // 根据另一方设置旋转方向
-            if (otherPlayer === 'player1') {
-                notification.className += ' transform rotate-90';
-            } else {
-                notification.className += ' transform -rotate-90';
+            // 获取提示框元素 - 修复ID问题
+            const playerNumber = otherPlayer === 'player1' ? '1' : '2';
+            const notification = document.getElementById(`notification-player${playerNumber}`);
+            const textEl = document.getElementById(`notification-text-player${playerNumber}`);
+            const subtextEl = document.getElementById(`notification-subtext-player${playerNumber}`);
+
+            // 调试：检查元素是否存在
+            console.log('查找提示框元素:', `notification-player${playerNumber}`);
+            console.log('notification元素:', notification);
+            console.log('textEl元素:', textEl);
+            console.log('subtextEl元素:', subtextEl);
+
+            // 检查元素是否存在
+            if (!notification || !textEl || !subtextEl) {
+                console.error('提示框元素未找到！');
+                return;
             }
+
+            // 设置样式（蓝色边框表示信息提示）
+            notification.className = `fixed top-1/4 ${otherPlayer === 'player1' ? 'left-1/4' : 'right-1/4'} bg-white rounded-2xl shadow-2xl p-4 text-center z-[9999] border-4 border-blue-500 transform ${otherPlayer === 'player1' ? 'rotate-90' : '-rotate-90'}`;
             
-            notification.innerHTML = `
-                <p class="text-2xl font-bold text-blue-600 mb-2">${otherPlayerName}，题目已结束</p>
-                <p class="text-lg text-gray-600 mb-2">正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span></p>
-                <p class="text-sm text-gray-500">准备下一题</p>
-            `;
-            
-            document.body.appendChild(notification);
+            // 设置文本内容
+            textEl.textContent = `${otherPlayerName}，题目已结束`;
+            textEl.className = `text-xl font-bold text-blue-600 mb-1`;
+            subtextEl.innerHTML = `正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span>`;
+            subtextEl.className = `text-lg text-gray-600 mb-1`;
+
+            // 显示提示
+            notification.classList.remove('hidden');
             
             // 3秒后移除提示
             setTimeout(() => {
-                notification.remove();
+                notification.classList.add('hidden');
             }, 3000);
         }
         
@@ -700,28 +791,33 @@
         function showWrongAnswerHint(player) {
             const playerName = player === 'player1' ? '玩家1' : '玩家2';
             
-            // 创建提示元素
-            const notification = document.createElement('div');
-            notification.className = `fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 text-center z-50 border-4 border-red-500`;
-            
-            // 根据答题者设置旋转方向
-            if (player === 'player1') {
-                notification.className += ' transform rotate-90';
-            } else {
-                notification.className += ' transform -rotate-90';
+            // 获取提示框元素 - 修复ID问题
+            const playerNumber = player === 'player1' ? '1' : '2';
+            const notification = document.getElementById(`notification-player${playerNumber}`);
+            const textEl = document.getElementById(`notification-text-player${playerNumber}`);
+            const subtextEl = document.getElementById(`notification-subtext-player${playerNumber}`);
+
+            // 检查元素是否存在
+            if (!notification || !textEl || !subtextEl) {
+                console.error('提示框元素未找到！');
+                return;
             }
+
+            // 设置样式（红色边框表示答错）
+            notification.className = `fixed top-1/4 ${player === 'player1' ? 'left-1/4' : 'right-1/4'} bg-white rounded-2xl shadow-2xl p-4 text-center z-[9999] border-4 border-red-500 transform ${player === 'player1' ? 'rotate-90' : '-rotate-90'}`;
             
-            notification.innerHTML = `
-                <p class="text-2xl font-bold text-red-600 mb-2">${playerName} 答错了</p>
-                <p class="text-lg text-gray-600 mb-2">正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span></p>
-                <p class="text-sm text-gray-500">继续加油！</p>
-            `;
-            
-            document.body.appendChild(notification);
+            // 设置文本内容
+            textEl.textContent = `${playerName} 答错了`;
+            textEl.className = `text-xl font-bold text-red-600 mb-1`;
+            subtextEl.innerHTML = `正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span>`;
+            subtextEl.className = `text-lg text-gray-600 mb-1`;
+
+            // 显示提示
+            notification.classList.remove('hidden');
             
             // 1.5秒后移除提示
             setTimeout(() => {
-                notification.remove();
+                notification.classList.add('hidden');
             }, 1500);
         }
         
