@@ -676,12 +676,11 @@
             const selectedOption = button.dataset.option;
             const isCorrect = selectedOption === currentAntonym;
             
-            // 立即结束当前轮次，防止重复答题
-            gameActive = false;
-            clearInterval(timerInterval);
-            
             if (isCorrect) {
-                // 答对了
+                // 答对了 - 立即结束当前轮次
+                gameActive = false;
+                clearInterval(timerInterval);
+                
                 button.classList.add('bg-green-100', 'border-2', 'border-green-500', 'correct-animation');
                 
                 // 给答题者加分
@@ -699,9 +698,16 @@
                 const otherPlayer = player === 'player1' ? 'player2' : 'player1';
                 showAnswerToOtherPlayer(otherPlayer);
                 
+                // 延迟进入下一轮
+                setTimeout(() => {
+                    round++;
+                    nextRound();
+                }, 3000);
+                
             } else {
-                // 答错了
+                // 答错了 - 不结束当前轮次，让另一个玩家继续答题
                 button.classList.add('bg-red-100', 'border-2', 'border-red-500');
+                button.disabled = true; // 禁用已答错的按钮
                 
                 // 高亮正确答案
                 const correctButtons = document.querySelectorAll(`[data-option="${currentAntonym}"]`);
@@ -711,13 +717,26 @@
                 
                 // 显示答错提示
                 showWrongAnswerHint(player);
+                
+                // 检查另一个玩家是否还有机会答题
+                const otherPlayer = player === 'player1' ? 'player2' : 'player1';
+                const otherPlayerButtons = document.querySelectorAll(`#options-${otherPlayer} button`);
+                const hasOtherPlayerAnswered = Array.from(otherPlayerButtons).some(btn => 
+                    btn.classList.contains('bg-green-100') || btn.classList.contains('bg-red-100')
+                );
+                
+                if (hasOtherPlayerAnswered) {
+                    // 另一个玩家也已经答题了，结束当前轮次
+                    gameActive = false;
+                    clearInterval(timerInterval);
+                    
+                    setTimeout(() => {
+                        round++;
+                        nextRound();
+                    }, 2000);
+                }
+                // 如果另一个玩家还没答题，继续等待
             }
-            
-            // 延迟进入下一轮
-            setTimeout(() => {
-                round++;
-                nextRound();
-            }, 3000);
         }
         
         // 显示答对提示
@@ -860,6 +879,9 @@
                             btn.classList.add('bg-green-100', 'border-2', 'border-green-500');
                         });
                         
+                        // 显示时间到提示
+                        showTimeUpNotification();
+                        
                         // 延迟进入下一轮
                         setTimeout(() => {
                             round++;
@@ -952,6 +974,25 @@
             notification.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg z-[9999] border-2 border-accent';
             notification.innerHTML = `
                 <span class="text-sm font-bold text-accent">${message}</span>
+            `;
+            document.body.appendChild(notification);
+            
+            // 2秒后移除提示
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+        
+        // 显示时间到期提示
+        function showTimeUpNotification() {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm px-8 py-4 rounded-2xl shadow-lg z-[9999] border-2 border-orange-500';
+            notification.innerHTML = `
+                <div class="text-center">
+                    <i class="fa fa-clock-o text-orange-500 text-2xl mb-2"></i>
+                    <p class="text-lg font-bold text-orange-600">时间到！</p>
+                    <p class="text-sm text-gray-600">正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span></p>
+                </div>
             `;
             document.body.appendChild(notification);
             
