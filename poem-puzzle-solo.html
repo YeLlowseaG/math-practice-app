@@ -101,6 +101,32 @@
                 100% { transform: scale(1) rotate(0deg); }
             }
             
+            /* 移动端优化 */
+            @media (max-width: 768px) {
+                .puzzle-piece {
+                    min-height: 60px;
+                    touch-action: none;
+                }
+                .drop-zone {
+                    min-height: 80px;
+                    touch-action: none;
+                }
+                .float-animation {
+                    animation: none;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .puzzle-piece {
+                    font-size: 0.9rem;
+                    padding: 12px;
+                }
+                .drop-zone {
+                    padding: 16px;
+                    font-size: 0.9rem;
+                }
+            }
+            
             /* 撒花庆祝动画 */
             .celebration-overlay {
                 position: fixed;
@@ -920,6 +946,11 @@
                 piece.addEventListener('dragstart', handleDragStart);
                 piece.addEventListener('dragend', handleDragEnd);
                 
+                // 移动端触摸支持
+                piece.addEventListener('touchstart', handleTouchStart, {passive: false});
+                piece.addEventListener('touchmove', handleTouchMove, {passive: false});
+                piece.addEventListener('touchend', handleTouchEnd, {passive: false});
+                
                 puzzlePieces.appendChild(piece);
             });
             
@@ -955,6 +986,100 @@
             this.classList.remove('dragging');
         }
         
+        // 移动端触摸事件处理
+        let touchDragElement = null;
+        let touchOffset = { x: 0, y: 0 };
+        let dragPreview = null;
+        
+        function handleTouchStart(e) {
+            e.preventDefault();
+            touchDragElement = this;
+            
+            // 记录触摸偏移
+            const touch = e.touches[0];
+            const rect = this.getBoundingClientRect();
+            touchOffset.x = touch.clientX - rect.left;
+            touchOffset.y = touch.clientY - rect.top;
+            
+            // 创建拖拽预览
+            dragPreview = this.cloneNode(true);
+            dragPreview.style.position = 'fixed';
+            dragPreview.style.top = (touch.clientY - touchOffset.y) + 'px';
+            dragPreview.style.left = (touch.clientX - touchOffset.x) + 'px';
+            dragPreview.style.opacity = '0.8';
+            dragPreview.style.transform = 'rotate(5deg) scale(1.1)';
+            dragPreview.style.zIndex = '9999';
+            dragPreview.style.pointerEvents = 'none';
+            document.body.appendChild(dragPreview);
+            
+            // 设置原元素样式
+            this.style.opacity = '0.5';
+            gameState.dragElement = this;
+        }
+        
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (!touchDragElement || !dragPreview) return;
+            
+            const touch = e.touches[0];
+            dragPreview.style.top = (touch.clientY - touchOffset.y) + 'px';
+            dragPreview.style.left = (touch.clientX - touchOffset.x) + 'px';
+            
+            // 检测放置区域
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            const dropZone = elementBelow?.closest('.drop-zone');
+            
+            // 清除所有高亮
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+            
+            // 高亮当前放置区域
+            if (dropZone && !dropZone.classList.contains('correct')) {
+                dropZone.classList.add('drag-over');
+            }
+        }
+        
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            if (!touchDragElement) return;
+            
+            const touch = e.changedTouches[0];
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            const dropZone = elementBelow?.closest('.drop-zone');
+            
+            // 清理拖拽预览
+            if (dragPreview) {
+                dragPreview.remove();
+                dragPreview = null;
+            }
+            
+            // 恢复原元素样式
+            touchDragElement.style.opacity = '';
+            
+            // 清除所有高亮
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+            
+            // 处理放置
+            if (dropZone && !dropZone.classList.contains('correct')) {
+                const droppedLine = touchDragElement.dataset.line.trim();
+                const correctLine = dropZone.dataset.correctLine.trim();
+                
+                if (droppedLine === correctLine) {
+                    // 正确放置 - 使用与拖拽相同的逻辑
+                    handleCorrectPlacement(dropZone, droppedLine);
+                } else {
+                    // 错误放置
+                    handleIncorrectPlacement(dropZone);
+                }
+            }
+            
+            touchDragElement = null;
+            gameState.dragElement = null;
+        }
+        
         // 拖拽悬停
         function handleDragOver(e) {
             e.preventDefault();
@@ -965,6 +1090,84 @@
         // 拖拽离开
         function handleDragLeave(e) {
             this.classList.remove('drag-over');
+        }
+        
+        // 正确放置处理
+        function handleCorrectPlacement(dropZone, droppedLine) {
+            // 立即移除拼图片 - 最高优先级
+            if (gameState.dragElement && gameState.dragElement.parentNode) {
+                gameState.dragElement.parentNode.removeChild(gameState.dragElement);
+            }
+            
+            // 正确放置
+            dropZone.innerHTML = `
+                <div class="font-poem text-lg text-poem font-medium">${droppedLine}</div>
+            `;
+            dropZone.classList.remove('bg-gray-100', 'border-gray-300');
+            dropZone.classList.add('correct', 'bg-green-50', 'border-green-300');
+            
+            // 清除提示状态
+            dropZone.dataset.showingHint = 'false';
+            dropZone.style.border = '2px solid #10B981';
+            dropZone.style.animation = '';
+            
+            // 清除提示定时器
+            if (gameState.hintTimeouts) {
+                gameState.hintTimeouts = gameState.hintTimeouts.filter(item => {
+                    if (item.zone === dropZone) {
+                        clearTimeout(item.timeout);
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            gameState.correctPlacements++;
+            
+            // 检查是否完成
+            if (gameState.correctPlacements === gameState.currentPoem.lines.length) {
+                handlePoemComplete();
+            }
+            
+            // 增加连击
+            gameState.combo++;
+            gameState.maxCombo = Math.max(gameState.maxCombo, gameState.combo);
+            
+            // 加分
+            const config = difficultyConfig[gameState.currentDifficulty];
+            const basePoints = config.pointsPerLine;
+            const comboBonus = Math.floor(basePoints * (gameState.combo - 1) * 0.1);
+            const totalPoints = basePoints + comboBonus;
+            gameState.score += totalPoints;
+            
+            // 🎉 撒花庆祝！
+            showCelebration();
+            
+            updateGameDisplay();
+        }
+        
+        // 错误放置处理
+        function handleIncorrectPlacement(dropZone) {
+            gameState.combo = 0;
+            updateGameDisplay();
+            
+            // 错误视觉反馈：红框 + 抖动 + 错误图标
+            dropZone.style.border = '3px solid #EF4444';
+            dropZone.style.backgroundColor = '#FEE2E2';
+            dropZone.innerHTML = `
+                <div class="text-red-500 text-2xl">❌</div>
+                <div class="text-red-600 text-sm font-medium mt-1">位置错误</div>
+            `;
+            dropZone.style.animation = 'shake 0.5s ease-in-out';
+            
+            // 1.5秒后恢复原状
+            setTimeout(() => {
+                dropZone.style.animation = '';
+                dropZone.style.border = '2px dashed #D1D5DB';
+                dropZone.style.backgroundColor = '#F3F4F6';
+                dropZone.innerHTML = `
+                    <div class="text-gray-400 font-poem">第${parseInt(dropZone.dataset.position) + 1}句</div>
+                `;
+            }, 1500);
         }
         
         // 拖放
@@ -978,79 +1181,9 @@
             const correctLine = this.dataset.correctLine.trim();
             
             if (droppedLine === correctLine) {
-                // 立即移除拼图片 - 最高优先级
-                if (gameState.dragElement && gameState.dragElement.parentNode) {
-                    gameState.dragElement.parentNode.removeChild(gameState.dragElement);
-                }
-                
-                // 正确放置
-                this.innerHTML = `
-                    <div class="font-poem text-lg text-poem font-medium">${droppedLine}</div>
-                `;
-                this.classList.remove('bg-gray-100', 'border-gray-300');
-                this.classList.add('correct', 'bg-green-50', 'border-green-300');
-                
-                // 清除提示状态
-                this.dataset.showingHint = 'false';
-                this.style.border = '2px solid #10B981';
-                this.style.animation = '';
-                
-                // 清除提示定时器
-                if (gameState.hintTimeouts) {
-                    gameState.hintTimeouts = gameState.hintTimeouts.filter(item => {
-                        if (item.zone === this) {
-                            clearTimeout(item.timeout);
-                            return false;
-                        }
-                        return true;
-                    });
-                }
-                gameState.correctPlacements++;
-                
-                // 检查是否完成
-                if (gameState.correctPlacements === gameState.currentPoem.lines.length) {
-                    handlePoemComplete();
-                }
-                
-                // 增加连击
-                gameState.combo++;
-                gameState.maxCombo = Math.max(gameState.maxCombo, gameState.combo);
-                
-                // 加分
-                const config = difficultyConfig[gameState.currentDifficulty];
-                const basePoints = config.pointsPerLine;
-                const comboBonus = Math.floor(basePoints * (gameState.combo - 1) * 0.1);
-                const totalPoints = basePoints + comboBonus;
-                gameState.score += totalPoints;
-                
-                // 🎉 撒花庆祝！
-                showCelebration();
-                
-                updateGameDisplay();
-                
+                handleCorrectPlacement(this, droppedLine);
             } else {
-                // 错误放置
-                gameState.combo = 0;
-                updateGameDisplay();
-                
-                // 错误视觉反馈：红框 + 抖动 + 错误图标
-                this.style.border = '3px solid #EF4444';
-                this.style.backgroundColor = '#FEE2E2';
-                this.innerHTML = `
-                    <div class="text-red-500 text-2xl">❌</div>
-                    <div class="text-red-600 text-sm font-medium mt-1">位置错误</div>
-                `;
-                this.style.animation = 'shake 0.5s ease-in-out';
-                
-                // 1.5秒后恢复原状
-                setTimeout(() => {
-                    this.style.animation = '';
-                    this.style.border = '2px dashed #D1D5DB';
-                    this.style.backgroundColor = '#F3F4F6';
-                    this.innerHTML = `
-                        <div class="text-gray-400 font-poem">第${parseInt(this.dataset.position) + 1}句</div>
-                    `;
-                }, 1500);
+                handleIncorrectPlacement(this);
             }
             
             // 清理拖拽状态

@@ -85,6 +85,29 @@
                 animation: button-press 0.2s ease-in-out;
             }
             
+            /* 移动端优化 */
+            @media (max-width: 768px) {
+                .option-btn {
+                    min-height: 64px;
+                    font-size: 1.1rem;
+                    padding: 16px 12px;
+                }
+                .float-animation {
+                    animation: none;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .option-btn {
+                    min-height: 72px;
+                    font-size: 1rem;
+                    padding: 20px 12px;
+                }
+                #question-text {
+                    font-size: 1.5rem;
+                }
+            }
+            
             .ripple {
                 position: absolute;
                 border-radius: 50%;
