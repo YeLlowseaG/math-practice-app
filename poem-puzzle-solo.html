@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>诗词拼图 - 单人闯关</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7C3AED',
+                        secondary: '#EC4899',
+                        accent: '#F59E0B',
+                        danger: '#EF4444',
+                        neutral: '#F7FFF7',
+                        text: '#1F2937',
+                        poem: '#6366F1'
+                    },
+                    fontFamily: {
+                        kids: ['"Comic Sans MS"', '"Marker Felt"', 'Arial', 'sans-serif'],
+                        poem: ['"KaiTi"', '"楷体"', '"STKaiti"', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .bounce-light {
+                animation: bounce-light 0.5s ease infinite alternate;
+            }
+            .float-animation {
+                animation: float 3s ease-in-out infinite;
+            }
+            .puzzle-piece {
+                transition: all 0.3s ease;
+                cursor: grab;
+            }
+            .puzzle-piece:active {
+                cursor: grabbing;
+                transform: scale(1.05);
+                z-index: 1000;
+            }
+            .puzzle-piece.dragging {
+                opacity: 0.8;
+                transform: rotate(5deg) scale(1.1);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            }
+            .drop-zone {
+                transition: all 0.3s ease;
+                border: 2px dashed transparent;
+            }
+            .drop-zone.drag-over {
+                border-color: #7C3AED;
+                background-color: rgba(124, 58, 237, 0.1);
+                transform: scale(1.02);
+            }
+            .drop-zone.correct {
+                background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+                border-color: #10B981;
+                animation: correct-glow 0.6s ease;
+            }
+            .poem-complete {
+                animation: poem-complete 1s ease-in-out;
+            }
+            .level-complete {
+                animation: level-complete 1s ease-in-out;
+            }
+            @keyframes bounce-light {
+                from { transform: translateY(0); }
+                to { transform: translateY(-5px); }
+            }
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+            }
+            @keyframes correct-glow {
+                0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+                50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.1); }
+                100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            }
+            @keyframes poem-complete {
+                0% { transform: scale(1); }
+                25% { transform: scale(1.05); }
+                75% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            @keyframes level-complete {
+                0% { transform: scale(1) rotate(0deg); }
+                25% { transform: scale(1.1) rotate(2deg); }
+                75% { transform: scale(1.1) rotate(-2deg); }
+                100% { transform: scale(1) rotate(0deg); }
+            }
+            
+            /* 撒花庆祝动画 */
+            .celebration-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                pointer-events: none;
+                z-index: 9999;
+                overflow: hidden;
+            }
+            
+            .confetti {
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                animation: confetti-fall 2s ease-out forwards;
+            }
+            
+            .star-confetti {
+                font-size: 20px;
+                animation: star-fall 2.5s ease-out forwards;
+            }
+            
+            @keyframes confetti-fall {
+                0% {
+                    transform: translateY(-100vh) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(720deg);
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes star-fall {
+                0% {
+                    transform: translateY(-100vh) rotate(0deg) scale(0);
+                    opacity: 1;
+                }
+                50% {
+                    transform: translateY(50vh) rotate(180deg) scale(1.2);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(360deg) scale(0);
+                    opacity: 0;
+                }
+            }
+            
+            .celebration-text {
+                position: absolute;
+                top: 25%;
+                left: 20%;
+                transform: translateX(-50%);
+                font-size: 2.2rem;
+                font-weight: bold;
+                color: #7C3AED;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                animation: celebration-bounce 1s ease-out;
+                pointer-events: none;
+                z-index: 10000;
+            }
+            
+            @keyframes celebration-bounce {
+                0% { transform: translateX(-50%) scale(0) rotate(-10deg); opacity: 0; }
+                50% { transform: translateX(-50%) scale(1.3) rotate(5deg); opacity: 1; }
+                100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 1; }
+            }
+            
+            /* 完整诗词显示动画 */
+            .poem-reveal {
+                animation: poem-reveal 1.5s ease-out forwards;
+            }
+            
+            @keyframes poem-reveal {
+                0% {
+                    opacity: 0;
+                    transform: translateY(-20px) scale(0.9);
+                }
+                50% {
+                    opacity: 0.7;
+                    transform: translateY(-5px) scale(1.05);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+            
+            .poem-line-appear {
+                opacity: 0;
+                transform: translateX(-30px);
+                animation: poem-line-appear 0.8s ease-out forwards;
+            }
+            
+            @keyframes poem-line-appear {
+                0% {
+                    opacity: 0;
+                    transform: translateX(-30px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-100 min-h-screen font-kids text-text">
+    
+    <!-- 开始界面 -->
+    <div id="start-screen" class="flex flex-col items-center justify-center min-h-screen p-8 relative">
+        <div class="text-center w-full max-w-sm mx-auto bg-white rounded-3xl shadow-2xl p-6 transform transition-all duration-500">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-3">诗词拼图</h1>
+            <p class="text-base mb-4 text-gray-600">单人闯关模式<br>重组经典诗词！</p>
+            
+            <div class="flex justify-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-3xl shadow-lg relative overflow-hidden float-animation">
+                    <i class="fa fa-book"></i>
+                    <div class="absolute inset-0 bg-white opacity-20 rounded-full animate-ping"></div>
+                </div>
+            </div>
+            
+            <!-- 诗词类型选择 -->
+            <div class="mb-5">
+                <h3 class="text-base font-bold mb-3">选择类型</h3>
+                <div class="flex justify-center gap-3">
+                    <button class="poetry-type-btn active" data-type="poem">
+                        <span class="text-sm">📜 古代诗</span>
+                    </button>
+                    <button class="poetry-type-btn" data-type="ci">
+                        <span class="text-sm">🌸 古代词</span>
+                    </button>
+                    <button class="poetry-type-btn" data-type="modern">
+                        <span class="text-sm">✨ 现代</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 难度选择 -->
+            <div class="mb-5">
+                <h3 class="text-base font-bold mb-3">选择难度</h3>
+                <div class="flex justify-center gap-3">
+                    <button class="difficulty-btn active" data-difficulty="easy">
+                        <span class="text-lg">😊 简单</span>
+                        <span class="text-xs">4句诗</span>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="medium">
+                        <span class="text-lg">🤔 中等</span>
+                        <span class="text-xs">6-8句</span>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="hard">
+                        <span class="text-lg">🔥 困难</span>
+                        <span class="text-xs">长诗词</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 倒计时开关 -->
+            <div class="mb-5 flex items-center justify-center gap-4 bg-gray-50 rounded-2xl p-3">
+                <i class="fa fa-clock-o text-gray-600"></i>
+                <span class="text-gray-700 font-medium">倒计时模式</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="timer-toggle" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+                <span class="text-xs text-gray-500" id="timer-description">根据难度限时</span>
+            </div>
+            
+            <button id="start-btn" class="bg-accent hover:bg-yellow-400 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                开始拼图 <i class="fa fa-play ml-2"></i>
+            </button>
+            
+            <div class="mt-4 text-xs text-gray-500">
+                <p>适合年龄：8-16岁</p>
+                <p>目标：正确拼接诗词获得高分！</p>
+            </div>
+        </div>
+        
+        <!-- 装饰元素 -->
+        <div class="absolute top-10 left-10 text-5xl text-primary/30">
+            <i class="fa fa-star bounce-light"></i>
+        </div>
+        <div class="absolute bottom-10 right-10 text-5xl text-secondary/30">
+            <i class="fa fa-heart bounce-light" style="animation-delay: 0.3s"></i>
+        </div>
+        <div class="absolute top-1/4 right-20 text-4xl text-accent/30">
+            <i class="fa fa-trophy bounce-light" style="animation-delay: 0.6s"></i>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="hidden h-screen flex flex-col">
+        <!-- 顶部信息栏 -->
+        <div class="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-md">
+            <!-- 左侧信息 -->
+            <div class="flex items-center gap-4">
+                <div class="bg-primary px-4 py-2 rounded-full text-white font-bold shadow-md">
+                    <span>关卡 </span><span id="level-display">1</span>
+                </div>
+                <div class="bg-secondary px-4 py-2 rounded-full text-white font-bold shadow-md">
+                    <span>连击 </span><span id="combo-display">0</span>
+                </div>
+            </div>
+            
+            <!-- 中间计时器 -->
+            <div id="timer" class="bg-accent text-white px-6 py-3 rounded-full shadow-md">
+                <i class="fa fa-clock-o mr-2"></i>
+                <span class="text-base font-medium mr-2">倒计时</span>
+                <span id="countdown" class="text-3xl font-bold">180</span>
+            </div>
+            
+            <!-- 右侧分数 -->
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 rounded-full text-white font-bold shadow-md">
+                <i class="fa fa-star mr-2"></i>
+                <span id="score-display">0</span>
+            </div>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="bg-gray-200 h-2">
+            <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        
+        <!-- 主要游戏区域 -->
+        <div class="flex-1 flex flex-col justify-start items-center p-4 overflow-y-auto">
+            <!-- 诗词信息 -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 text-center max-w-2xl w-full">
+                <h2 id="poem-title" class="text-2xl font-bold font-poem text-poem mb-2">静夜思</h2>
+                <p id="poem-author" class="text-gray-600 font-poem">李白</p>
+                <p id="poem-hint" class="text-sm text-gray-500 mt-2">将诗句拖拽到正确的位置</p>
+                
+                <!-- 完成后显示的完整诗词 -->
+                <div id="completed-poem" class="hidden mt-6 p-8 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border-2 border-amber-200 shadow-lg">
+                    <div id="complete-poem-content" class="font-poem text-xl text-gray-800 leading-loose text-center space-y-3">
+                        <!-- 完整诗词内容会在这里显示 -->
+                    </div>
+                </div>
+                
+                <!-- 继续按钮 - 独立在诗词卡片外 -->
+                <div id="continue-btn-container" class="hidden mt-6 flex justify-center">
+                    <button id="continue-btn" class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                        继续下一首 <i class="fa fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 拼图区域 -->
+            <div class="flex flex-col lg:flex-row gap-8 w-full max-w-6xl mb-20">
+                <!-- 左侧：诗句拼图片 -->
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold mb-4 text-center">诗句碎片</h3>
+                    <div id="puzzle-pieces" class="grid grid-cols-2 gap-4 auto-rows-min">
+                        <!-- 拼图片会动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- 右侧：拼图目标区域 -->
+                <div class="flex-1">
+                    <h3 class="text-lg font-bold mb-4 text-center">诗词拼图</h3>
+                    <div id="drop-zones" class="space-y-4">
+                        <!-- 拖放区域会动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 操作按钮 - 固定在右下角 -->
+            <div class="fixed bottom-6 right-6 flex flex-col gap-3 z-50">
+                <button id="hint-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-full font-bold shadow-lg transition-all duration-300 hover:scale-105">
+                    <i class="fa fa-lightbulb-o"></i>
+                </button>
+                <button id="reset-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-3 rounded-full font-bold shadow-lg transition-all duration-300 hover:scale-105">
+                    <i class="fa fa-refresh"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 结果界面 -->
+    <div id="result-screen" class="hidden flex flex-col items-center justify-center h-screen p-6 bg-white/90 backdrop-blur-md">
+        <div class="text-center max-w-lg mx-auto">
+            <div id="result-icon" class="text-8xl mb-6">🎉</div>
+            <h2 id="result-title" class="text-[clamp(2rem,5vw,3rem)] font-bold mb-6">诗词大师！</h2>
+            
+            <div class="bg-neutral rounded-2xl shadow-lg p-8 mb-8">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="text-center">
+                        <div class="text-primary text-3xl font-bold" id="final-score">0</div>
+                        <div class="text-gray-600">总分数</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-secondary text-3xl font-bold" id="final-level">1</div>
+                        <div class="text-gray-600">到达关卡</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-accent text-3xl font-bold" id="final-accuracy">0%</div>
+                        <div class="text-gray-600">完成率</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-purple-500 text-3xl font-bold" id="poems-completed">0</div>
+                        <div class="text-gray-600">完成诗词</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 成就显示 -->
+            <div id="achievements" class="mb-8">
+                <!-- 成就徽章会动态生成 -->
+            </div>
+            
+            <div class="flex gap-4 justify-center">
+                <button id="restart-btn" class="bg-primary hover:bg-purple-600 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                    再来一次 <i class="fa fa-refresh ml-2"></i>
+                </button>
+                <button id="home-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                    返回首页 <i class="fa fa-home ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 诗词数据库 - 按类型和难度分级（小学1-6年级必修古诗词）
+        const poemDatabase = {
+            poem: {
+                easy: [
+                    {
+                        title: "静夜思",
+                        author: "李白",
+                        lines: ["床前明月光", "疑是地上霜", "举头望明月", "低头思故乡"],
+                        description: "李白的经典思乡诗"
+                    },
+                    {
+                        title: "春晓",
+                        author: "孟浩然",
+                        lines: ["春眠不觉晓", "处处闻啼鸟", "夜来风雨声", "花落知多少"],
+                        description: "孟浩然的春日清晨"
+                    },
+                    {
+                        title: "登鹳雀楼",
+                        author: "王之涣",
+                        lines: ["白日依山尽", "黄河入海流", "欲穷千里目", "更上一层楼"],
+                        description: "王之涣的壮志诗"
+                    },
+                    {
+                        title: "咏鹅",
+                        author: "骆宾王",
+                        lines: ["鹅，鹅，鹅", "曲项向天歌", "白毛浮绿水", "红掌拨清波"],
+                        description: "骆宾王七岁时的咏物诗"
+                    },
+                    {
+                        title: "悯农",
+                        author: "李绅",
+                        lines: ["锄禾日当午", "汗滴禾下土", "谁知盘中餐", "粒粒皆辛苦"],
+                        description: "李绅的悯农诗"
+                    },
+                    {
+                        title: "风",
+                        author: "李峤",
+                        lines: ["解落三秋叶", "能开二月花", "过江千尺浪", "入竹万竿斜"],
+                        description: "李峤的咏风诗"
+                    },
+                    {
+                        title: "小池",
+                        author: "杨万里",
+                        lines: ["泉眼无声惜细流", "树阴照水爱晴柔", "小荷才露尖尖角", "早有蜻蜓立上头"],
+                        description: "杨万里的夏日小景"
+                    },
+                    {
+                        title: "梅花",
+                        author: "王安石",
+                        lines: ["墙角数枝梅", "凌寒独自开", "遥知不是雪", "为有暗香来"],
+                        description: "王安石的咏梅诗"
+                    },
+                    {
+                        title: "江雪",
+                        author: "柳宗元",
+                        lines: ["千山鸟飞绝", "万径人踪灭", "孤舟蓑笠翁", "独钓寒江雪"],
+                        description: "柳宗元的雪景诗"
+                    },
+                    {
+                        title: "山行",
+                        author: "杜牧",
+                        lines: ["远上寒山石径斜", "白云生处有人家", "停车坐爱枫林晚", "霜叶红于二月花"],
+                        description: "杜牧的秋山诗"
+                    },
+                    {
+                        title: "清明",
+                        author: "杜牧",
+                        lines: ["清明时节雨纷纷", "路上行人欲断魂", "借问酒家何处有", "牧童遥指杏花村"],
+                        description: "杜牧的清明诗"
+                    },
+                    {
+                        title: "绝句",
+                        author: "杜甫",
+                        lines: ["两个黄鹂鸣翠柳", "一行白鹭上青天", "窗含西岭千秋雪", "门泊东吴万里船"],
+                        description: "杜甫的春日诗"
+                    },
+                    {
+                        title: "石灰吟",
+                        author: "于谦",
+                        lines: ["千锤万凿出深山", "烈火焚烧若等闲", "粉身碎骨浑不怕", "要留清白在人间"],
+                        description: "于谦的励志诗"
+                    },
+                    {
+                        title: "竹石",
+                        author: "郑燮",
+                        lines: ["咬定青山不放松", "立根原在破岩中", "千磨万击还坚劲", "任尔东西南北风"],
+                        description: "郑燮的咏竹诗"
+                    }
+                ],
+                medium: [
+                    {
+                        title: "赠汪伦",
+                        author: "李白",
+                        lines: ["李白乘舟将欲行", "忽闻岸上踏歌声", "桃花潭水深千尺", "不及汪伦送我情"],
+                        description: "李白的友情诗"
+                    },
+                    {
+                        title: "望庐山瀑布",
+                        author: "李白",
+                        lines: ["日照香炉生紫烟", "遥看瀑布挂前川", "飞流直下三千尺", "疑是银河落九天"],
+                        description: "李白的瀑布奇观"
+                    },
+                    {
+                        title: "早发白帝城",
+                        author: "李白",
+                        lines: ["朝辞白帝彩云间", "千里江陵一日还", "两岸猿声啼不住", "轻舟已过万重山"],
+                        description: "李白的江行诗"
+                    },
+                    {
+                        title: "望天门山",
+                        author: "李白",
+                        lines: ["天门中断楚江开", "碧水东流至此回", "两岸青山相对出", "孤帆一片日边来"],
+                        description: "李白的江山诗"
+                    },
+                    {
+                        title: "独坐敬亭山",
+                        author: "李白",
+                        lines: ["众鸟高飞尽", "孤云独去闲", "相看两不厌", "只有敬亭山"],
+                        description: "李白的山居诗"
+                    },
+                    {
+                        title: "夜宿山寺",
+                        author: "李白",
+                        lines: ["危楼高百尺", "手可摘星辰", "不敢高声语", "恐惊天上人"],
+                        description: "李白的山寺诗"
+                    },
+                    {
+                        title: "寻隐者不遇",
+                        author: "贾岛",
+                        lines: ["松下问童子", "言师采药去", "只在此山中", "云深不知处"],
+                        description: "贾岛的访友诗"
+                    },
+                    {
+                        title: "池上",
+                        author: "白居易",
+                        lines: ["小娃撑小艇", "偷采白莲回", "不解藏踪迹", "浮萍一道开"],
+                        description: "白居易的童趣诗"
+                    },
+                    {
+                        title: "小儿垂钓",
+                        author: "胡令能",
+                        lines: ["蓬头稚子学垂纶", "侧坐莓苔草映身", "路人借问遥招手", "怕得鱼惊不应人"],
+                        description: "胡令能的儿童诗"
+                    },
+                    {
+                        title: "九月九日忆山东兄弟",
+                        author: "王维",
+                        lines: ["独在异乡为异客", "每逢佳节倍思亲", "遥知兄弟登高处", "遍插茱萸少一人"],
+                        description: "王维的思乡诗"
+                    }
+                ],
+                hard: [
+                    {
+                        title: "春夜喜雨",
+                        author: "杜甫",
+                        lines: ["好雨知时节", "当春乃发生", "随风潜入夜", "润物细无声", "野径云俱黑", "江船火独明", "晓看红湿处", "花重锦官城"],
+                        description: "杜甫的喜雨诗"
+                    },
+                    {
+                        title: "山居秋暝",
+                        author: "王维",
+                        lines: ["空山新雨后", "天气晚来秋", "明月松间照", "清泉石上流", "竹喧归浣女", "莲动下渔舟", "随意春芳歇", "王孙自可留"],
+                        description: "王维的山居诗"
+                    },
+                    {
+                        title: "过故人庄",
+                        author: "孟浩然",
+                        lines: ["故人具鸡黍", "邀我至田家", "绿树村边合", "青山郭外斜", "开轩面场圃", "把酒话桑麻", "待到重阳日", "还来就菊花"],
+                        description: "孟浩然的田园诗"
+                    },
+                    {
+                        title: "长歌行",
+                        author: "汉乐府",
+                        lines: ["青青园中葵", "朝露待日晞", "阳春布德泽", "万物生光辉", "常恐秋节至", "焜黄华叶衰", "百川东到海", "何时复西归", "少壮不努力", "老大徒伤悲"],
+                        description: "汉乐府的励志诗"
+                    }
+                ]
+            },
+            ci: {
+                easy: [
+                    {
+                        title: "咏柳",
+                        author: "贺知章",
+                        lines: ["碧玉妆成一树高", "万条垂下绿丝绦", "不知细叶谁裁出", "二月春风似剪刀"],
+                        description: "贺知章的咏柳诗"
+                    },
+                    {
+                        title: "村居",
+                        author: "高鼎",
+                        lines: ["草长莺飞二月天", "拂堤杨柳醉春烟", "儿童散学归来早", "忙趁东风放纸鸢"],
+                        description: "高鼎的村居诗"
+                    },
+                    {
+                        title: "元日",
+                        author: "王安石",
+                        lines: ["爆竹声中一岁除", "春风送暖入屠苏", "千门万户曈曈日", "总把新桃换旧符"],
+                        description: "王安石的新年诗"
+                    },
+                    {
+                        title: "江南春",
+                        author: "杜牧",
+                        lines: ["千里莺啼绿映红", "水村山郭酒旗风", "南朝四百八十寺", "多少楼台烟雨中"],
+                        description: "杜牧的江南诗"
+                    }
+                ],
+                medium: [
+                    {
+                        title: "题西林壁",
+                        author: "苏轼",
+                        lines: ["横看成岭侧成峰", "远近高低各不同", "不识庐山真面目", "只缘身在此山中"],
+                        description: "苏轼的哲理诗"
+                    },
+                    {
+                        title: "惠崇春江晚景",
+                        author: "苏轼",
+                        lines: ["竹外桃花三两枝", "春江水暖鸭先知", "蒌蒿满地芦芽短", "正是河豚欲上时"],
+                        description: "苏轼的春江诗"
+                    },
+                    {
+                        title: "饮湖上初晴后雨",
+                        author: "苏轼",
+                        lines: ["水光潋滟晴方好", "山色空蒙雨亦奇", "欲把西湖比西子", "淡妆浓抹总相宜"],
+                        description: "苏轼的西湖诗"
+                    },
+                    {
+                        title: "宿新市徐公店",
+                        author: "杨万里",
+                        lines: ["篱落疏疏一径深", "树头新绿未成阴", "儿童急走追黄蝶", "飞入菜花无处寻"],
+                        description: "杨万里的田园诗"
+                    }
+                ],
+                hard: [
+                    {
+                        title: "清平乐·村居",
+                        author: "辛弃疾",
+                        lines: ["茅檐低小", "溪上青青草", "醉里吴音相媚好", "白发谁家翁媪", "大儿锄豆溪东", "中儿正织鸡笼", "最喜小儿亡赖", "溪头卧剥莲蓬"],
+                        description: "辛弃疾的村居词"
+                    },
+                    {
+                        title: "西江月·夜行黄沙道中",
+                        author: "辛弃疾",
+                        lines: ["明月别枝惊鹊", "清风半夜鸣蝉", "稻花香里说丰年", "听取蛙声一片", "七八个星天外", "两三点雨山前", "旧时茅店社林边", "路转溪桥忽见"],
+                        description: "辛弃疾的夜行词"
+                    }
+                ]
+            },
+            modern: {
+                easy: [
+                    {
+                        title: "画",
+                        author: "无",
+                        lines: ["远看山有色", "近听水无声", "春去花还在", "人来鸟不惊"],
+                        description: "古代的画中诗"
+                    },
+                    {
+                        title: "画鸡",
+                        author: "唐寅",
+                        lines: ["头上红冠不用裁", "满身雪白走将来", "平生不敢轻言语", "一叫千门万户开"],
+                        description: "唐寅的咏鸡诗"
+                    }
+                ],
+                medium: [
+                    {
+                        title: "乡愁",
+                        author: "余光中",
+                        lines: ["小时候", "乡愁是一枚小小的邮票", "我在这头", "母亲在那头"],
+                        description: "余光中的现代诗"
+                    },
+                    {
+                        title: "再别康桥",
+                        author: "徐志摩",
+                        lines: ["轻轻的我走了", "正如我轻轻的来", "我轻轻的招手", "作别西天的云彩", "那河畔的金柳", "是夕阳中的新娘"],
+                        description: "徐志摩的离别诗"
+                    }
+                ],
+                hard: [
+                    {
+                        title: "七律·长征",
+                        author: "毛泽东",
+                        lines: ["红军不怕远征难", "万水千山只等闲", "五岭逶迤腾细浪", "乌蒙磅礴走泥丸", "金沙水拍云崖暖", "大渡桥横铁索寒", "更喜岷山千里雪", "三军过后尽开颜"],
+                        description: "毛泽东的长征诗"
+                    },
+                    {
+                        title: "卜算子·咏梅",
+                        author: "毛泽东",
+                        lines: ["风雨送春归", "飞雪迎春到", "已是悬崖百丈冰", "犹有花枝俏", "俏也不争春", "只把春来报", "待到山花烂漫时", "她在丛中笑"],
+                        description: "毛泽东的咏梅词"
+                    }
+                ]
+            }
+        };
+        
+        // 游戏状态变量
+        let gameState = {
+            currentType: 'poem',
+            currentDifficulty: 'easy',
+            level: 1,
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            completedPoems: 0,
+            totalTime: 0,
+            isGameActive: false,
+            currentPoem: null,
+            usedPoems: [],
+            timer: null,
+            timeLimit: 180,
+            isTimerEnabled: true,
+            achievements: [],
+            dragElement: null,
+            correctPlacements: 0,
+            hintTimeouts: [] // 存储提示的定时器
+        };
+        
+        // 难度配置
+        const difficultyConfig = {
+            easy: { timeLimit: 180, pointsPerLine: 100, comboMultiplier: 1.2 },
+            medium: { timeLimit: 240, pointsPerLine: 150, comboMultiplier: 1.5 },
+            hard: { timeLimit: 300, pointsPerLine: 200, comboMultiplier: 2.0 }
+        };
+        
+        // 成就系统
+        const achievements = [
+            { id: 'first_poem', name: '初露头角', desc: '完成第一首诗', icon: '🎯', unlocked: false },
+            { id: 'combo_3', name: '连击高手', desc: '连续完成3首诗', icon: '🔥', unlocked: false },
+            { id: 'speed_master', name: '速度之王', desc: '60秒内完成一首诗', icon: '⚡', unlocked: false },
+            { id: 'poet_scholar', name: '诗词学者', desc: '完成10首诗', icon: '📚', unlocked: false },
+            { id: 'perfect_round', name: '完美表现', desc: '一次性正确拼接', icon: '💎', unlocked: false }
+        ];
+        
+        // DOM元素
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const homeBtn = document.getElementById('home-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const continueBtn = document.getElementById('continue-btn');
+        const poemTitle = document.getElementById('poem-title');
+        const poemAuthor = document.getElementById('poem-author');
+        const poemHint = document.getElementById('poem-hint');
+        const puzzlePieces = document.getElementById('puzzle-pieces');
+        const dropZones = document.getElementById('drop-zones');
+        const levelDisplay = document.getElementById('level-display');
+        const comboDisplay = document.getElementById('combo-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const countdownEl = document.getElementById('countdown');
+        const progressBar = document.getElementById('progress-bar');
+        
+        // 事件监听
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', restartGame);
+        homeBtn.addEventListener('click', goHome);
+        hintBtn.addEventListener('click', showHint);
+        resetBtn.addEventListener('click', resetPuzzle);
+        continueBtn.addEventListener('click', continueToNext);
+        
+        // 诗词类型选择
+        document.querySelectorAll('.poetry-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.poetry-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                gameState.currentType = btn.dataset.type;
+                updateTimerDescription();
+            });
+        });
+        
+        // 难度选择
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                gameState.currentDifficulty = btn.dataset.difficulty;
+                updateTimerDescription();
+            });
+        });
+        
+        // 倒计时开关事件监听
+        document.getElementById('timer-toggle').addEventListener('change', function() {
+            gameState.isTimerEnabled = this.checked;
+            updateTimerDescription();
+        });
+        
+        // 更新计时器描述
+        function updateTimerDescription() {
+            const description = document.getElementById('timer-description');
+            if (!gameState.isTimerEnabled) {
+                description.textContent = '不限时模式';
+            } else {
+                const config = difficultyConfig[gameState.currentDifficulty];
+                description.textContent = `${config.timeLimit}秒限时`;
+            }
+        }
+        
+        // 开始游戏
+        function startGame() {
+            // 保存设置
+            const isTimerEnabled = gameState.isTimerEnabled;
+            const currentType = gameState.currentType;
+            const currentDifficulty = gameState.currentDifficulty;
+            
+            // 重置游戏状态
+            gameState = {
+                currentType: currentType,
+                currentDifficulty: currentDifficulty,
+                level: 1,
+                score: 0,
+                combo: 0,
+                maxCombo: 0,
+                completedPoems: 0,
+                totalTime: 0,
+                isGameActive: true,
+                currentPoem: null,
+                usedPoems: [],
+                timer: null,
+                timeLimit: difficultyConfig[currentDifficulty].timeLimit,
+                isTimerEnabled: isTimerEnabled,
+                achievements: [],
+                dragElement: null,
+                correctPlacements: 0
+            };
+            
+            // 切换界面
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            // 开始第一首诗
+            nextPoem();
+        }
+        
+        // 生成下一首诗
+        function nextPoem() {
+            if (!gameState.isGameActive) return;
+            
+            // 确保完整诗词区域隐藏
+            const completedPoemEl = document.getElementById('completed-poem');
+            completedPoemEl.classList.add('hidden');
+            completedPoemEl.classList.remove('poem-reveal');
+            
+            // 选择诗词
+            const poems = poemDatabase[gameState.currentType][gameState.currentDifficulty];
+            const availablePoems = poems.filter(poem => !gameState.usedPoems.includes(poem.title));
+            
+            if (availablePoems.length === 0) {
+                // 所有诗词完成，升级或结束
+                levelUp();
+                return;
+            }
+            
+            // 随机选择一首诗
+            const randomIndex = Math.floor(Math.random() * availablePoems.length);
+            gameState.currentPoem = availablePoems[randomIndex];
+            gameState.usedPoems.push(gameState.currentPoem.title);
+            gameState.correctPlacements = 0;
+            
+            // 显示诗词信息
+            poemTitle.textContent = gameState.currentPoem.title;
+            poemAuthor.textContent = gameState.currentPoem.author;
+            poemHint.textContent = gameState.currentPoem.description;
+            
+            // 生成拼图
+            generatePuzzle();
+            
+            // 开始计时
+            startTimer();
+            
+            // 更新显示
+            updateGameDisplay();
+        }
+        
+        // 生成拼图
+        function generatePuzzle() {
+            const lines = [...gameState.currentPoem.lines];
+            const shuffledLines = shuffleArray([...lines]);
+            
+            // 清空容器
+            puzzlePieces.innerHTML = '';
+            dropZones.innerHTML = '';
+            
+            // 创建拼图片
+            shuffledLines.forEach((line, index) => {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece bg-white rounded-xl shadow-lg p-4 text-center cursor-grab border-2 border-gray-200 hover:border-primary hover:shadow-xl transform hover:scale-105';
+                piece.innerHTML = `
+                    <div class="font-poem text-lg text-poem font-medium">${line}</div>
+                `;
+                piece.dataset.line = line;
+                piece.draggable = true;
+                
+                // 拖拽事件
+                piece.addEventListener('dragstart', handleDragStart);
+                piece.addEventListener('dragend', handleDragEnd);
+                
+                puzzlePieces.appendChild(piece);
+            });
+            
+            // 创建放置区域
+            lines.forEach((line, index) => {
+                const zone = document.createElement('div');
+                zone.className = 'drop-zone bg-gray-100 rounded-xl p-6 text-center min-h-[80px] flex items-center justify-center border-2 border-dashed border-gray-300';
+                zone.innerHTML = `
+                    <div class="text-gray-400 font-poem">第${index + 1}句</div>
+                `;
+                zone.dataset.correctLine = line;
+                zone.dataset.position = index;
+                
+                // 拖放事件
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('drop', handleDrop);
+                zone.addEventListener('dragleave', handleDragLeave);
+                
+                dropZones.appendChild(zone);
+            });
+        }
+        
+        // 拖拽开始
+        function handleDragStart(e) {
+            gameState.dragElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.outerHTML);
+        }
+        
+        // 拖拽结束
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+        }
+        
+        // 拖拽悬停
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        }
+        
+        // 拖拽离开
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+        
+        // 拖放
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            if (!gameState.dragElement) return;
+            
+            const droppedLine = gameState.dragElement.dataset.line.trim();
+            const correctLine = this.dataset.correctLine.trim();
+            
+            if (droppedLine === correctLine) {
+                // 立即移除拼图片 - 最高优先级
+                if (gameState.dragElement && gameState.dragElement.parentNode) {
+                    gameState.dragElement.parentNode.removeChild(gameState.dragElement);
+                }
+                
+                // 正确放置
+                this.innerHTML = `
+                    <div class="font-poem text-lg text-poem font-medium">${droppedLine}</div>
+                `;
+                this.classList.remove('bg-gray-100', 'border-gray-300');
+                this.classList.add('correct', 'bg-green-50', 'border-green-300');
+                
+                // 清除提示状态
+                this.dataset.showingHint = 'false';
+                this.style.border = '2px solid #10B981';
+                this.style.animation = '';
+                
+                // 清除提示定时器
+                if (gameState.hintTimeouts) {
+                    gameState.hintTimeouts = gameState.hintTimeouts.filter(item => {
+                        if (item.zone === this) {
+                            clearTimeout(item.timeout);
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+                gameState.correctPlacements++;
+                
+                // 检查是否完成
+                if (gameState.correctPlacements === gameState.currentPoem.lines.length) {
+                    handlePoemComplete();
+                }
+                
+                // 增加连击
+                gameState.combo++;
+                gameState.maxCombo = Math.max(gameState.maxCombo, gameState.combo);
+                
+                // 加分
+                const config = difficultyConfig[gameState.currentDifficulty];
+                const basePoints = config.pointsPerLine;
+                const comboBonus = Math.floor(basePoints * (gameState.combo - 1) * 0.1);
+                const totalPoints = basePoints + comboBonus;
+                gameState.score += totalPoints;
+                
+                // 🎉 撒花庆祝！
+                showCelebration();
+                
+                updateGameDisplay();
+                
+            } else {
+                // 错误放置
+                gameState.combo = 0;
+                updateGameDisplay();
+                
+                // 错误视觉反馈：红框 + 抖动 + 错误图标
+                this.style.border = '3px solid #EF4444';
+                this.style.backgroundColor = '#FEE2E2';
+                this.innerHTML = `
+                    <div class="text-red-500 text-2xl">❌</div>
+                    <div class="text-red-600 text-sm font-medium mt-1">位置错误</div>
+                `;
+                this.style.animation = 'shake 0.5s ease-in-out';
+                
+                // 1.5秒后恢复原状
+                setTimeout(() => {
+                    this.style.animation = '';
+                    this.style.border = '2px dashed #D1D5DB';
+                    this.style.backgroundColor = '#F3F4F6';
+                    this.innerHTML = `
+                        <div class="text-gray-400 font-poem">第${parseInt(this.dataset.position) + 1}句</div>
+                    `;
+                }, 1500);
+            }
+            
+            // 清理拖拽状态
+            gameState.dragElement = null;
+        }
+        
+        // 诗词完成
+        function handlePoemComplete() {
+            gameState.completedPoems++;
+            
+            // 停止计时
+            clearInterval(gameState.timer);
+            
+            // 完成动画
+            dropZones.classList.add('poem-complete');
+            
+            // 显示完整诗词
+            showCompletedPoem();
+            
+            // 检查成就
+            checkAchievements();
+            
+            // 不再自动切换，等待用户点击继续按钮
+        }
+        
+        // 显示完成的诗词
+        function showCompletedPoem() {
+            const completedPoemEl = document.getElementById('completed-poem');
+            const poemContentEl = document.getElementById('complete-poem-content');
+            
+            // 生成完整诗词内容 - 更优雅的排版
+            let poemHTML = '';
+            gameState.currentPoem.lines.forEach((line, index) => {
+                poemHTML += `<div class="poem-line-appear" style="animation-delay: ${index * 0.4}s">${line}</div>`;
+            });
+            
+            poemContentEl.innerHTML = poemHTML;
+            
+            // 检查是否是最后一首诗（需要升级）
+            const poems = poemDatabase[gameState.currentType][gameState.currentDifficulty];
+            const availablePoems = poems.filter(poem => !gameState.usedPoems.includes(poem.title));
+            const isLastPoem = availablePoems.length === 0; // 没有剩余诗词了，需要升级
+            
+            // 显示继续按钮并更新文字
+            const continueBtn = document.getElementById('continue-btn');
+            const continueBtnContainer = document.getElementById('continue-btn-container');
+            
+            if (isLastPoem) {
+                continueBtn.innerHTML = '进入下一关 <i class="fa fa-arrow-up ml-2"></i>';
+            } else {
+                continueBtn.innerHTML = '继续下一首 <i class="fa fa-arrow-right ml-2"></i>';
+            }
+            
+            // 显示继续按钮容器（提示和重置按钮保持显示）
+            continueBtnContainer.classList.remove('hidden');
+            
+            // 显示完整诗词区域
+            completedPoemEl.classList.remove('hidden');
+            completedPoemEl.classList.add('poem-reveal');
+            
+            // 完全隐藏拼图区域
+            const puzzleArea = document.querySelector('.flex.flex-col.lg\\:flex-row.gap-8');
+            if (puzzleArea) {
+                puzzleArea.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
+                puzzleArea.style.opacity = '0';
+                puzzleArea.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    puzzleArea.style.display = 'none';
+                }, 800);
+            }
+        }
+        
+        // 隐藏完成的诗词
+        function hideCompletedPoem() {
+            const completedPoemEl = document.getElementById('completed-poem');
+            const puzzleArea = document.querySelector('.flex.flex-col.lg\\:flex-row.gap-8');
+            const continueBtnContainer = document.getElementById('continue-btn-container');
+            
+            // 隐藏完整诗词
+            completedPoemEl.classList.add('hidden');
+            completedPoemEl.classList.remove('poem-reveal');
+            
+            // 恢复拼图区域
+            if (puzzleArea) {
+                puzzleArea.style.display = 'flex';
+                puzzleArea.style.opacity = '1';
+                puzzleArea.style.transform = 'translateY(0)';
+            }
+            
+            // 隐藏继续按钮容器（提示和重置按钮一直保持显示）
+            continueBtnContainer.classList.add('hidden');
+        }
+        
+        // 继续下一首诗
+        function continueToNext() {
+            dropZones.classList.remove('poem-complete');
+            hideCompletedPoem();
+            nextPoem();
+        }
+        
+        // 升级
+        function levelUp() {
+            gameState.level++;
+            gameState.usedPoems = [];
+            
+            // 显示升级动画
+            showLevelUpNotification();
+            
+            setTimeout(nextPoem, 3000);
+        }
+        
+        // 开始计时
+        function startTimer() {
+            if (!gameState.isTimerEnabled) {
+                countdownEl.textContent = '∞';
+                return;
+            }
+            
+            let timeLeft = gameState.timeLimit;
+            countdownEl.textContent = timeLeft;
+            
+            gameState.timer = setInterval(() => {
+                timeLeft--;
+                countdownEl.textContent = timeLeft;
+                
+                // 时间警告效果
+                if (timeLeft <= 30) {
+                    countdownEl.parentElement.classList.add('animate-pulse');
+                    countdownEl.parentElement.style.backgroundColor = '#EF4444';
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    endGame();
+                }
+            }, 1000);
+        }
+        
+        // 更新游戏显示
+        function updateGameDisplay() {
+            levelDisplay.textContent = gameState.level;
+            comboDisplay.textContent = gameState.combo;
+            scoreDisplay.textContent = gameState.score;
+            
+            // 更新进度条
+            const progress = (gameState.correctPlacements / gameState.currentPoem.lines.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // 重置计时器样式
+            countdownEl.parentElement.classList.remove('animate-pulse');
+            countdownEl.parentElement.style.backgroundColor = '#F59E0B';
+        }
+        
+        // 显示提示
+        function showHint() {
+            const emptyZones = Array.from(dropZones.children).filter(zone => 
+                !zone.classList.contains('correct')
+            );
+            
+            if (emptyZones.length === 0) return; // 如果都完成了就不提示
+            
+            // 智能选择：优先提示第一个空位置（按诗句顺序）
+            let targetZone = null;
+            for (let i = 0; i < gameState.currentPoem.lines.length; i++) {
+                const zone = Array.from(dropZones.children).find(z => 
+                    parseInt(z.dataset.position) === i && !z.classList.contains('correct')
+                );
+                if (zone) {
+                    targetZone = zone;
+                    break;
+                }
+            }
+            
+            if (targetZone) {
+                const correctLine = targetZone.dataset.correctLine;
+                const hintText = correctLine.substring(0, 2) + '...'; // 显示前两个字
+                
+                // 显示位置提示（橙色边框+闪烁）
+                targetZone.style.border = '3px solid #F59E0B';
+                targetZone.style.animation = 'pulse 1s ease-in-out 3';
+                
+                // 显示内容提示
+                const originalContent = targetZone.innerHTML;
+                targetZone.innerHTML = `
+                    <div class="text-orange-500 font-poem text-sm">
+                        <div class="mb-1">第${parseInt(targetZone.dataset.position) + 1}句</div>
+                        <div class="font-bold">${hintText}</div>
+                    </div>
+                `;
+                
+                // 标记这个区域正在显示提示
+                targetZone.dataset.showingHint = 'true';
+                
+                // 4秒后恢复（保存定时器ID）
+                const hintTimeout = setTimeout(() => {
+                    // 只有在未被正确放置的情况下才恢复
+                    if (!targetZone.classList.contains('correct')) {
+                        targetZone.style.border = '2px dashed #D1D5DB';
+                        targetZone.style.animation = '';
+                        targetZone.innerHTML = originalContent;
+                        targetZone.dataset.showingHint = 'false';
+                    }
+                }, 4000);
+                
+                // 保存定时器ID到游戏状态，以便后续清除
+                gameState.hintTimeouts.push({ timeout: hintTimeout, zone: targetZone });
+                
+                // 同时高亮对应的拼图片
+                const puzzlePieces = Array.from(document.querySelectorAll('.puzzle-piece'));
+                const matchingPiece = puzzlePieces.find(piece => 
+                    piece.dataset.line === correctLine
+                );
+                
+                if (matchingPiece) {
+                    matchingPiece.style.border = '3px solid #10B981';
+                    matchingPiece.style.transform = 'scale(1.05)';
+                    matchingPiece.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.5)';
+                    
+                    setTimeout(() => {
+                        matchingPiece.style.border = '2px solid #e5e7eb';
+                        matchingPiece.style.transform = '';
+                        matchingPiece.style.boxShadow = '';
+                    }, 4000);
+                }
+            }
+        }
+        
+        // 重置拼图
+        function resetPuzzle() {
+            gameState.correctPlacements = 0;
+            gameState.combo = 0;
+            generatePuzzle();
+            updateGameDisplay();
+        }
+        
+        // 检查成就
+        function checkAchievements() {
+            achievements.forEach(achievement => {
+                if (achievement.unlocked) return;
+                
+                let shouldUnlock = false;
+                
+                switch (achievement.id) {
+                    case 'first_poem':
+                        shouldUnlock = gameState.completedPoems === 1;
+                        break;
+                    case 'combo_3':
+                        shouldUnlock = gameState.combo >= 3;
+                        break;
+                    case 'speed_master':
+                        shouldUnlock = gameState.timeLimit - parseInt(countdownEl.textContent) <= 60;
+                        break;
+                    case 'poet_scholar':
+                        shouldUnlock = gameState.completedPoems >= 10;
+                        break;
+                    case 'perfect_round':
+                        shouldUnlock = gameState.correctPlacements === gameState.currentPoem.lines.length && gameState.combo === gameState.currentPoem.lines.length;
+                        break;
+                }
+                
+                if (shouldUnlock) {
+                    achievement.unlocked = true;
+                    gameState.achievements.push(achievement);
+                    showAchievement(achievement);
+                }
+            });
+        }
+        
+        // 显示成就
+        function showAchievement(achievement) {
+            const achievementEl = document.createElement('div');
+            achievementEl.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-bounce';
+            achievementEl.innerHTML = `
+                <span class="text-2xl mr-2">${achievement.icon}</span>
+                <span class="font-bold">${achievement.name}</span>
+            `;
+            document.body.appendChild(achievementEl);
+            
+            setTimeout(() => {
+                achievementEl.remove();
+            }, 3000);
+        }
+        
+        // 🎉 撒花庆祝动画
+        function showCelebration() {
+            const overlay = document.createElement('div');
+            overlay.className = 'celebration-overlay';
+            
+            // 添加庆祝文字
+            const celebrationTexts = ['太棒了！', '真厉害！', '好棒啊！', '继续加油！', '完美！'];
+            const randomText = celebrationTexts[Math.floor(Math.random() * celebrationTexts.length)];
+            
+            const textEl = document.createElement('div');
+            textEl.className = 'celebration-text';
+            textEl.textContent = randomText;
+            overlay.appendChild(textEl);
+            
+            // 生成彩色圆点撒花
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.animationDuration = (1.5 + Math.random() * 1) + 's';
+                overlay.appendChild(confetti);
+            }
+            
+            // 生成星星表情符号
+            const stars = ['⭐', '🌟', '✨', '💫', '🎉', '🎊', '👏', '💖'];
+            
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-confetti';
+                star.textContent = stars[Math.floor(Math.random() * stars.length)];
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.animationDelay = Math.random() * 0.8 + 's';
+                star.style.animationDuration = (2 + Math.random() * 1) + 's';
+                overlay.appendChild(star);
+            }
+            
+            document.body.appendChild(overlay);
+            
+            // 3秒后移除撒花效果
+            setTimeout(() => {
+                overlay.remove();
+            }, 3000);
+        }
+        
+        // 显示升级提示
+        function showLevelUpNotification() {
+            const notification = document.createElement('div');
+            notification.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+            notification.innerHTML = `
+                <div class="bg-white rounded-3xl p-8 text-center level-complete">
+                    <div class="text-6xl mb-4">🎉</div>
+                    <h3 class="text-2xl font-bold text-primary mb-2">升级了！</h3>
+                    <p class="text-gray-600">进入第 ${gameState.level} 关</p>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // 结束游戏
+        function endGame() {
+            gameState.isGameActive = false;
+            clearInterval(gameState.timer);
+            
+            // 切换到结果界面
+            gameScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            // 显示结果
+            displayResults();
+        }
+        
+        // 显示结果
+        function displayResults() {
+            const accuracy = gameState.completedPoems > 0 ? 100 : 0;
+            
+            document.getElementById('final-score').textContent = gameState.score;
+            document.getElementById('final-level').textContent = gameState.level;
+            document.getElementById('final-accuracy').textContent = `${accuracy}%`;
+            document.getElementById('poems-completed').textContent = gameState.completedPoems;
+            
+            // 根据表现显示不同的结果
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            
+            if (gameState.completedPoems >= 10) {
+                resultIcon.textContent = '🏆';
+                resultTitle.textContent = '诗词大师！';
+            } else if (gameState.completedPoems >= 5) {
+                resultIcon.textContent = '🎉';
+                resultTitle.textContent = '很棒！';
+            } else if (gameState.completedPoems >= 1) {
+                resultIcon.textContent = '👍';
+                resultTitle.textContent = '不错哦！';
+            } else {
+                resultIcon.textContent = '💪';
+                resultTitle.textContent = '继续努力！';
+            }
+            
+            // 显示成就
+            displayAchievements();
+        }
+        
+        // 显示成就
+        function displayAchievements() {
+            const achievementsEl = document.getElementById('achievements');
+            
+            if (gameState.achievements.length > 0) {
+                achievementsEl.innerHTML = `
+                    <h3 class="text-lg font-bold mb-4">获得成就</h3>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        ${gameState.achievements.map(achievement => `
+                            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm">
+                                <span class="mr-2">${achievement.icon}</span>
+                                <span>${achievement.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                achievementsEl.innerHTML = '';
+            }
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            resultScreen.classList.add('hidden');
+            startGame();
+        }
+        
+        // 返回首页
+        function goHome() {
+            resultScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+        
+        // 工具函数：打乱数组
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        // 初始化按钮样式
+        document.addEventListener('DOMContentLoaded', () => {
+            const style = document.createElement('style');
+            style.textContent = `
+                .poetry-type-btn, .difficulty-btn {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.25rem;
+                    padding: 1rem;
+                    border-radius: 1rem;
+                    border: 2px solid #e5e7eb;
+                    background: white;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .poetry-type-btn:hover, .difficulty-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+                }
+                .poetry-type-btn.active, .difficulty-btn.active {
+                    border-color: #7C3AED;
+                    background: linear-gradient(135deg, #7C3AED, #EC4899);
+                    color: white;
+                }
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-5px); }
+                    75% { transform: translateX(5px); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
