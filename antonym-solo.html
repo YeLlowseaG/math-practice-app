@@ -141,6 +141,17 @@
                 </div>
             </div>
             
+            <!-- 倒计时开关 -->
+            <div class="mb-6 flex items-center justify-center gap-4 bg-gray-50 rounded-2xl p-4">
+                <i class="fa fa-clock-o text-gray-600"></i>
+                <span class="text-gray-700 font-medium">倒计时模式</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="timer-toggle" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+                <span class="text-xs text-gray-500" id="timer-description">根据难度限时</span>
+            </div>
+            
             <button id="start-btn" class="bg-accent hover:bg-yellow-400 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
                 开始挑战 <i class="fa fa-play ml-2"></i>
             </button>
@@ -498,7 +509,8 @@
             achievements: [],
             questionsPerLevel: 10, // 每关10题
             currentLevelQuestions: 0, // 当前关卡已答题数
-            currentTimeLeft: 10 // 当前剩余时间
+            currentTimeLeft: 10, // 当前剩余时间
+            isTimerEnabled: true // 倒计时开关状态
         };
         
         // 难度配置
@@ -544,11 +556,32 @@
                 document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 gameState.currentDifficulty = btn.dataset.difficulty;
+                updateTimerDescription();
             });
         });
         
+        // 倒计时开关事件监听
+        document.getElementById('timer-toggle').addEventListener('change', function() {
+            gameState.isTimerEnabled = this.checked;
+            updateTimerDescription();
+        });
+        
+        // 更新计时器描述
+        function updateTimerDescription() {
+            const description = document.getElementById('timer-description');
+            if (!gameState.isTimerEnabled) {
+                description.textContent = '不限时模式';
+            } else {
+                const config = difficultyConfig[gameState.currentDifficulty];
+                description.textContent = `每题${config.timeLimit}秒限时`;
+            }
+        }
+        
         // 开始游戏
         function startGame() {
+            // 保存倒计时开关状态
+            const isTimerEnabled = gameState.isTimerEnabled;
+            
             // 重置游戏状态
             gameState = {
                 currentDifficulty: gameState.currentDifficulty,
@@ -566,7 +599,8 @@
                 achievements: [],
                 questionsPerLevel: 10, // 每关10题
                 currentLevelQuestions: 0, // 当前关卡已答题数
-                currentTimeLeft: difficultyConfig[gameState.currentDifficulty].timeLimit // 当前剩余时间
+                currentTimeLeft: difficultyConfig[gameState.currentDifficulty].timeLimit, // 当前剩余时间
+                isTimerEnabled: isTimerEnabled // 保持倒计时开关状态
             };
             
             // 切换界面
@@ -885,6 +919,12 @@
         
         // 开始计时
         function startTimer() {
+            if (!gameState.isTimerEnabled) {
+                // 不限时模式，显示无限符号
+                countdownEl.textContent = '不限时 ∞';
+                return;
+            }
+            
             let timeLeft = gameState.timeLimit;
             gameState.currentTimeLeft = timeLeft; // 保存当前时间
             updateCountdownDisplay(timeLeft);

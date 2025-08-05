@@ -92,6 +92,17 @@
                 </div>
             </div>
             
+            <!-- 倒计时开关 -->
+            <div class="mb-6 flex items-center justify-center gap-4 bg-gray-50 rounded-2xl p-4">
+                <i class="fa fa-clock-o text-gray-600"></i>
+                <span class="text-gray-700 font-medium">倒计时模式</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="timer-toggle" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+                <span class="text-xs text-gray-500" id="timer-description">每题10秒限时</span>
+            </div>
+            
             <button id="start-btn" class="bg-accent hover:bg-yellow-400 text-text font-bold py-3 px-8 rounded-full text-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
                 开始游戏 <i class="fa fa-play ml-2"></i>
             </button>
@@ -458,6 +469,7 @@
         let countdown = 10;
         let usedIndices = [];
         let isRotationLocked = false;
+        let isTimerEnabled = true; // 倒计时开关状态
         
         // DOM元素
         const startScreen = document.getElementById('start-screen');
@@ -486,6 +498,13 @@
         startBtn.addEventListener('click', startGame);
         restartBtn.addEventListener('click', restartGame);
         lockRotationBtn.addEventListener('click', toggleRotationLock);
+        
+        // 倒计时开关事件监听
+        document.getElementById('timer-toggle').addEventListener('change', function() {
+            isTimerEnabled = this.checked;
+            const description = document.getElementById('timer-description');
+            description.textContent = isTimerEnabled ? '每题10秒限时' : '不限时模式';
+        });
         
         // 页面加载时检查提示框元素是否存在
         window.addEventListener('DOMContentLoaded', () => {
@@ -895,6 +914,15 @@
         // 开始倒计时
         function startCountdown() {
             clearInterval(timerInterval);
+            
+            if (!isTimerEnabled) {
+                // 不限时模式，显示无限符号
+                countdownEl.textContent = '∞';
+                countdownPlayer1El.textContent = '∞';
+                countdownPlayer2El.textContent = '∞';
+                return;
+            }
+            
             countdown = 10;
             countdownEl.textContent = countdown;
             countdownPlayer1El.textContent = countdown;
