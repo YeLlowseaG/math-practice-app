@@ -268,6 +268,53 @@
             flex-wrap: wrap;
         }
         
+        /* 数字范围按钮组 - 保持两行布局（当前已经是正确的） */
+        .number-range-group {
+            flex-wrap: wrap;
+            max-width: 100%;
+        }
+        
+        .number-range-group .option-btn {
+            flex: 0 0 calc(33.333% - 0.33rem);
+            min-width: 0;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* 强制数字范围按钮为两行 */
+        .number-range-group {
+            flex-wrap: wrap;
+            max-width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, auto);
+            gap: 0.5rem;
+        }
+        
+        .number-range-group .option-btn {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        /* 运算类型按钮组 - 强制一行布局 */
+        .operator-group {
+            flex-wrap: nowrap !important;
+            gap: 0.25rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .operator-group .operator-wrapper {
+            flex: 1;
+            min-width: 0;
+            max-width: calc(25% - 0.25rem);
+        }
+        
+        .operator-group .operator-select {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            width: 100%;
+        }
+        
         /* 运算次数按钮特殊样式 - 保持在一行 */
         .setting-card:first-child .button-group {
             flex-wrap: nowrap;
@@ -878,7 +925,7 @@
                 <div class="setting-card">
                     <h3>📊 数字范围</h3>
                     <p>算式中数字的最大值</p>
-                    <div class="button-group">
+                    <div class="button-group number-range-group">
                         <button class="option-btn number-range-btn active" data-range="10">10<span style="font-size: 0.75rem;">内</span></button>
                         <button class="option-btn number-range-btn" data-range="20">20<span style="font-size: 0.75rem;">内</span></button>
                         <button class="option-btn number-range-btn" data-range="50">50<span style="font-size: 0.75rem;">内</span></button>
@@ -892,7 +939,7 @@
                 <div class="setting-card">
                     <h3>⚡ 运算类型</h3>
                     <p>最多选择 <span id="max-operators">2</span> 种（与运算次数相同）</p>
-                    <div class="button-group">
+                    <div class="button-group operator-group">
                         <div class="operator-wrapper">
                             <div class="operator-select active" data-op="+">
                                 <span style="font-size: 1.25rem; font-weight: bold;">+</span>
