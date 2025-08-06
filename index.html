@@ -108,7 +108,7 @@
             </div>
             
             <!-- 游戏选择区域 -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 mb-8 md:mb-12">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-8 md:mb-12">
                 
                 <!-- 数学练习 -->
                 <div class="game-card bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-math/20 hover:border-math/40">
@@ -227,6 +227,36 @@
                     
                     <button onclick="window.location.href='poem-puzzle-solo.html'" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-emerald-600 hover:to-green-500 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
                         开始拼图 <i class="fa fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- 拼音学习 -->
+                <div class="game-card bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-pink-500/20 hover:border-pink-500/40">
+                    <div class="text-center mb-6">
+                        <div class="w-24 h-24 bg-gradient-to-br from-pink-500 to-blue-500 rounded-full flex items-center justify-center text-white text-4xl shadow-lg mx-auto mb-4 float-animation" style="animation-delay: 0.8s">
+                            <i class="fa fa-volume-up"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-pink-600 mb-2">拼音小达人</h2>
+                        <p class="text-gray-600 text-sm">听读音选拼音</p>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-star text-yellow-400 mr-2"></i>
+                            <span>适合年龄：5-8岁</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-clock-o text-blue-400 mr-2"></i>
+                            <span>游戏时间：10-15分钟</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-trophy text-orange-400 mr-2"></i>
+                            <span>分级：启蒙到挑战</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="window.location.href='pinyin-game.html'" class="w-full bg-gradient-to-r from-pink-500 to-blue-500 hover:from-blue-500 hover:to-pink-500 text-white font-bold py-4 px-6 rounded-2xl text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                        开始学习 <i class="fa fa-arrow-right ml-2"></i>
                     </button>
                 </div>
             </div>
