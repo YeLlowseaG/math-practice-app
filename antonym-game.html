@@ -525,13 +525,32 @@
         // 检测iPad和Android平板，强制使用桁面版布局
         function detectTabletAndApplyDesktopLayout() {
             const userAgent = navigator.userAgent.toLowerCase();
+            const screenWidth = screen.width;
+            const screenHeight = screen.height;
+            const maxDimension = Math.max(screenWidth, screenHeight);
+            const minDimension = Math.min(screenWidth, screenHeight);
+            
+            console.log(`📱 设备信息: UserAgent=${userAgent}, Screen=${screenWidth}x${screenHeight}, MaxTouch=${navigator.maxTouchPoints}`);
+            
+            // 更准确的iPad检测
             const isIPad = /ipad/.test(userAgent) || 
-                          (/macintosh/.test(userAgent) && navigator.maxTouchPoints > 1);
+                          // 现代iPad可能显示Macintosh
+                          (/macintosh/.test(userAgent) && navigator.maxTouchPoints > 1) ||
+                          // 根据屏幕尺寸判断（iPad屏幕通常大于1000px）
+                          (navigator.maxTouchPoints > 1 && maxDimension >= 1000);
+                          
             const isAndroidTablet = /android/.test(userAgent) && 
                                    !/mobile/.test(userAgent) &&
-                                   (screen.width >= 768 || screen.height >= 768);
+                                   (maxDimension >= 768);
             
-            const isTablet = isIPad || isAndroidTablet;
+            // 更宽松的平板判断：触控设备且屏幕足够大
+            const isTouchTablet = navigator.maxTouchPoints > 1 && 
+                                 maxDimension >= 900 && 
+                                 minDimension >= 600;
+            
+            const isTablet = isIPad || isAndroidTablet || isTouchTablet;
+            
+            console.log(`🔎 检测结果: iPad=${isIPad}, AndroidTablet=${isAndroidTablet}, TouchTablet=${isTouchTablet}, IsTablet=${isTablet}`);
             
             if (isTablet) {
                 // 添加平板标识
@@ -541,7 +560,9 @@
                 // 强制显示桁面版布局
                 document.body.style.overflow = 'visible';
                 
-                console.log('检测到平板设备（反义词对战），应用桁面版布局');
+                console.log('✅ 检测到平板设备（反义词对战），应用桁面版布局');
+            } else {
+                console.log('❌ 未检测到平板设备，使用默认布局');
             }
             
             return isTablet;

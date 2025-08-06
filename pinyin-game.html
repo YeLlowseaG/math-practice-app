@@ -1166,6 +1166,37 @@
             }, 3000);
         }
 
+        // 缓存选择的语音引擎，确保一致性
+        let selectedVoiceEngine = null;
+        let voiceInitialized = false;
+        
+        // 初始化语音引擎（只执行一次）
+        function initializeVoiceEngine() {
+            if (voiceInitialized) return selectedVoiceEngine !== null;
+            
+            const voices = speechSynthesis.getVoices();
+            console.log('初始化语音引擎，所有可用语音:', voices.map(v => `${v.name} (${v.lang})`));
+            
+            // 严格筛选普通话语音
+            selectedVoiceEngine = voices.find(voice => 
+                voice.lang === 'zh-CN' && 
+                (
+                    voice.name.includes('Mandarin') ||
+                    voice.name.includes('普通话')
+                )
+            );
+            
+            voiceInitialized = true;
+            
+            if (selectedVoiceEngine) {
+                console.log('✅ 选定语音引擎:', selectedVoiceEngine.name, selectedVoiceEngine.lang);
+                return true;
+            } else {
+                console.log('❌ 未找到合适的普通话语音引擎');
+                return false;
+            }
+        }
+        
         // 播放当前汉字或拼音的读音
         function playCurrentSound() {
             // 使用Web Speech API播放读音
@@ -1184,68 +1215,50 @@
                 // 先停止所有正在播放的语音
                 speechSynthesis.cancel();
                 
-                const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                
-                // 设置中文语音参数
-                utterance.lang = 'zh-CN';
-                utterance.rate = 0.6; // 适合儿童的慢速
-                utterance.pitch = 1.1; // 稍高音调
-                utterance.volume = 0.9;
-                
-                // 严格选择普通话语音引擎
-                function selectStrictMandarinVoice() {
-                    const voices = speechSynthesis.getVoices();
-                    console.log('所有可用语音:', voices.map(v => `${v.name} (${v.lang})`));
+                // 等待一小段时间确保停止完成
+                setTimeout(() => {
+                    // 初始化语音引擎
+                    const hasValidVoice = initializeVoiceEngine();
                     
-                    // 只接受明确标识为 Mandarin 或普通话的语音
-                    const mandarinVoice = voices.find(voice => 
-                        voice.lang === 'zh-CN' && 
-                        (
-                            voice.name.includes('Mandarin') ||
-                            voice.name.includes('普通话')
-                        )
-                    );
-                    
-                    if (mandarinVoice) {
-                        console.log('找到普通话语音:', mandarinVoice.name, mandarinVoice.lang);
-                        utterance.voice = mandarinVoice;
-                        return true;
-                    } else {
-                        console.log('未找到普通话语音引擎');
-                        return false;
+                    if (!hasValidVoice) {
+                        showVoiceEngineError();
+                        return;
                     }
-                }
                 
-                // 检查是否有合适的普通话语音
-                let hasMandarinVoice = false;
+                    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                    
+                    // 设置固定的语音参数，确保一致性
+                    utterance.lang = 'zh-CN';
+                    utterance.rate = 0.6; // 固定语速
+                    utterance.pitch = 1.0; // 固定音调，避免随机变化
+                    utterance.volume = 0.9;
+                    
+                    // 使用缓存的语音引擎，确保一致性
+                    utterance.voice = selectedVoiceEngine;
+                    
+                    console.log(`🔊 播放文本: "${textToSpeak}" 使用引擎: ${selectedVoiceEngine.name}`);
                 
-                // 语音加载完成后检查
-                utterance.onvoiceschanged = () => {
-                    hasMandarinVoice = selectStrictMandarinVoice();
-                };
+                    // 添加错误处理
+                    utterance.onerror = function(event) {
+                        console.error('语音播放错误:', event.error);
+                    };
+                    
+                    utterance.onstart = function() {
+                        console.log('开始播放语音');
+                    };
+                    
+                    utterance.onend = function() {
+                        console.log('语音播放完成');
+                    };
                 
-                // 如果语音列表已加载，直接检查
-                if (speechSynthesis.getVoices().length > 0) {
-                    hasMandarinVoice = selectStrictMandarinVoice();
-                }
-                
-                // 如果没有合适的语音，显示错误提示
-                if (!hasMandarinVoice && speechSynthesis.getVoices().length > 0) {
-                    console.error('语言引擎有问题，无法找到普通话语音');
-                    // 显示用户友好的错误提示
-                    showVoiceEngineError();
-                    return; // 不播放任何声音
-                }
-                
-                // 设置不同模式的语速
-                if (currentGameMode === 'consonants' || currentGameMode === 'vowels') {
-                    utterance.rate = 0.5; // 基础学习更慢
-                }
-                
-                // 只有在找到合适语音时才播放
-                if (hasMandarinVoice || speechSynthesis.getVoices().length === 0) {
+                    // 设置不同模式的语速
+                    if (currentGameMode === 'consonants' || currentGameMode === 'vowels') {
+                        utterance.rate = 0.5; // 基础学习更慢
+                    }
+                    
+                    // 播放语音
                     speechSynthesis.speak(utterance);
-                }
+                }, 100); // 延迟100ms确保cancel完成
                 
                 // 添加动画效果
                 playSoundBtn.classList.add('sound-wave');
@@ -1316,8 +1329,24 @@
             }
         }
 
+        // 初始化语音列表
+        function initVoicesList() {
+            if (speechSynthesis.getVoices().length === 0) {
+                console.log('等待语音列表加载...');
+                speechSynthesis.onvoiceschanged = function() {
+                    console.log('语音列表已加载');
+                    initializeVoiceEngine();
+                };
+            } else {
+                initializeVoiceEngine();
+            }
+        }
+        
         // 页面加载时初始化
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+            initVoicesList();
+        });
     </script>
 </body>
 </html>
