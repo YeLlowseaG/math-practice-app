@@ -194,6 +194,12 @@
             </div>
             
             <div class="flex items-center gap-4">
+                <!-- 布局切换按钮 -->
+                <button id="layout-toggle-btn" class="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-md transition-all duration-300 hover:scale-105 active:scale-95">
+                    <i id="layout-icon" class="fa fa-mobile text-gray-600"></i>
+                    <span id="layout-text" class="ml-2 text-sm font-bold text-gray-600">手机版</span>
+                </button>
+                
                 <!-- 锁定旋转按钮 -->
                 <button id="lock-rotation-btn" class="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-md transition-all duration-300 hover:scale-105 active:scale-95">
                     <i id="lock-icon" class="fa fa-lock text-gray-600"></i>
@@ -571,6 +577,27 @@
         // 页面加载时立即检测
         detectTabletAndApplyDesktopLayout();
         
+        // 初始化布局按钮状态
+        function initLayoutButton() {
+            const isMobile = /Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
+                             !/iPad/i.test(navigator.userAgent);
+            const layoutIcon = document.getElementById('layout-icon');
+            const layoutText = document.getElementById('layout-text');
+            
+            if (isMobile) {
+                isCurrentlyMobile = true;
+                layoutIcon.className = 'fa fa-desktop text-gray-600';
+                layoutText.textContent = '桌面版';
+            } else {
+                isCurrentlyMobile = false;
+                layoutIcon.className = 'fa fa-mobile text-gray-600';
+                layoutText.textContent = '手机版';
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initLayoutButton);
+        
         // 监听屏幕方向变化
         window.addEventListener('orientationchange', function() {
             setTimeout(detectTabletAndApplyDesktopLayout, 100);
@@ -593,6 +620,10 @@
         let usedIndices = [];
         let isRotationLocked = false;
         let isTimerEnabled = true; // 倒计时开关状态
+        
+        // 布局状态变量
+        let layoutMode = 'auto'; // 'auto', 'desktop', 'mobile'
+        let isCurrentlyMobile = false; // 当前实际使用的布局
         
         // DOM元素
         const startScreen = document.getElementById('start-screen');
@@ -621,6 +652,9 @@
         startBtn.addEventListener('click', startGame);
         restartBtn.addEventListener('click', restartGame);
         lockRotationBtn.addEventListener('click', toggleRotationLock);
+        
+        // 布局切换按钮事件监听
+        document.getElementById('layout-toggle-btn').addEventListener('click', toggleLayout);
         
         // 倒计时开关事件监听
         document.getElementById('timer-toggle').addEventListener('change', function() {
@@ -1512,6 +1546,140 @@
             setTimeout(() => {
                 notification.remove();
             }, 2000);
+        }
+        
+        // 切换布局模式
+        function toggleLayout() {
+            const layoutIcon = document.getElementById('layout-icon');
+            const layoutText = document.getElementById('layout-text');
+            
+            // 切换布局状态
+            if (layoutMode === 'desktop' || (layoutMode === 'auto' && !isCurrentlyMobile)) {
+                // 切换到手机版
+                layoutMode = 'mobile';
+                isCurrentlyMobile = true;
+                setupMobileLayout();
+                layoutIcon.className = 'fa fa-desktop text-gray-600';
+                layoutText.textContent = '桌面版';
+                showLockNotification('已切换到手机版布局');
+            } else {
+                // 切换到桌面版
+                layoutMode = 'desktop';
+                isCurrentlyMobile = false;
+                setupDesktopLayout();
+                layoutIcon.className = 'fa fa-mobile text-gray-600';
+                layoutText.textContent = '手机版';
+                showLockNotification('已切换到桌面版布局');
+            }
+        }
+        
+        // 设置桌面版布局
+        function setupDesktopLayout() {
+            console.log('开始应用桌面版布局...');
+            
+            // 1. 恢复第二个目标字卡片显示
+            const secondCard = document.getElementById('second-target-card');
+            if (secondCard) {
+                secondCard.classList.remove('hidden');
+                secondCard.style.cssText = `
+                    transform: rotate(-90deg) !important;
+                    display: block !important;
+                `;
+                console.log('桌面版：第二个目标字卡片已显示');
+            }
+            
+            // 2. 恢复目标字卡片的旋转
+            const targetWordEl = document.getElementById('target-word');
+            const targetWord2El = document.getElementById('target-word-2');
+            
+            if (targetWordEl) {
+                const parentCard = targetWordEl.closest('div');
+                if (parentCard) {
+                    parentCard.style.cssText = `
+                        transform: rotate(90deg) !important;
+                        display: block !important;
+                        visibility: visible !important;
+                    `;
+                }
+            }
+            
+            if (targetWord2El) {
+                const parentCard = targetWord2El.closest('div');
+                if (parentCard) {
+                    parentCard.style.cssText = `
+                        transform: rotate(-90deg) !important;
+                        display: block !important;
+                        visibility: visible !important;
+                    `;
+                }
+            }
+            
+            // 3. 恢复玩家区域的旋转和原始布局
+            const playerAreas = document.querySelectorAll('div[class*="w-1/3"][class*="bg-player"]');
+            console.log('找到玩家区域数量:', playerAreas.length);
+            
+            playerAreas.forEach((area, index) => {
+                if (index === 0) {
+                    // 玩家1区域 - 90度顺时针旋转
+                    area.style.cssText = `
+                        transform: rotate(90deg) !important;
+                        width: 33.333333% !important;
+                        margin-right: 6rem !important;
+                        transform-origin: center !important;
+                        transform: rotate(90deg) translateX(-5rem) !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                    `;
+                } else {
+                    // 玩家2区域 - 90度逆时针旋转
+                    area.style.cssText = `
+                        transform: rotate(-90deg) !important;
+                        width: 33.333333% !important;
+                        margin-left: 6rem !important;
+                        transform-origin: center !important;
+                        transform: rotate(-90deg) translateX(5rem) !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                    `;
+                }
+                console.log(`玩家区域${index + 1}桌面版样式已恢复`);
+            });
+            
+            // 4. 恢复中间目标字区域
+            const whiteArea = document.querySelector('div[class*="w-1/3"][class*="bg-white"]');
+            if (whiteArea) {
+                whiteArea.style.cssText = `
+                    width: 33.333333% !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                    padding: 1rem !important;
+                `;
+                
+                // 显示所有旋转的目标字卡片
+                const rotatedCards = whiteArea.querySelectorAll('div[class*="transform"]');
+                rotatedCards.forEach(card => {
+                    card.style.display = 'block !important';
+                });
+                
+                console.log('目标字区域桌面版样式已恢复');
+            }
+            
+            // 5. 恢复游戏容器的横向布局
+            const gameContainer = document.querySelector('.flex-1.flex.overflow-hidden');
+            if (gameContainer) {
+                gameContainer.style.cssText = `
+                    display: flex !important;
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    min-height: 100vh !important;
+                `;
+                console.log('游戏容器横向布局已恢复');
+            }
+            
+            console.log('✅ 桌面版布局已完全恢复');
         }
         
 
