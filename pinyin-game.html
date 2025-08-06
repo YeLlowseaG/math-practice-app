@@ -1040,6 +1040,31 @@
             feedbackContent.classList.add('hidden');
             feedbackContent.classList.remove('level-complete');
         }
+        
+        // 显示语音引擎错误提示
+        function showVoiceEngineError() {
+            // 显示在反馈区域
+            feedbackText.textContent = '语音引擎有问题';
+            feedbackText.className = 'text-xl font-bold mb-2 text-danger';
+            
+            feedbackDetail.innerHTML = `
+                <div class="text-center">
+                    <p class="text-sm mb-2 text-red-600">本设备未找到普通话语音引擎</p>
+                    <p class="text-xs text-gray-600 mb-2">请检查设备设置或更换浏览器</p>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-2 mt-2">
+                        <p class="text-xs text-yellow-800">推荐使用带有中文普通话语音的设备访问</p>
+                    </div>
+                </div>
+            `;
+            
+            feedbackContent.classList.remove('hidden');
+            feedbackContent.classList.add('level-complete');
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                hideFeedback();
+            }, 5000);
+        }
 
         // 开始计时
         function startTimer() {
@@ -1167,71 +1192,49 @@
                 utterance.pitch = 1.1; // 稍高音调
                 utterance.volume = 0.9;
                 
-                // 精确选择普通话语音引擎
-                function selectMandarinVoice() {
+                // 严格选择普通话语音引擎
+                function selectStrictMandarinVoice() {
                     const voices = speechSynthesis.getVoices();
                     console.log('所有可用语音:', voices.map(v => `${v.name} (${v.lang})`));
                     
-                    // 优先级选择普通话语音
-                    let selectedVoice = null;
-                    
-                    // 1. 最优先：明确标识普通话的语音
-                    selectedVoice = voices.find(voice => 
+                    // 只接受明确标识为 Mandarin 或普通话的语音
+                    const mandarinVoice = voices.find(voice => 
                         voice.lang === 'zh-CN' && 
                         (
                             voice.name.includes('Mandarin') ||
-                            voice.name.includes('普通话') ||
-                            voice.name.includes('Putonghua') ||
-                            voice.name.includes('国语') ||
-                            voice.name.includes('Xiaoxuan') ||
-                            voice.name.includes('Xiaoyan') ||
-                            voice.name.includes('Yaoyao')
-                        ) &&
-                        !voice.name.includes('Cantonese') &&
-                        !voice.name.includes('粤语') &&
-                        !voice.name.includes('Hong Kong') &&
-                        !voice.name.includes('Taiwan')
+                            voice.name.includes('普通话')
+                        )
                     );
                     
-                    // 2. 次选：zh-CN 但排除方言
-                    if (!selectedVoice) {
-                        selectedVoice = voices.find(voice => 
-                            voice.lang === 'zh-CN' &&
-                            !voice.name.includes('Cantonese') &&
-                            !voice.name.includes('粤语') &&
-                            !voice.name.includes('Hong Kong') &&
-                            !voice.name.includes('Taiwan')
-                        );
-                    }
-                    
-                    // 3. 备选：任何 zh-CN 语音
-                    if (!selectedVoice) {
-                        selectedVoice = voices.find(voice => voice.lang === 'zh-CN');
-                    }
-                    
-                    // 4. 最后备选：任何中文语音
-                    if (!selectedVoice) {
-                        selectedVoice = voices.find(voice => 
-                            voice.lang.startsWith('zh') ||
-                            voice.name.includes('Chinese') ||
-                            voice.name.includes('中文')
-                        );
-                    }
-                    
-                    if (selectedVoice) {
-                        console.log('选择的语音:', selectedVoice.name, selectedVoice.lang);
-                        utterance.voice = selectedVoice;
+                    if (mandarinVoice) {
+                        console.log('找到普通话语音:', mandarinVoice.name, mandarinVoice.lang);
+                        utterance.voice = mandarinVoice;
+                        return true;
                     } else {
-                        console.log('未找到合适的中文语音，使用默认语音');
+                        console.log('未找到普通话语音引擎');
+                        return false;
                     }
                 }
                 
-                // 语音加载完成后选择
-                utterance.onvoiceschanged = selectMandarinVoice;
+                // 检查是否有合适的普通话语音
+                let hasMandarinVoice = false;
                 
-                // 如果语音列表已加载，直接选择
+                // 语音加载完成后检查
+                utterance.onvoiceschanged = () => {
+                    hasMandarinVoice = selectStrictMandarinVoice();
+                };
+                
+                // 如果语音列表已加载，直接检查
                 if (speechSynthesis.getVoices().length > 0) {
-                    selectMandarinVoice();
+                    hasMandarinVoice = selectStrictMandarinVoice();
+                }
+                
+                // 如果没有合适的语音，显示错误提示
+                if (!hasMandarinVoice && speechSynthesis.getVoices().length > 0) {
+                    console.error('语言引擎有问题，无法找到普通话语音');
+                    // 显示用户友好的错误提示
+                    showVoiceEngineError();
+                    return; // 不播放任何声音
                 }
                 
                 // 设置不同模式的语速
@@ -1239,7 +1242,10 @@
                     utterance.rate = 0.5; // 基础学习更慢
                 }
                 
-                speechSynthesis.speak(utterance);
+                // 只有在找到合适语音时才播放
+                if (hasMandarinVoice || speechSynthesis.getVoices().length === 0) {
+                    speechSynthesis.speak(utterance);
+                }
                 
                 // 添加动画效果
                 playSoundBtn.classList.add('sound-wave');
