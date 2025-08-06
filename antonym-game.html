@@ -60,59 +60,9 @@
                 100% { transform: scale(1); }
             }
             
-            /* 按钮容器样式 */
-            #options-player1,
-            #options-player2 {
-                display: block !important;
-                width: 300px !important;
-                height: 200px !important;
-                background: #f0f0f0 !important;
-                border: 2px solid #ccc !important;
-                padding: 10px !important;
-                margin: 10px auto !important;
-            }
+            /* 按钮容器样式 - 由JavaScript动态设置 */
             
-            /* iPad 和 Android 平板强制桁面版布局 */
-            .is-tablet-desktop {
-                /* 强制使用桁面版样式 */
-            }
-            
-            .is-tablet-desktop body {
-                overflow: visible !important;
-            }
-            
-            /* 平板横屏模式下的特别样式 */
-            @media screen and (min-width: 768px) and (min-height: 600px) {
-                .tablet-landscape #game-screen {
-                    display: flex !important;
-                    flex-direction: row !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    min-height: 100vh !important;
-                }
-                
-                .tablet-landscape .game-container {
-                    max-width: none !important;
-                    width: 100% !important;
-                    display: flex !important;
-                    flex-direction: row !important;
-                }
-                
-                .tablet-landscape .player-section {
-                    width: 50% !important;
-                    height: 100vh !important;
-                    display: flex !important;
-                    flex-direction: column !important;
-                    justify-content: center !important;
-                    align-items: center !important;
-                }
-                
-                .tablet-landscape #options-player1,
-                .tablet-landscape #options-player2 {
-                    width: 400px !important;
-                    height: 300px !important;
-                }
-            }
+
         }
     </style>
 </head>
@@ -528,85 +478,23 @@
             { word: "软弱", pinyin: "ruǎn ruò", antonym: "坚强", antonymPinyin: "jiān qiáng" }
         ];
         
-        // 检测iPad和Android平板，强制使用桁面版布局
-        function detectTabletAndApplyDesktopLayout() {
-            const userAgent = navigator.userAgent.toLowerCase();
-            const screenWidth = screen.width;
-            const screenHeight = screen.height;
-            const maxDimension = Math.max(screenWidth, screenHeight);
-            const minDimension = Math.min(screenWidth, screenHeight);
-            
-            console.log(`📱 设备信息: UserAgent=${userAgent}, Screen=${screenWidth}x${screenHeight}, MaxTouch=${navigator.maxTouchPoints}`);
-            
-            // 更准确的iPad检测
-            const isIPad = /ipad/.test(userAgent) || 
-                          // 现代iPad可能显示Macintosh
-                          (/macintosh/.test(userAgent) && navigator.maxTouchPoints > 1) ||
-                          // 根据屏幕尺寸判断（iPad屏幕通常大于1000px）
-                          (navigator.maxTouchPoints > 1 && maxDimension >= 1000);
-                          
-            const isAndroidTablet = /android/.test(userAgent) && 
-                                   !/mobile/.test(userAgent) &&
-                                   (maxDimension >= 768);
-            
-            // 更宽松的平板判断：触控设备且屏幕足够大
-            const isTouchTablet = navigator.maxTouchPoints > 1 && 
-                                 maxDimension >= 900 && 
-                                 minDimension >= 600;
-            
-            const isTablet = isIPad || isAndroidTablet || isTouchTablet;
-            
-            console.log(`🔎 检测结果: iPad=${isIPad}, AndroidTablet=${isAndroidTablet}, TouchTablet=${isTouchTablet}, IsTablet=${isTablet}`);
-            
-            if (isTablet) {
-                // 添加平板标识
-                document.documentElement.classList.add('is-tablet-desktop');
-                document.body.classList.add('tablet-landscape');
-                
-                // 强制显示桁面版布局
-                document.body.style.overflow = 'visible';
-                
-                console.log('✅ 检测到平板设备（反义词对战），应用桁面版布局');
-            } else {
-                console.log('❌ 未检测到平板设备，使用默认布局');
-            }
-            
-            return isTablet;
-        }
-        
-        // 页面加载时立即检测
-        detectTabletAndApplyDesktopLayout();
+
         
         // 初始化布局按钮状态
         function initLayoutButton() {
-            const isMobile = /Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                             !/iPad/i.test(navigator.userAgent);
             const layoutIcon = document.getElementById('layout-icon');
             const layoutText = document.getElementById('layout-text');
             
-            if (isMobile) {
-                isCurrentlyMobile = true;
-                layoutIcon.className = 'fa fa-desktop text-gray-600';
-                layoutText.textContent = '桌面版';
-            } else {
-                isCurrentlyMobile = false;
-                layoutIcon.className = 'fa fa-mobile text-gray-600';
-                layoutText.textContent = '手机版';
-            }
+            // 默认使用桌面版布局，用户可手动切换
+            isCurrentlyMobile = false;
+            layoutIcon.className = 'fa fa-mobile text-gray-600';
+            layoutText.textContent = '手机版';
         }
         
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', initLayoutButton);
         
-        // 监听屏幕方向变化
-        window.addEventListener('orientationchange', function() {
-            setTimeout(detectTabletAndApplyDesktopLayout, 100);
-        });
-        
-        // 监听窗口尺寸变化
-        window.addEventListener('resize', function() {
-            detectTabletAndApplyDesktopLayout();
-        });
+
         
         // 游戏状态变量
         let currentWord = null;
@@ -708,16 +596,16 @@
             usedIndices = [];
             updateScores();
             
-            // 检测手机端并立即应用布局 - 排除iPad
-            const isMobile = /Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                             !/iPad/i.test(navigator.userAgent);
-            console.log('游戏开始，检测设备类型:', isMobile ? '手机端' : '桌面端', 'width:', window.innerWidth);
-            console.log('User Agent:', navigator.userAgent);
-            if (isMobile) {
+            // 根据当前布局模式应用相应的样式
+            if (isCurrentlyMobile) {
                 setTimeout(() => {
                     setupMobileLayout();
                     console.log('手机端布局已应用');
                 }, 100); // 延迟一点确保DOM已渲染
+            } else {
+                // 确保桌面版布局也被正确应用
+                setupDesktopLayout();
+                console.log('桌面端布局已应用');
             }
             
             nextRound();
@@ -783,16 +671,14 @@
         
         // 生成选项
         function generateOptions() {
+
+            
             // 清空之前的选项
             optionsPlayer1.innerHTML = '';
             optionsPlayer2.innerHTML = '';
             
-            // 检测是否为手机端 - 排除iPad
-            const isMobile = /Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                             !/iPad/i.test(navigator.userAgent);
-            
-            // 用JavaScript直接设置容器样式
-            if (isMobile) {
+            // 根据当前布局模式设置容器样式
+            if (isCurrentlyMobile) {
                 // 手机端容器样式 - 防止超出屏幕
                 const containerStyle = `
                     display: grid !important;
@@ -812,6 +698,8 @@
                 `;
                 optionsPlayer1.style.cssText = containerStyle;
                 optionsPlayer2.style.cssText = containerStyle;
+                console.log('手机版布局，屏幕宽度:', window.innerWidth);
+                setupMobileLayout();
             } else {
                 // 桌面端容器样式（恢复基础样式）
                 optionsPlayer1.style.cssText = `
@@ -824,14 +712,7 @@
                     margin: 10px auto !important;
                 `;
                 optionsPlayer2.style.cssText = optionsPlayer1.style.cssText;
-            }
-            
-                // 手机端完全重新布局
-            if (isMobile) {
-                console.log('检测到手机端，屏幕宽度:', window.innerWidth);
-                setupMobileLayout();
-            } else {
-                console.log('桌面端，屏幕宽度:', window.innerWidth);
+                console.log('桌面版布局，屏幕宽度:', window.innerWidth);
                 // 桌面端：确保第二个目标字卡片显示
                 const secondCard = document.getElementById('second-target-card');
                 if (secondCard) {
@@ -908,11 +789,10 @@
         
         // 创建选项按钮
         function createOptionButton(text, pinyin, player) {
+
             const button = document.createElement('button');
-            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                             (window.innerWidth <= 768 && 'ontouchstart' in window);
-            
-            if (isMobile) {
+            // 根据当前布局模式设置按钮样式
+            if (isCurrentlyMobile) {
                 // 手机端样式 - 适配Grid，防止文字超出
                 button.style.cssText = `
                     display: flex !important;
@@ -957,8 +837,8 @@
             }
             
             button.innerHTML = `
-                <div style="font-size: ${isMobile ? '16px' : '18px'}; line-height: 1.1; margin-bottom: 2px;">${text}</div>
-                <div style="font-size: ${isMobile ? '9px' : '10px'}; color: #666;">${pinyin || ''}</div>
+                <div style="font-size: ${isCurrentlyMobile ? '16px' : '18px'}; line-height: 1.1; margin-bottom: 2px;">${text}</div>
+                <div style="font-size: ${isCurrentlyMobile ? '9px' : '10px'}; color: #666;">${pinyin || ''}</div>
             `;
             
             button.onclick = function() {
@@ -1242,11 +1122,8 @@
                 return;
             }
 
-            // 检测是否为手机端
-            const isMobile = /Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                             !/iPad/i.test(navigator.userAgent);
-            
-            if (isMobile) {
+            // 根据当前布局模式设置通知样式
+            if (isCurrentlyMobile) {
                 // 手机端：将通知显示在玩家区域内的红框位置，垂直水平居中
                 notification.className = `absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-2 text-center z-[9999] border-2 border-green-500 max-w-[200px]`;
                 notification.style.transform = 'translate(-50%, -50%)'; // 水平垂直居中，无旋转
@@ -1258,11 +1135,11 @@
                 notification.style.transform = rotation;
             }
             
-            // 设置文本内容 - 根据设备调整字体大小
+            // 设置文本内容 - 根据布局模式调整字体大小
             textEl.textContent = `恭喜你答对了！`;
             subtextEl.innerHTML = `得 <span class="font-bold text-green-600">1</span> 分！`;
             
-            if (isMobile) {
+            if (isCurrentlyMobile) {
                 textEl.className = `text-sm font-bold text-green-600 mb-1`;
                 subtextEl.className = `text-xs text-gray-600`;
             } else {
@@ -1301,11 +1178,8 @@
                 return;
             }
 
-            // 检测是否为手机端
-            const isMobile = /Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                             !/iPad/i.test(navigator.userAgent);
-            
-            if (isMobile) {
+            // 根据当前布局模式设置通知样式
+            if (isCurrentlyMobile) {
                 // 手机端：将通知显示在玩家区域内的红框位置，垂直水平居中
                 notification.className = `absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-2 text-center z-[9999] border-2 border-blue-500 max-w-[200px]`;
                 notification.style.transform = 'translate(-50%, -50%)'; // 水平垂直居中，无旋转
@@ -1325,7 +1199,7 @@
                 textEl.textContent = `时间到！`;
                 subtextEl.innerHTML = `正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span>`;
                 
-                if (isMobile) {
+                if (isCurrentlyMobile) {
                     textEl.className = `text-sm font-bold text-orange-600 mb-1`;
                     subtextEl.className = `text-xs text-gray-600`;
                 } else {
@@ -1337,7 +1211,7 @@
                 textEl.textContent = `${otherPlayerName}，题目已结束`;
                 subtextEl.innerHTML = `正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span>`;
                 
-                if (isMobile) {
+                if (isCurrentlyMobile) {
                     textEl.className = `text-sm font-bold text-blue-600 mb-1`;
                     subtextEl.className = `text-xs text-gray-600`;
                 } else {
@@ -1371,11 +1245,8 @@
                 return;
             }
 
-            // 检测是否为手机端
-            const isMobile = /Android|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) && 
-                             !/iPad/i.test(navigator.userAgent);
-            
-            if (isMobile) {
+            // 根据当前布局模式设置通知样式
+            if (isCurrentlyMobile) {
                 // 手机端：将通知显示在玩家区域内的红框位置，垂直水平居中
                 notification.className = `absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg p-2 text-center z-[9999] border-2 border-red-500 max-w-[200px]`;
                 notification.style.transform = 'translate(-50%, -50%)'; // 水平垂直居中，无旋转
@@ -1387,11 +1258,11 @@
                 notification.style.transform = rotation;
             }
             
-            // 设置文本内容 - 根据设备调整字体大小
+            // 设置文本内容 - 根据布局模式调整字体大小
             textEl.textContent = `${playerName} 答错了`;
             subtextEl.innerHTML = `正确答案是：<span class="font-bold text-green-600">${currentAntonym}</span>`;
             
-            if (isMobile) {
+            if (isCurrentlyMobile) {
                 textEl.className = `text-sm font-bold text-red-600 mb-1`;
                 subtextEl.className = `text-xs text-gray-600`;
             } else {
@@ -1679,15 +1550,28 @@
                 console.log('游戏容器横向布局已恢复');
             }
             
+            // 6. 确保选项容器使用桌面版样式
+            if (optionsPlayer1 && optionsPlayer2) {
+                const desktopContainerStyle = `
+                    display: block !important;
+                    width: 300px !important;
+                    height: 200px !important;
+                    background: #f0f0f0 !important;
+                    border: 2px solid #ccc !important;
+                    padding: 10px !important;
+                    margin: 10px auto !important;
+                `;
+                optionsPlayer1.style.cssText = desktopContainerStyle;
+                optionsPlayer2.style.cssText = desktopContainerStyle;
+                console.log('选项容器桌面版样式已恢复');
+            }
+            
             console.log('✅ 桌面版布局已完全恢复');
         }
         
 
         
-        // 适配iPad旋转
-        window.addEventListener('resize', () => {
-            // 可以添加旋转屏幕的提示
-        });
+
     </script>
 </body>
 </html>
