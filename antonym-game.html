@@ -701,17 +701,22 @@
                 console.log('手机版布局，屏幕宽度:', window.innerWidth);
                 setupMobileLayout();
             } else {
-                // 桌面端容器样式（恢复基础样式）
-                optionsPlayer1.style.cssText = `
-                    display: block !important;
+                // 桌面端容器样式 - 使用网格布局确保2x2排列
+                const desktopContainerStyle = `
+                    display: grid !important;
+                    grid-template-columns: 1fr 1fr !important;
+                    grid-template-rows: 1fr 1fr !important;
+                    gap: 8px !important;
                     width: 300px !important;
                     height: 200px !important;
                     background: #f0f0f0 !important;
                     border: 2px solid #ccc !important;
                     padding: 10px !important;
                     margin: 10px auto !important;
+                    box-sizing: border-box !important;
                 `;
-                optionsPlayer2.style.cssText = optionsPlayer1.style.cssText;
+                optionsPlayer1.style.cssText = desktopContainerStyle;
+                optionsPlayer2.style.cssText = desktopContainerStyle;
                 console.log('桌面版布局，屏幕宽度:', window.innerWidth);
                 // 桌面端：确保第二个目标字卡片显示
                 const secondCard = document.getElementById('second-target-card');
@@ -817,22 +822,24 @@
                     text-overflow: ellipsis !important;
                 `;
             } else {
-                // 桌面端样式
+                // 桌面端样式 - 适配网格布局
                 button.style.cssText = `
-                    display: inline-block !important;
-                    width: 120px !important;
-                    height: 80px !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                    width: 100% !important;
+                    height: 100% !important;
                     background: white !important;
                     border: 2px solid #333 !important;
                     border-radius: 8px !important;
-                    font-size: 18px !important;
+                    font-size: 16px !important;
                     font-weight: bold !important;
                     color: #333 !important;
                     cursor: pointer !important;
-                    margin: 4px !important;
                     padding: 8px !important;
                     text-align: center !important;
-                    vertical-align: top !important;
+                    box-sizing: border-box !important;
                 `;
             }
             
@@ -1026,6 +1033,29 @@
                 card.style.opacity = '0 !important';
                 console.log('隐藏-rotate-90的白色卡片');
             });
+            
+            // 9. 确保选项容器使用手机版样式
+            if (optionsPlayer1 && optionsPlayer2) {
+                const mobileContainerStyle = `
+                    display: grid !important;
+                    grid-template-columns: 1fr 1fr !important;
+                    grid-template-rows: 1fr 1fr !important;
+                    gap: 4px !important;
+                    width: 100% !important;
+                    max-width: min(280px, calc(100vw - 2rem)) !important;
+                    height: 120px !important;
+                    background: rgba(255,255,255,0.9) !important;
+                    border-radius: 8px !important;
+                    border: none !important;
+                    padding: 6px !important;
+                    margin: 0.5rem auto !important;
+                    box-sizing: border-box !important;
+                    overflow: hidden !important;
+                `;
+                optionsPlayer1.style.cssText = mobileContainerStyle;
+                optionsPlayer2.style.cssText = mobileContainerStyle;
+                console.log('选项容器手机版样式已应用');
+            }
             
             console.log('手机端布局修复完成！');
         }
@@ -1442,6 +1472,12 @@
                 layoutText.textContent = '手机版';
                 showLockNotification('已切换到桌面版布局');
             }
+            
+            // 重要：重新生成选项按钮以应用新的布局样式
+            if (gameActive && currentWord && currentAntonym) {
+                console.log('布局切换后重新生成选项按钮');
+                generateOptions();
+            }
         }
         
         // 设置桌面版布局
@@ -1550,20 +1586,24 @@
                 console.log('游戏容器横向布局已恢复');
             }
             
-            // 6. 确保选项容器使用桌面版样式
+            // 6. 确保选项容器使用桌面版网格样式
             if (optionsPlayer1 && optionsPlayer2) {
                 const desktopContainerStyle = `
-                    display: block !important;
+                    display: grid !important;
+                    grid-template-columns: 1fr 1fr !important;
+                    grid-template-rows: 1fr 1fr !important;
+                    gap: 8px !important;
                     width: 300px !important;
                     height: 200px !important;
                     background: #f0f0f0 !important;
                     border: 2px solid #ccc !important;
                     padding: 10px !important;
                     margin: 10px auto !important;
+                    box-sizing: border-box !important;
                 `;
                 optionsPlayer1.style.cssText = desktopContainerStyle;
                 optionsPlayer2.style.cssText = desktopContainerStyle;
-                console.log('选项容器桌面版样式已恢复');
+                console.log('选项容器桌面版网格样式已恢复');
             }
             
             console.log('✅ 桌面版布局已完全恢复');
