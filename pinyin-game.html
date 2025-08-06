@@ -1167,28 +1167,71 @@
                 utterance.pitch = 1.1; // 稍高音调
                 utterance.volume = 0.9;
                 
-                // 尝试选择中文语音
-                utterance.onvoiceschanged = () => {
+                // 精确选择普通话语音引擎
+                function selectMandarinVoice() {
                     const voices = speechSynthesis.getVoices();
-                    const chineseVoice = voices.find(voice => 
-                        voice.lang === 'zh-CN' || voice.lang === 'zh' || 
-                        voice.name.includes('Chinese') || voice.name.includes('中文')
+                    console.log('所有可用语音:', voices.map(v => `${v.name} (${v.lang})`));
+                    
+                    // 优先级选择普通话语音
+                    let selectedVoice = null;
+                    
+                    // 1. 最优先：明确标识普通话的语音
+                    selectedVoice = voices.find(voice => 
+                        voice.lang === 'zh-CN' && 
+                        (
+                            voice.name.includes('Mandarin') ||
+                            voice.name.includes('普通话') ||
+                            voice.name.includes('Putonghua') ||
+                            voice.name.includes('国语') ||
+                            voice.name.includes('Xiaoxuan') ||
+                            voice.name.includes('Xiaoyan') ||
+                            voice.name.includes('Yaoyao')
+                        ) &&
+                        !voice.name.includes('Cantonese') &&
+                        !voice.name.includes('粤语') &&
+                        !voice.name.includes('Hong Kong') &&
+                        !voice.name.includes('Taiwan')
                     );
-                    if (chineseVoice) {
-                        utterance.voice = chineseVoice;
+                    
+                    // 2. 次选：zh-CN 但排除方言
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => 
+                            voice.lang === 'zh-CN' &&
+                            !voice.name.includes('Cantonese') &&
+                            !voice.name.includes('粤语') &&
+                            !voice.name.includes('Hong Kong') &&
+                            !voice.name.includes('Taiwan')
+                        );
                     }
-                };
+                    
+                    // 3. 备选：任何 zh-CN 语音
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => voice.lang === 'zh-CN');
+                    }
+                    
+                    // 4. 最后备选：任何中文语音
+                    if (!selectedVoice) {
+                        selectedVoice = voices.find(voice => 
+                            voice.lang.startsWith('zh') ||
+                            voice.name.includes('Chinese') ||
+                            voice.name.includes('中文')
+                        );
+                    }
+                    
+                    if (selectedVoice) {
+                        console.log('选择的语音:', selectedVoice.name, selectedVoice.lang);
+                        utterance.voice = selectedVoice;
+                    } else {
+                        console.log('未找到合适的中文语音，使用默认语音');
+                    }
+                }
                 
-                // 如果语音列表已加载，直接设置
-                const voices = speechSynthesis.getVoices();
-                if (voices.length > 0) {
-                    const chineseVoice = voices.find(voice => 
-                        voice.lang === 'zh-CN' || voice.lang === 'zh' || 
-                        voice.name.includes('Chinese') || voice.name.includes('中文')
-                    );
-                    if (chineseVoice) {
-                        utterance.voice = chineseVoice;
-                    }
+                // 语音加载完成后选择
+                utterance.onvoiceschanged = selectMandarinVoice;
+                
+                // 如果语音列表已加载，直接选择
+                if (speechSynthesis.getVoices().length > 0) {
+                    selectMandarinVoice();
                 }
                 
                 // 设置不同模式的语速
