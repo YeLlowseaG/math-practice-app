@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>单词泡泡 - 英语单词游戏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        danger: '#EF4444',
+                        bubble: '#60A5FA'
+                    },
+                    fontFamily: {
+                        kids: ['"Comic Sans MS"', '"Marker Felt"', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .bubble {
+            width: 70px;
+            height: 70px;
+            background: #60A5FA;
+            border-radius: 50%;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.75rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .bubble:hover {
+            transform: scale(1.1);
+            background: #3B82F6;
+        }
+        
+        .bubble:active {
+            transform: scale(0.95);
+        }
+        
+        .bubble.correct {
+            background: #10B981;
+            animation: pop 0.5s ease-out;
+        }
+        
+        .bubble.wrong {
+            background: #EF4444;
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(0) rotate(180deg); opacity: 0; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .bubbles-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            overflow: hidden;
+        }
+        
+        @media (max-width: 768px) {
+            .bubble {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            .bubbles-container {
+                height: 280px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .bubble {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+            .bubbles-container {
+                height: 240px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen font-kids">
+    <!-- 开始界面 -->
+    <div id="start-screen" class="flex flex-col items-center justify-center min-h-screen p-6">
+        <button onclick="window.location.href='index.html'" class="absolute top-4 right-4 bg-white/90 px-4 py-2 rounded-full shadow-lg">
+            <i class="fa fa-home mr-2"></i>首页
+        </button>
+        
+        <div class="text-center max-w-md mx-auto bg-white rounded-3xl shadow-2xl p-8">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-4">单词泡泡</h1>
+            <p class="text-lg mb-6">看到图片后，在15秒内<br>点破字母泡泡拼出单词！</p>
+            
+            <div class="flex justify-center mb-8">
+                <div class="w-24 h-24 bg-gradient-to-br from-bubble to-blue-600 rounded-full flex items-center justify-center text-white text-4xl shadow-lg">
+                    <i class="fa fa-bullseye"></i>
+                </div>
+            </div>
+            
+            <!-- 难度选择 -->
+            <div class="mb-6">
+                <h3 class="text-base font-bold mb-3">选择难度</h3>
+                <div class="flex justify-center gap-3">
+                    <button class="difficulty-btn active" data-difficulty="easy">
+                        <span class="text-lg">😊 简单</span>
+                        <span class="text-xs">3-4字母</span>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="medium">
+                        <span class="text-lg">🤔 中等</span>
+                        <span class="text-xs">5-6字母</span>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="hard">
+                        <span class="text-lg">🔥 困难</span>
+                        <span class="text-xs">7+字母</span>
+                    </button>
+                </div>
+            </div>
+            
+            <button id="start-btn" class="bg-accent hover:bg-yellow-400 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg">
+                开始游戏 <i class="fa fa-play ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="hidden h-screen flex flex-col">
+        <!-- 顶部信息栏 -->
+        <div class="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm shadow-md">
+            <div class="flex items-center gap-3">
+                <button onclick="window.location.href='index.html'" class="bg-white/90 px-3 py-2 rounded-full shadow-md">
+                    <i class="fa fa-home mr-1"></i>首页
+                </button>
+                <div class="bg-primary px-4 py-2 rounded-full text-white font-bold">
+                    关卡 <span id="level-display">1</span>
+                </div>
+                <div class="bg-secondary px-4 py-2 rounded-full text-white font-bold">
+                    分数 <span id="score-display">0</span>
+                </div>
+            </div>
+            
+            <div id="timer" class="bg-accent text-white px-6 py-3 rounded-full shadow-md">
+                <i class="fa fa-clock-o mr-2"></i>
+                时间 <span id="countdown" class="text-3xl font-bold">15</span>
+            </div>
+            
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 rounded-full text-white font-bold">
+                <i class="fa fa-bolt mr-2"></i>
+                <span id="combo-display">0</span>
+            </div>
+        </div>
+        
+        <!-- 主要游戏区域 -->
+        <div class="flex-1 flex flex-col justify-center items-center p-4 relative">
+            <!-- 图片显示区域 -->
+            <div id="image-container" class="mb-8 text-center">
+                <div id="image-placeholder" class="w-48 h-48 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl shadow-lg flex items-center justify-center text-6xl text-gray-400">
+                    <i class="fa fa-image"></i>
+                </div>
+            </div>
+            
+            <!-- 单词显示区域 -->
+            <div id="word-display" class="mb-4 text-center">
+                <div id="current-word" class="text-3xl font-bold text-gray-800 bg-gradient-to-r from-yellow-100 to-orange-100 px-6 py-3 rounded-2xl shadow-lg border-2 border-yellow-300">
+                    <span id="word-placeholder">点击开始</span>
+                </div>
+            </div>
+            
+            <!-- 提示区域 -->
+            <div id="hint-area" class="mb-6 text-center">
+                <div class="bg-gradient-to-r from-blue-100 to-purple-100 px-6 py-4 rounded-2xl shadow-lg border-2 border-blue-300 inline-block">
+                    <p id="hint-text" class="text-blue-700 text-lg font-bold">🎯 点击字母泡泡拼出单词</p>
+                </div>
+            </div>
+            
+            <!-- 泡泡区域 -->
+            <div id="bubbles-container" class="bubbles-container mx-auto max-w-4xl">
+                <!-- 泡泡会动态生成在这里 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        let gameState = {
+            level: 1,
+            score: 0,
+            combo: 0,
+            correctWords: 0,
+            totalWords: 0,
+            isGameActive: false,
+            currentWord: '',
+            selectedLetters: [],
+            timer: null,
+            timeLeft: 15,
+            currentDifficulty: 'easy'
+        };
+
+        // 单词数据库 - 扩充版
+        const wordDatabase = {
+            easy: [
+                // 动物类
+                { word: 'CAT', hint: '喵喵叫的动物' },
+                { word: 'DOG', hint: '人类最好的朋友' },
+                { word: 'BIRD', hint: '会飞的动物' },
+                { word: 'FISH', hint: '水里游的动物' },
+                { word: 'RABBIT', hint: '长耳朵的动物' },
+                { word: 'DUCK', hint: '会游泳的鸟' },
+                { word: 'CHICKEN', hint: '会下蛋的动物' },
+                { word: 'COW', hint: '产奶的动物' },
+                { word: 'PIG', hint: '粉色的农场动物' },
+                { word: 'BEAR', hint: '棕色的熊' },
+                { word: 'PANDA', hint: '黑白相间的熊猫' },
+                { word: 'TIGER', hint: '条纹的老虎' },
+                { word: 'LION', hint: '草原之王' },
+                { word: 'MONKEY', hint: '会爬树的猴子' },
+                { word: 'ELEPHANT', hint: '长鼻子的大象' },
+                { word: 'ZEBRA', hint: '黑白条纹的斑马' },
+                { word: 'ANT', hint: '小蚂蚁' },
+                { word: 'BEE', hint: '会采蜜的蜜蜂' },
+                { word: 'BUTTERFLY', hint: '美丽的蝴蝶' },
+                { word: 'FROG', hint: '会跳的青蛙' },
+                
+                // 食物类
+                { word: 'APPLE', hint: '红色的水果' },
+                { word: 'BANANA', hint: '黄色的水果' },
+                { word: 'ORANGE', hint: '橙色的水果' },
+                { word: 'GRAPE', hint: '紫色的小水果' },
+                { word: 'WATERMELON', hint: '大西瓜' },
+                { word: 'STRAWBERRY', hint: '红色的草莓' },
+                { word: 'CAKE', hint: '生日时吃的甜点' },
+                { word: 'BREAD', hint: '面包' },
+                { word: 'MILK', hint: '白色的牛奶' },
+                { word: 'EGG', hint: '鸡蛋' },
+                { word: 'RICE', hint: '米饭' },
+                { word: 'NOODLES', hint: '面条' },
+                { word: 'ICE CREAM', hint: '冰淇淋' },
+                { word: 'JUICE', hint: '果汁' },
+                { word: 'WATER', hint: '水' },
+                { word: 'CANDY', hint: '糖果' },
+                { word: 'CHOCOLATE', hint: '巧克力' },
+                { word: 'COOKIE', hint: '饼干' },
+                { word: 'VEGETABLE', hint: '蔬菜' },
+                { word: 'FRUIT', hint: '水果' },
+                
+                // 颜色和形状
+                { word: 'RED', hint: '红色' },
+                { word: 'YELLOW', hint: '黄色' },
+                { word: 'BLUE', hint: '蓝色' },
+                { word: 'GREEN', hint: '绿色' },
+                { word: 'PINK', hint: '粉色' },
+                { word: 'BLACK', hint: '黑色' },
+                { word: 'WHITE', hint: '白色' },
+                { word: 'CIRCLE', hint: '圆形' },
+                { word: 'SQUARE', hint: '正方形' },
+                { word: 'STAR', hint: '星星' },
+                { word: 'TRIANGLE', hint: '三角形' },
+                { word: 'HEART', hint: '爱心' },
+                
+                // 身体部位
+                { word: 'HEAD', hint: '头' },
+                { word: 'EYE', hint: '眼睛' },
+                { word: 'NOSE', hint: '鼻子' },
+                { word: 'MOUTH', hint: '嘴巴' },
+                { word: 'EAR', hint: '耳朵' },
+                { word: 'HAND', hint: '手' },
+                { word: 'ARM', hint: '手臂' },
+                { word: 'LEG', hint: '腿' },
+                { word: 'FOOT', hint: '脚' },
+                { word: 'HAIR', hint: '头发' },
+                { word: 'FACE', hint: '脸' },
+                { word: 'TOOTH', hint: '牙齿' },
+                
+                // 家庭成员
+                { word: 'MOTHER', hint: '妈妈' },
+                { word: 'FATHER', hint: '爸爸' },
+                { word: 'BABY', hint: '宝宝' },
+                { word: 'SISTER', hint: '姐妹' },
+                { word: 'BROTHER', hint: '兄弟' },
+                { word: 'GRANDMA', hint: '奶奶' },
+                { word: 'GRANDPA', hint: '爷爷' },
+                { word: 'FAMILY', hint: '家庭' },
+                
+                // 数字和时间
+                { word: 'ONE', hint: '一' },
+                { word: 'TWO', hint: '二' },
+                { word: 'THREE', hint: '三' },
+                { word: 'FOUR', hint: '四' },
+                { word: 'FIVE', hint: '五' },
+                { word: 'SIX', hint: '六' },
+                { word: 'SEVEN', hint: '七' },
+                { word: 'EIGHT', hint: '八' },
+                { word: 'NINE', hint: '九' },
+                { word: 'TEN', hint: '十' },
+                { word: 'SUN', hint: '太阳' },
+                { word: 'MOON', hint: '月亮' },
+                { word: 'DAY', hint: '白天' },
+                { word: 'NIGHT', hint: '夜晚' },
+                { word: 'MORNING', hint: '早晨' },
+                { word: 'TODAY', hint: '今天' },
+                { word: 'TOMORROW', hint: '明天' },
+                { word: 'CLOCK', hint: '钟表' },
+                
+                // 日常用品
+                { word: 'BALL', hint: '球' },
+                { word: 'DOLL', hint: '娃娃' },
+                { word: 'KITE', hint: '风筝' },
+                { word: 'BOOK', hint: '书' },
+                { word: 'PENCIL', hint: '铅笔' },
+                { word: 'CRAYON', hint: '蜡笔' },
+                { word: 'BAG', hint: '书包' },
+                { word: 'CHAIR', hint: '椅子' },
+                { word: 'TABLE', hint: '桌子' },
+                { word: 'BED', hint: '床' },
+                { word: 'DOOR', hint: '门' },
+                { word: 'WINDOW', hint: '窗户' },
+                { word: 'CUP', hint: '杯子' },
+                { word: 'PLATE', hint: '盘子' },
+                { word: 'SPOON', hint: '勺子' },
+                { word: 'TOY', hint: '玩具' },
+                { word: 'COMPUTER', hint: '电脑' },
+                { word: 'TV', hint: '电视' },
+                { word: 'PHONE', hint: '电话' },
+                { word: 'LIGHT', hint: '灯' },
+                { word: 'CAR', hint: '小汽车' },
+                { word: 'BUS', hint: '公交车' },
+                { word: 'BIKE', hint: '自行车' },
+                { word: 'BOAT', hint: '小船' },
+                { word: 'HOUSE', hint: '房子' },
+                { word: 'TREE', hint: '树' },
+                { word: 'FLOWER', hint: '花' },
+                { word: 'BALLOON', hint: '气球' },
+                
+                // 动作动词
+                { word: 'RUN', hint: '跑' },
+                { word: 'JUMP', hint: '跳' },
+                { word: 'PLAY', hint: '玩' },
+                { word: 'EAT', hint: '吃' },
+                { word: 'DRINK', hint: '喝' },
+                { word: 'READ', hint: '读' },
+                { word: 'DRAW', hint: '画' },
+                { word: 'SING', hint: '唱歌' },
+                { word: 'DANCE', hint: '跳舞' },
+                { word: 'SLEEP', hint: '睡觉' },
+                { word: 'SWIM', hint: '游泳' },
+                { word: 'WALK', hint: '走路' },
+                { word: 'SEE', hint: '看见' },
+                { word: 'HEAR', hint: '听见' },
+                { word: 'SAY', hint: '说' },
+                { word: 'LAUGH', hint: '笑' },
+                { word: 'CRY', hint: '哭' },
+                { word: 'SIT', hint: '坐' },
+                { word: 'STAND', hint: '站' },
+                { word: 'GIVE', hint: '给' },
+                { word: 'LIKE', hint: '喜欢' },
+                { word: 'LOVE', hint: '爱' },
+                { word: 'GO', hint: '去' },
+                { word: 'COME', hint: '来' },
+                { word: 'OPEN', hint: '打开' },
+                { word: 'CLOSE', hint: '关闭' },
+                { word: 'WASH', hint: '洗' },
+                { word: 'HELP', hint: '帮助' },
+                
+                // 自然和天气
+                { word: 'RAIN', hint: '雨' },
+                { word: 'SNOW', hint: '雪' },
+                { word: 'CLOUD', hint: '云' },
+                { word: 'WIND', hint: '风' },
+                { word: 'SKY', hint: '天空' },
+                { word: 'RIVER', hint: '河流' },
+                { word: 'MOUNTAIN', hint: '山' },
+                { word: 'GRASS', hint: '草' },
+                { word: 'SEA', hint: '海洋' },
+                { word: 'HOT', hint: '热的' },
+                { word: 'COLD', hint: '冷的' },
+                { word: 'WARM', hint: '暖和的' },
+                { word: 'SUNNY', hint: '晴朗的' },
+                { word: 'RAINY', hint: '下雨的' },
+                { word: 'RAINBOW', hint: '彩虹' },
+                
+                // 地点和职业
+                { word: 'SCHOOL', hint: '学校' },
+                { word: 'HOME', hint: '家' },
+                { word: 'PARK', hint: '公园' },
+                { word: 'ZOO', hint: '动物园' },
+                { word: 'SHOP', hint: '商店' },
+                { word: 'HOSPITAL', hint: '医院' },
+                { word: 'TEACHER', hint: '老师' },
+                { word: 'DOCTOR', hint: '医生' },
+                { word: 'NURSE', hint: '护士' },
+                { word: 'POLICEMAN', hint: '警察' },
+                { word: 'FARMER', hint: '农民' },
+                { word: 'COOK', hint: '厨师' },
+                { word: 'STUDENT', hint: '学生' },
+                { word: 'FRIEND', hint: '朋友' },
+                { word: 'BOY', hint: '男孩' },
+                { word: 'GIRL', hint: '女孩' }
+            ],
+            medium: [
+                // 中等难度的单词（保持原有的）
+                { word: 'RESTAURANT', hint: '餐厅' },
+                { word: 'SUPERMARKET', hint: '超市' },
+                { word: 'LIBRARY', hint: '图书馆' },
+                { word: 'MUSEUM', hint: '博物馆' },
+                { word: 'BEACH', hint: '海滩' },
+                { word: 'UNIVERSITY', hint: '大学' },
+                { word: 'SUBMARINE', hint: '潜水艇' },
+                { word: 'DINOSAUR', hint: '远古的恐龙' },
+                { word: 'TELESCOPE', hint: '望远镜' },
+                { word: 'MICROSCOPE', hint: '显微镜' },
+                { word: 'VOLCANO', hint: '火山' },
+                { word: 'WATERFALL', hint: '瀑布' },
+                { word: 'OCEAN', hint: '海洋' },
+                { word: 'FOREST', hint: '森林' },
+                { word: 'ASTRONAUT', hint: '太空人' },
+                { word: 'TELEPHONE', hint: '电话' }
+            ],
+            hard: [
+                // 困难难度的单词（保持原有的）
+                { word: 'ELEPHANT', hint: '长鼻子的大象' },
+                { word: 'BUTTERFLY', hint: '美丽的蝴蝶' },
+                { word: 'ASTRONAUT', hint: '太空人' },
+                { word: 'TELEPHONE', hint: '电话' },
+                { word: 'COMPUTER', hint: '电脑' },
+                { word: 'UNIVERSITY', hint: '大学' },
+                { word: 'SUBMARINE', hint: '潜水艇' },
+                { word: 'DINOSAUR', hint: '远古的恐龙' },
+                { word: 'TELESCOPE', hint: '望远镜' },
+                { word: 'MICROSCOPE', hint: '显微镜' },
+                { word: 'VOLCANO', hint: '火山' },
+                { word: 'WATERFALL', hint: '瀑布' },
+                { word: 'MOUNTAIN', hint: '山' },
+                { word: 'OCEAN', hint: '海洋' },
+                { word: 'FOREST', hint: '森林' }
+            ]
+        };
+
+        // 简单的图标生成函数
+        function getIconForWord(word) {
+            // 使用Font Awesome图标，更简单直观
+            const iconMap = {
+                // 动物类
+                'CAT': 'fa-paw', 'DOG': 'fa-paw', 'RABBIT': 'fa-paw', 'DUCK': 'fa-dove', 'CHICKEN': 'fa-dove', 'COW': 'fa-horse', 'PIG': 'fa-horse', 'BEAR': 'fa-horse', 'PANDA': 'fa-horse', 'TIGER': 'fa-horse', 'LION': 'fa-horse', 'MONKEY': 'fa-horse', 'ELEPHANT': 'fa-horse', 'ZEBRA': 'fa-horse', 'ANT': 'fa-bug', 'BEE': 'fa-bug', 'BUTTERFLY': 'fa-bug', 'FROG': 'fa-fish',
+                'BIRD': 'fa-dove', 'FISH': 'fa-fish',
+                
+                // 食物类
+                'APPLE': 'fa-apple-alt', 'BANANA': 'fa-apple-alt', 'ORANGE': 'fa-apple-alt', 'GRAPE': 'fa-apple-alt', 'WATERMELON': 'fa-apple-alt', 'STRAWBERRY': 'fa-apple-alt', 'CAKE': 'fa-birthday-cake', 'BREAD': 'fa-birthday-cake', 'MILK': 'fa-wine-bottle', 'EGG': 'fa-egg', 'RICE': 'fa-apple-alt', 'NOODLES': 'fa-apple-alt', 'ICE CREAM': 'fa-ice-cream', 'JUICE': 'fa-wine-bottle', 'WATER': 'fa-wine-bottle', 'CANDY': 'fa-candy-cane', 'CHOCOLATE': 'fa-candy-cane', 'COOKIE': 'fa-cookie-bite', 'VEGETABLE': 'fa-carrot', 'FRUIT': 'fa-apple-alt',
+                
+                // 颜色和形状
+                'RED': 'fa-palette', 'YELLOW': 'fa-palette', 'BLUE': 'fa-palette', 'GREEN': 'fa-palette', 'PINK': 'fa-palette', 'BLACK': 'fa-palette', 'WHITE': 'fa-palette', 'CIRCLE': 'fa-circle', 'SQUARE': 'fa-square', 'STAR': 'fa-star', 'TRIANGLE': 'fa-play', 'HEART': 'fa-heart',
+                
+                // 身体部位
+                'HEAD': 'fa-user', 'EYE': 'fa-eye', 'NOSE': 'fa-user', 'MOUTH': 'fa-user', 'EAR': 'fa-user', 'HAND': 'fa-hand-paper', 'ARM': 'fa-user', 'LEG': 'fa-user', 'FOOT': 'fa-user', 'HAIR': 'fa-user', 'FACE': 'fa-user', 'TOOTH': 'fa-user',
+                
+                // 家庭成员
+                'MOTHER': 'fa-female', 'FATHER': 'fa-male', 'BABY': 'fa-baby', 'SISTER': 'fa-female', 'BROTHER': 'fa-male', 'GRANDMA': 'fa-female', 'GRANDPA': 'fa-male', 'FAMILY': 'fa-users',
+                
+                // 数字和时间
+                'ONE': 'fa-hashtag', 'TWO': 'fa-hashtag', 'THREE': 'fa-hashtag', 'FOUR': 'fa-hashtag', 'FIVE': 'fa-hashtag', 'SIX': 'fa-hashtag', 'SEVEN': 'fa-hashtag', 'EIGHT': 'fa-hashtag', 'NINE': 'fa-hashtag', 'TEN': 'fa-hashtag', 'SUN': 'fa-sun', 'MOON': 'fa-moon', 'DAY': 'fa-sun', 'NIGHT': 'fa-moon', 'MORNING': 'fa-sun', 'TODAY': 'fa-calendar-day', 'TOMORROW': 'fa-calendar-day', 'CLOCK': 'fa-clock',
+                
+                // 日常用品
+                'BALL': 'fa-circle', 'DOLL': 'fa-child', 'KITE': 'fa-paper-plane', 'BOOK': 'fa-book', 'PENCIL': 'fa-pencil-alt', 'CRAYON': 'fa-pencil-alt', 'BAG': 'fa-briefcase', 'CHAIR': 'fa-chair', 'TABLE': 'fa-table', 'BED': 'fa-bed', 'DOOR': 'fa-door-open', 'WINDOW': 'fa-window-maximize', 'CUP': 'fa-mug-hot', 'PLATE': 'fa-circle', 'SPOON': 'fa-utensils', 'TOY': 'fa-child', 'COMPUTER': 'fa-laptop', 'TV': 'fa-tv', 'PHONE': 'fa-phone', 'LIGHT': 'fa-lightbulb', 'CAR': 'fa-car', 'BUS': 'fa-bus', 'BIKE': 'fa-bicycle', 'BOAT': 'fa-ship', 'HOUSE': 'fa-home', 'TREE': 'fa-tree', 'FLOWER': 'fa-seedling', 'BALLOON': 'fa-circle',
+                
+                // 动作动词
+                'RUN': 'fa-running', 'JUMP': 'fa-running', 'PLAY': 'fa-gamepad', 'EAT': 'fa-utensils', 'DRINK': 'fa-wine-bottle', 'READ': 'fa-book-open', 'DRAW': 'fa-paint-brush', 'SING': 'fa-music', 'DANCE': 'fa-music', 'SLEEP': 'fa-bed', 'SWIM': 'fa-swimming-pool', 'WALK': 'fa-walking', 'SEE': 'fa-eye', 'HEAR': 'fa-ear', 'SAY': 'fa-comment', 'LAUGH': 'fa-laugh', 'CRY': 'fa-sad-tear', 'SIT': 'fa-chair', 'STAND': 'fa-user', 'GIVE': 'fa-hand-holding-heart', 'LIKE': 'fa-heart', 'LOVE': 'fa-heart', 'GO': 'fa-arrow-right', 'COME': 'fa-arrow-left', 'OPEN': 'fa-door-open', 'CLOSE': 'fa-door-closed', 'WASH': 'fa-hands-wash', 'HELP': 'fa-hands-helping',
+                
+                // 自然和天气
+                'RAIN': 'fa-cloud-rain', 'SNOW': 'fa-snowflake', 'CLOUD': 'fa-cloud', 'WIND': 'fa-wind', 'SKY': 'fa-cloud', 'RIVER': 'fa-water', 'MOUNTAIN': 'fa-mountain', 'GRASS': 'fa-seedling', 'SEA': 'fa-water', 'HOT': 'fa-thermometer-full', 'COLD': 'fa-thermometer-empty', 'WARM': 'fa-thermometer-half', 'SUNNY': 'fa-sun', 'RAINY': 'fa-cloud-rain', 'RAINBOW': 'fa-rainbow',
+                
+                // 地点和职业
+                'SCHOOL': 'fa-graduation-cap', 'HOME': 'fa-home', 'PARK': 'fa-tree', 'ZOO': 'fa-horse', 'SHOP': 'fa-shopping-cart', 'HOSPITAL': 'fa-hospital', 'TEACHER': 'fa-chalkboard-teacher', 'DOCTOR': 'fa-user-md', 'NURSE': 'fa-user-nurse', 'POLICEMAN': 'fa-shield-alt', 'FARMER': 'fa-user-tie', 'COOK': 'fa-utensils', 'STUDENT': 'fa-user-graduate', 'FRIEND': 'fa-users', 'BOY': 'fa-male', 'GIRL': 'fa-female',
+                
+                // 原有的单词
+                'RESTAURANT': 'fa-utensils', 'SUPERMARKET': 'fa-shopping-cart', 'LIBRARY': 'fa-book', 'MUSEUM': 'fa-landmark', 'BEACH': 'fa-umbrella-beach', 'UNIVERSITY': 'fa-university', 'SUBMARINE': 'fa-ship', 'DINOSAUR': 'fa-dragon', 'TELESCOPE': 'fa-eye', 'MICROSCOPE': 'fa-search', 'VOLCANO': 'fa-fire', 'WATERFALL': 'fa-water', 'OCEAN': 'fa-water', 'FOREST': 'fa-tree', 'ASTRONAUT': 'fa-user-astronaut', 'TELEPHONE': 'fa-phone'
+            };
+
+            // 如果有预定义的图标，直接返回
+            if (iconMap[word]) {
+                return `<i class="fa ${iconMap[word]}"></i>`;
+            }
+
+            // 智能匹配：根据单词特征生成图标
+            const wordLower = word.toLowerCase();
+            
+            // 动物相关
+            if (wordLower.includes('cat') || wordLower.includes('dog') || wordLower.includes('rabbit') || wordLower.includes('duck') || wordLower.includes('chicken') || wordLower.includes('cow') || wordLower.includes('pig') || wordLower.includes('bear') || wordLower.includes('panda') || wordLower.includes('tiger') || wordLower.includes('lion') || wordLower.includes('monkey') || wordLower.includes('elephant') || wordLower.includes('zebra') || wordLower.includes('ant') || wordLower.includes('bee') || wordLower.includes('butterfly') || wordLower.includes('frog')) return '<i class="fa fa-paw"></i>';
+            if (wordLower.includes('fish')) return '<i class="fa fa-fish"></i>';
+            if (wordLower.includes('bird') || wordLower.includes('duck') || wordLower.includes('chicken')) return '<i class="fa fa-dove"></i>';
+            
+            // 食物相关
+            if (wordLower.includes('apple') || wordLower.includes('banana') || wordLower.includes('orange') || wordLower.includes('grape') || wordLower.includes('watermelon') || wordLower.includes('strawberry') || wordLower.includes('rice') || wordLower.includes('noodles') || wordLower.includes('ice cream') || wordLower.includes('juice') || wordLower.includes('water') || wordLower.includes('candy') || wordLower.includes('chocolate') || wordLower.includes('cookie') || wordLower.includes('vegetable') || wordLower.includes('fruit')) return '<i class="fa fa-apple-alt"></i>';
+            if (wordLower.includes('cake') || wordLower.includes('bread')) return '<i class="fa fa-birthday-cake"></i>';
+            if (wordLower.includes('milk') || wordLower.includes('egg')) return '<i class="fa fa-wine-bottle"></i>';
+            if (wordLower.includes('pizza')) return '<i class="fa fa-pizza-slice"></i>';
+            
+            // 自然相关
+            if (wordLower.includes('sun') || wordLower.includes('day') || wordLower.includes('morning') || wordLower.includes('sunny')) return '<i class="fa fa-sun"></i>';
+            if (wordLower.includes('moon') || wordLower.includes('night')) return '<i class="fa fa-moon"></i>';
+            if (wordLower.includes('star')) return '<i class="fa fa-star"></i>';
+            if (wordLower.includes('tree') || wordLower.includes('grass')) return '<i class="fa fa-tree"></i>';
+            if (wordLower.includes('flower') || wordLower.includes('grass')) return '<i class="fa fa-seedling"></i>';
+            if (wordLower.includes('mountain')) return '<i class="fa fa-mountain"></i>';
+            if (wordLower.includes('rain') || wordLower.includes('rainy')) return '<i class="fa fa-cloud-rain"></i>';
+            if (wordLower.includes('snow')) return '<i class="fa fa-snowflake"></i>';
+            if (wordLower.includes('cloud') || wordLower.includes('sky')) return '<i class="fa fa-cloud"></i>';
+            if (wordLower.includes('wind')) return '<i class="fa fa-wind"></i>';
+            if (wordLower.includes('river') || wordLower.includes('sea') || wordLower.includes('water')) return '<i class="fa fa-water"></i>';
+            if (wordLower.includes('rainbow')) return '<i class="fa fa-rainbow"></i>';
+            if (wordLower.includes('hot') || wordLower.includes('cold') || wordLower.includes('warm')) return '<i class="fa fa-thermometer-half"></i>';
+            
+            // 颜色和形状
+            if (wordLower.includes('red') || wordLower.includes('yellow') || wordLower.includes('blue') || wordLower.includes('green') || wordLower.includes('pink') || wordLower.includes('black') || wordLower.includes('white')) return '<i class="fa fa-palette"></i>';
+            if (wordLower.includes('circle')) return '<i class="fa fa-circle"></i>';
+            if (wordLower.includes('square')) return '<i class="fa fa-square"></i>';
+            if (wordLower.includes('triangle')) return '<i class="fa fa-play"></i>';
+            if (wordLower.includes('heart')) return '<i class="fa fa-heart"></i>';
+            
+            // 身体部位
+            if (wordLower.includes('head') || wordLower.includes('nose') || wordLower.includes('mouth') || wordLower.includes('ear') || wordLower.includes('arm') || wordLower.includes('leg') || wordLower.includes('foot') || wordLower.includes('hair') || wordLower.includes('face') || wordLower.includes('tooth')) return '<i class="fa fa-user"></i>';
+            if (wordLower.includes('eye')) return '<i class="fa fa-eye"></i>';
+            if (wordLower.includes('hand')) return '<i class="fa fa-hand-paper"></i>';
+            
+            // 家庭成员
+            if (wordLower.includes('mother') || wordLower.includes('sister') || wordLower.includes('grandma')) return '<i class="fa fa-female"></i>';
+            if (wordLower.includes('father') || wordLower.includes('brother') || wordLower.includes('grandpa')) return '<i class="fa fa-male"></i>';
+            if (wordLower.includes('baby')) return '<i class="fa fa-baby"></i>';
+            if (wordLower.includes('family')) return '<i class="fa fa-users"></i>';
+            
+            // 数字
+            if (wordLower.includes('one') || wordLower.includes('two') || wordLower.includes('three') || wordLower.includes('four') || wordLower.includes('five') || wordLower.includes('six') || wordLower.includes('seven') || wordLower.includes('eight') || wordLower.includes('nine') || wordLower.includes('ten')) return '<i class="fa fa-hashtag"></i>';
+            
+            // 时间
+            if (wordLower.includes('today') || wordLower.includes('tomorrow')) return '<i class="fa fa-calendar-day"></i>';
+            if (wordLower.includes('clock')) return '<i class="fa fa-clock"></i>';
+            
+            // 物品相关
+            if (wordLower.includes('house') || wordLower.includes('home')) return '<i class="fa fa-home"></i>';
+            if (wordLower.includes('car')) return '<i class="fa fa-car"></i>';
+            if (wordLower.includes('book')) return '<i class="fa fa-book"></i>';
+            if (wordLower.includes('ball') || wordLower.includes('balloon')) return '<i class="fa fa-circle"></i>';
+            if (wordLower.includes('hat')) return '<i class="fa fa-hat-cowboy"></i>';
+            if (wordLower.includes('pencil') || wordLower.includes('crayon')) return '<i class="fa fa-pencil-alt"></i>';
+            if (wordLower.includes('phone') || wordLower.includes('telephone')) return '<i class="fa fa-phone"></i>';
+            if (wordLower.includes('computer')) return '<i class="fa fa-laptop"></i>';
+            if (wordLower.includes('tv') || wordLower.includes('television')) return '<i class="fa fa-tv"></i>';
+            if (wordLower.includes('camera')) return '<i class="fa fa-camera"></i>';
+            if (wordLower.includes('clock') || wordLower.includes('watch')) return '<i class="fa fa-clock"></i>';
+            if (wordLower.includes('key')) return '<i class="fa fa-key"></i>';
+            if (wordLower.includes('door')) return '<i class="fa fa-door-open"></i>';
+            if (wordLower.includes('window')) return '<i class="fa fa-window-maximize"></i>';
+            if (wordLower.includes('bed')) return '<i class="fa fa-bed"></i>';
+            if (wordLower.includes('chair')) return '<i class="fa fa-chair"></i>';
+            if (wordLower.includes('table')) return '<i class="fa fa-table"></i>';
+            if (wordLower.includes('lamp') || wordLower.includes('light')) return '<i class="fa fa-lightbulb"></i>';
+            if (wordLower.includes('mirror')) return '<i class="fa fa-mirror"></i>';
+            if (wordLower.includes('bag') || wordLower.includes('backpack')) return '<i class="fa fa-briefcase"></i>';
+            if (wordLower.includes('shirt') || wordLower.includes('clothes')) return '<i class="fa fa-tshirt"></i>';
+            if (wordLower.includes('shoes')) return '<i class="fa fa-shoe-prints"></i>';
+            if (wordLower.includes('glasses')) return '<i class="fa fa-glasses"></i>';
+            if (wordLower.includes('umbrella')) return '<i class="fa fa-umbrella"></i>';
+            if (wordLower.includes('money')) return '<i class="fa fa-dollar-sign"></i>';
+            if (wordLower.includes('gift') || wordLower.includes('present')) return '<i class="fa fa-gift"></i>';
+            if (wordLower.includes('toy')) return '<i class="fa fa-gamepad"></i>';
+            if (wordLower.includes('robot')) return '<i class="fa fa-robot"></i>';
+            if (wordLower.includes('rocket')) return '<i class="fa fa-rocket"></i>';
+            if (wordLower.includes('plane') || wordLower.includes('airplane')) return '<i class="fa fa-plane"></i>';
+            if (wordLower.includes('train')) return '<i class="fa fa-train"></i>';
+            if (wordLower.includes('bus')) return '<i class="fa fa-bus"></i>';
+            if (wordLower.includes('bike') || wordLower.includes('bicycle')) return '<i class="fa fa-bicycle"></i>';
+            if (wordLower.includes('boat') || wordLower.includes('ship')) return '<i class="fa fa-ship"></i>';
+            if (wordLower.includes('doll')) return '<i class="fa fa-child"></i>';
+            if (wordLower.includes('kite')) return '<i class="fa fa-paper-plane"></i>';
+            if (wordLower.includes('cup') || wordLower.includes('plate') || wordLower.includes('spoon')) return '<i class="fa fa-utensils"></i>';
+            
+            // 动作动词
+            if (wordLower.includes('run') || wordLower.includes('jump')) return '<i class="fa fa-running"></i>';
+            if (wordLower.includes('play')) return '<i class="fa fa-gamepad"></i>';
+            if (wordLower.includes('eat')) return '<i class="fa fa-utensils"></i>';
+            if (wordLower.includes('drink')) return '<i class="fa fa-wine-bottle"></i>';
+            if (wordLower.includes('read')) return '<i class="fa fa-book-open"></i>';
+            if (wordLower.includes('draw')) return '<i class="fa fa-paint-brush"></i>';
+            if (wordLower.includes('sing') || wordLower.includes('dance')) return '<i class="fa fa-music"></i>';
+            if (wordLower.includes('sleep')) return '<i class="fa fa-bed"></i>';
+            if (wordLower.includes('swim')) return '<i class="fa fa-swimming-pool"></i>';
+            if (wordLower.includes('walk')) return '<i class="fa fa-walking"></i>';
+            if (wordLower.includes('see')) return '<i class="fa fa-eye"></i>';
+            if (wordLower.includes('hear')) return '<i class="fa fa-ear"></i>';
+            if (wordLower.includes('say')) return '<i class="fa fa-comment"></i>';
+            if (wordLower.includes('laugh')) return '<i class="fa fa-laugh"></i>';
+            if (wordLower.includes('cry')) return '<i class="fa fa-sad-tear"></i>';
+            if (wordLower.includes('sit')) return '<i class="fa fa-chair"></i>';
+            if (wordLower.includes('stand')) return '<i class="fa fa-user"></i>';
+            if (wordLower.includes('give')) return '<i class="fa fa-hand-holding-heart"></i>';
+            if (wordLower.includes('like') || wordLower.includes('love')) return '<i class="fa fa-heart"></i>';
+            if (wordLower.includes('go')) return '<i class="fa fa-arrow-right"></i>';
+            if (wordLower.includes('come')) return '<i class="fa fa-arrow-left"></i>';
+            if (wordLower.includes('open')) return '<i class="fa fa-door-open"></i>';
+            if (wordLower.includes('close')) return '<i class="fa fa-door-closed"></i>';
+            if (wordLower.includes('wash')) return '<i class="fa fa-hands-wash"></i>';
+            if (wordLower.includes('help')) return '<i class="fa fa-hands-helping"></i>';
+            
+            // 地点相关
+            if (wordLower.includes('school')) return '<i class="fa fa-graduation-cap"></i>';
+            if (wordLower.includes('hospital')) return '<i class="fa fa-hospital"></i>';
+            if (wordLower.includes('restaurant')) return '<i class="fa fa-utensils"></i>';
+            if (wordLower.includes('supermarket') || wordLower.includes('store') || wordLower.includes('shop')) return '<i class="fa fa-shopping-cart"></i>';
+            if (wordLower.includes('library')) return '<i class="fa fa-book"></i>';
+            if (wordLower.includes('museum')) return '<i class="fa fa-landmark"></i>';
+            if (wordLower.includes('park')) return '<i class="fa fa-tree"></i>';
+            if (wordLower.includes('beach')) return '<i class="fa fa-umbrella-beach"></i>';
+            if (wordLower.includes('university') || wordLower.includes('college')) return '<i class="fa fa-university"></i>';
+            if (wordLower.includes('office')) return '<i class="fa fa-building"></i>';
+            if (wordLower.includes('factory')) return '<i class="fa fa-industry"></i>';
+            if (wordLower.includes('bank')) return '<i class="fa fa-university"></i>';
+            if (wordLower.includes('police')) return '<i class="fa fa-shield-alt"></i>';
+            if (wordLower.includes('fire')) return '<i class="fa fa-fire"></i>';
+            if (wordLower.includes('church')) return '<i class="fa fa-church"></i>';
+            if (wordLower.includes('castle')) return '<i class="fa fa-chess-rook"></i>';
+            if (wordLower.includes('bridge')) return '<i class="fa fa-route"></i>';
+            if (wordLower.includes('tower')) return '<i class="fa fa-chess-king"></i>';
+            if (wordLower.includes('zoo')) return '<i class="fa fa-horse"></i>';
+            
+            // 人物相关
+            if (wordLower.includes('friend')) return '<i class="fa fa-users"></i>';
+            if (wordLower.includes('family')) return '<i class="fa fa-users"></i>';
+            if (wordLower.includes('astronaut')) return '<i class="fa fa-user-astronaut"></i>';
+            if (wordLower.includes('teacher')) return '<i class="fa fa-chalkboard-teacher"></i>';
+            if (wordLower.includes('doctor')) return '<i class="fa fa-user-md"></i>';
+            if (wordLower.includes('nurse')) return '<i class="fa fa-user-nurse"></i>';
+            if (wordLower.includes('police') || wordLower.includes('policeman')) return '<i class="fa fa-user-shield"></i>';
+            if (wordLower.includes('firefighter')) return '<i class="fa fa-fire-extinguisher"></i>';
+            if (wordLower.includes('soldier')) return '<i class="fa fa-user-tie"></i>';
+            if (wordLower.includes('pilot')) return '<i class="fa fa-user-tie"></i>';
+            if (wordLower.includes('farmer')) return '<i class="fa fa-user"></i>';
+            if (wordLower.includes('cook') || wordLower.includes('chef')) return '<i class="fa fa-user-chef"></i>';
+            if (wordLower.includes('artist')) return '<i class="fa fa-palette"></i>';
+            if (wordLower.includes('musician')) return '<i class="fa fa-music"></i>';
+            if (wordLower.includes('scientist')) return '<i class="fa fa-flask"></i>';
+            if (wordLower.includes('engineer')) return '<i class="fa fa-cogs"></i>';
+            if (wordLower.includes('businessman')) return '<i class="fa fa-user-tie"></i>';
+            if (wordLower.includes('student')) return '<i class="fa fa-user-graduate"></i>';
+            if (wordLower.includes('baby')) return '<i class="fa fa-baby"></i>';
+            if (wordLower.includes('child') || wordLower.includes('kid')) return '<i class="fa fa-child"></i>';
+            if (wordLower.includes('boy')) return '<i class="fa fa-male"></i>';
+            if (wordLower.includes('girl')) return '<i class="fa fa-female"></i>';
+            if (wordLower.includes('man')) return '<i class="fa fa-male"></i>';
+            if (wordLower.includes('woman')) return '<i class="fa fa-female"></i>';
+            
+            // 其他通用匹配
+            if (wordLower.includes('weather')) return '<i class="fa fa-cloud-sun"></i>';
+            if (wordLower.includes('country') || wordLower.includes('world')) return '<i class="fa fa-globe"></i>';
+            if (wordLower.includes('space')) return '<i class="fa fa-rocket"></i>';
+            if (wordLower.includes('telescope')) return '<i class="fa fa-eye"></i>';
+            if (wordLower.includes('microscope')) return '<i class="fa fa-search"></i>';
+            if (wordLower.includes('music')) return '<i class="fa fa-music"></i>';
+            if (wordLower.includes('game')) return '<i class="fa fa-gamepad"></i>';
+            if (wordLower.includes('sport')) return '<i class="fa fa-futbol"></i>';
+            if (wordLower.includes('dance')) return '<i class="fa fa-music"></i>';
+            if (wordLower.includes('art')) return '<i class="fa fa-palette"></i>';
+            if (wordLower.includes('movie')) return '<i class="fa fa-film"></i>';
+            if (wordLower.includes('party')) return '<i class="fa fa-birthday-cake"></i>';
+            if (wordLower.includes('birthday')) return '<i class="fa fa-birthday-cake"></i>';
+            if (wordLower.includes('christmas')) return '<i class="fa fa-tree"></i>';
+            if (wordLower.includes('halloween')) return '<i class="fa fa-ghost"></i>';
+            if (wordLower.includes('love') || wordLower.includes('heart')) return '<i class="fa fa-heart"></i>';
+            if (wordLower.includes('smile') || wordLower.includes('happy')) return '<i class="fa fa-smile"></i>';
+            if (wordLower.includes('sad') || wordLower.includes('cry')) return '<i class="fa fa-frown"></i>';
+            if (wordLower.includes('angry')) return '<i class="fa fa-angry"></i>';
+            if (wordLower.includes('sleep')) return '<i class="fa fa-bed"></i>';
+            if (wordLower.includes('eat') || wordLower.includes('food')) return '<i class="fa fa-utensils"></i>';
+            if (wordLower.includes('drink')) return '<i class="fa fa-glass-whiskey"></i>';
+            if (wordLower.includes('work')) return '<i class="fa fa-briefcase"></i>';
+            if (wordLower.includes('study') || wordLower.includes('learn')) return '<i class="fa fa-book"></i>';
+            if (wordLower.includes('play')) return '<i class="fa fa-gamepad"></i>';
+            if (wordLower.includes('run')) return '<i class="fa fa-running"></i>';
+            if (wordLower.includes('walk')) return '<i class="fa fa-walking"></i>';
+            if (wordLower.includes('swim')) return '<i class="fa fa-swimming-pool"></i>';
+            if (wordLower.includes('jump')) return '<i class="fa fa-arrow-up"></i>';
+            if (wordLower.includes('dance')) return '<i class="fa fa-music"></i>';
+            if (wordLower.includes('sing')) return '<i class="fa fa-microphone"></i>';
+            if (wordLower.includes('read')) return '<i class="fa fa-book-open"></i>';
+            if (wordLower.includes('write')) return '<i class="fa fa-pen"></i>';
+            if (wordLower.includes('draw') || wordLower.includes('paint')) return '<i class="fa fa-palette"></i>';
+            if (wordLower.includes('build') || wordLower.includes('make')) return '<i class="fa fa-hammer"></i>';
+            if (wordLower.includes('clean')) return '<i class="fa fa-broom"></i>';
+            if (wordLower.includes('wash')) return '<i class="fa fa-soap"></i>';
+            if (wordLower.includes('cook')) return '<i class="fa fa-utensils"></i>';
+            if (wordLower.includes('shop') || wordLower.includes('buy')) return '<i class="fa fa-shopping-cart"></i>';
+            if (wordLower.includes('help')) return '<i class="fa fa-hands-helping"></i>';
+            if (wordLower.includes('save')) return '<i class="fa fa-save"></i>';
+            if (wordLower.includes('find') || wordLower.includes('search')) return '<i class="fa fa-search"></i>';
+            if (wordLower.includes('open')) return '<i class="fa fa-door-open"></i>';
+            if (wordLower.includes('close')) return '<i class="fa fa-door-closed"></i>';
+            if (wordLower.includes('start') || wordLower.includes('begin')) return '<i class="fa fa-play"></i>';
+            if (wordLower.includes('stop')) return '<i class="fa fa-stop"></i>';
+            if (wordLower.includes('fast') || wordLower.includes('quick')) return '<i class="fa fa-tachometer-alt"></i>';
+            if (wordLower.includes('slow')) return '<i class="fa fa-clock"></i>';
+            if (wordLower.includes('big') || wordLower.includes('large')) return '<i class="fa fa-expand"></i>';
+            if (wordLower.includes('small') || wordLower.includes('tiny')) return '<i class="fa fa-compress"></i>';
+            if (wordLower.includes('hot')) return '<i class="fa fa-fire"></i>';
+            if (wordLower.includes('cold')) return '<i class="fa fa-snowflake"></i>';
+            if (wordLower.includes('new')) return '<i class="fa fa-star"></i>';
+            if (wordLower.includes('old')) return '<i class="fa fa-clock"></i>';
+            if (wordLower.includes('good') || wordLower.includes('great')) return '<i class="fa fa-thumbs-up"></i>';
+            if (wordLower.includes('bad')) return '<i class="fa fa-thumbs-down"></i>';
+            if (wordLower.includes('beautiful') || wordLower.includes('pretty')) return '<i class="fa fa-star"></i>';
+            if (wordLower.includes('ugly')) return '<i class="fa fa-times"></i>';
+            if (wordLower.includes('strong')) return '<i class="fa fa-dumbbell"></i>';
+            if (wordLower.includes('weak')) return '<i class="fa fa-heart-broken"></i>';
+            if (wordLower.includes('rich')) return '<i class="fa fa-dollar-sign"></i>';
+            if (wordLower.includes('poor')) return '<i class="fa fa-heart-broken"></i>';
+            if (wordLower.includes('smart') || wordLower.includes('clever')) return '<i class="fa fa-brain"></i>';
+            if (wordLower.includes('stupid') || wordLower.includes('dumb')) return '<i class="fa fa-question"></i>';
+            if (wordLower.includes('brave')) return '<i class="fa fa-shield-alt"></i>';
+            if (wordLower.includes('scared') || wordLower.includes('afraid')) return '<i class="fa fa-ghost"></i>';
+            if (wordLower.includes('funny')) return '<i class="fa fa-laugh"></i>';
+            if (wordLower.includes('boring')) return '<i class="fa fa-sleep"></i>';
+            if (wordLower.includes('exciting')) return '<i class="fa fa-star"></i>';
+            if (wordLower.includes('dangerous')) return '<i class="fa fa-exclamation-triangle"></i>';
+            if (wordLower.includes('safe')) return '<i class="fa fa-shield-alt"></i>';
+            if (wordLower.includes('free')) return '<i class="fa fa-unlock"></i>';
+            if (wordLower.includes('busy')) return '<i class="fa fa-calendar"></i>';
+            if (wordLower.includes('quiet')) return '<i class="fa fa-volume-mute"></i>';
+            if (wordLower.includes('loud') || wordLower.includes('noisy')) return '<i class="fa fa-volume-up"></i>';
+            if (wordLower.includes('bright')) return '<i class="fa fa-lightbulb"></i>';
+            if (wordLower.includes('dark')) return '<i class="fa fa-moon"></i>';
+            if (wordLower.includes('color') || wordLower.includes('colour')) return '<i class="fa fa-palette"></i>';
+            if (wordLower.includes('red')) return '<i class="fa fa-circle" style="color: red;"></i>';
+            if (wordLower.includes('blue')) return '<i class="fa fa-circle" style="color: blue;"></i>';
+            if (wordLower.includes('green')) return '<i class="fa fa-circle" style="color: green;"></i>';
+            if (wordLower.includes('yellow')) return '<i class="fa fa-circle" style="color: yellow;"></i>';
+            if (wordLower.includes('orange')) return '<i class="fa fa-circle" style="color: orange;"></i>';
+            if (wordLower.includes('purple')) return '<i class="fa fa-circle" style="color: purple;"></i>';
+            if (wordLower.includes('pink')) return '<i class="fa fa-circle" style="color: pink;"></i>';
+            if (wordLower.includes('brown')) return '<i class="fa fa-circle" style="color: brown;"></i>';
+            if (wordLower.includes('black')) return '<i class="fa fa-circle" style="color: black;"></i>';
+            if (wordLower.includes('white')) return '<i class="fa fa-circle" style="color: white;"></i>';
+            if (wordLower.includes('gray') || wordLower.includes('grey')) return '<i class="fa fa-circle" style="color: gray;"></i>';
+            
+            // 如果没有匹配到任何图标，返回默认图标
+            return '<i class="fa fa-question"></i>';
+        }
+
+        // 获取DOM元素
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const startBtn = document.getElementById('start-btn');
+        const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+        const levelDisplay = document.getElementById('level-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const comboDisplay = document.getElementById('combo-display');
+        const countdownEl = document.getElementById('countdown');
+        const imagePlaceholder = document.getElementById('image-placeholder');
+        const wordPlaceholder = document.getElementById('word-placeholder');
+        const hintText = document.getElementById('hint-text');
+        const bubblesContainer = document.getElementById('bubbles-container');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initButtons();
+        });
+
+        // 初始化按钮
+        function initButtons() {
+            // 难度选择按钮
+            difficultyBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    difficultyBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    gameState.currentDifficulty = btn.dataset.difficulty;
+                });
+            });
+
+            // 开始按钮
+            startBtn.addEventListener('click', startGame);
+        }
+
+        // 开始游戏
+        function startGame() {
+            gameState = {
+                level: 1,
+                score: 0,
+                combo: 0,
+                correctWords: 0,
+                totalWords: 0,
+                isGameActive: true,
+                currentWord: '',
+                selectedLetters: [],
+                timer: null,
+                timeLeft: 15,
+                currentDifficulty: gameState.currentDifficulty || 'easy'
+            };
+
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            nextWord();
+        }
+
+        // 下一个单词
+        function nextWord() {
+            if (!gameState.isGameActive) return;
+
+            const words = wordDatabase[gameState.currentDifficulty];
+            const randomWord = words[Math.floor(Math.random() * words.length)];
+            
+            gameState.currentWord = randomWord.word;
+            gameState.selectedLetters = [];
+            gameState.timeLeft = 15;
+            
+            // 显示图片和提示
+            const icon = getIconForWord(randomWord.word);
+            imagePlaceholder.innerHTML = icon;
+            wordPlaceholder.textContent = '🎯 点击字母泡泡拼出单词';
+            hintText.textContent = `💡 提示：${randomWord.hint}`;
+            
+            // 生成泡泡
+            generateBubbles();
+            
+            // 开始计时
+            startTimer();
+            
+            // 更新显示
+            updateGameDisplay();
+        }
+
+        // 生成泡泡
+        function generateBubbles() {
+            bubblesContainer.innerHTML = '';
+            
+            const word = gameState.currentWord;
+            const letters = word.split('');
+            const extraLetters = generateExtraLetters(word);
+            const allLetters = [...letters, ...extraLetters];
+            
+            // 打乱字母顺序
+            const shuffledLetters = shuffleArray(allLetters);
+            
+            // 创建泡泡
+            shuffledLetters.forEach((letter, index) => {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                bubble.textContent = letter;
+                bubble.dataset.letter = letter;
+                bubble.dataset.isCorrect = letters.includes(letter) ? 'true' : 'false';
+                
+                // 更匀称的分布算法
+                const containerWidth = bubblesContainer.offsetWidth;
+                const containerHeight = bubblesContainer.offsetHeight;
+                const bubbleSize = 70;
+                const padding = 30;
+                
+                // 计算网格布局
+                const cols = Math.ceil(Math.sqrt(shuffledLetters.length));
+                const rows = Math.ceil(shuffledLetters.length / cols);
+                const cellWidth = (containerWidth - padding * 2) / cols;
+                const cellHeight = (containerHeight - padding * 2) / rows;
+                
+                // 计算当前泡泡在网格中的位置
+                const col = index % cols;
+                const row = Math.floor(index / cols);
+                
+                // 在网格单元内随机偏移
+                const baseX = padding + col * cellWidth + cellWidth / 2;
+                const baseY = padding + row * cellHeight + cellHeight / 2;
+                
+                // 添加随机偏移，但保持在合理范围内
+                const offsetX = (Math.random() - 0.5) * (cellWidth * 0.6);
+                const offsetY = (Math.random() - 0.5) * (cellHeight * 0.6);
+                
+                const x = baseX + offsetX - bubbleSize / 2;
+                const y = baseY + offsetY - bubbleSize / 2;
+                
+                bubble.style.left = x + 'px';
+                bubble.style.top = y + 'px';
+                
+                // 点击事件
+                bubble.addEventListener('click', handleBubbleClick);
+                
+                bubblesContainer.appendChild(bubble);
+            });
+        }
+
+        // 生成额外字母
+        function generateExtraLetters(word) {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const extraCount = Math.max(3, word.length);
+            const extraLetters = [];
+            
+            for (let i = 0; i < extraCount; i++) {
+                let randomLetter;
+                do {
+                    randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+                } while (word.includes(randomLetter) || extraLetters.includes(randomLetter));
+                extraLetters.push(randomLetter);
+            }
+            
+            return extraLetters;
+        }
+
+        // 处理泡泡点击
+        function handleBubbleClick() {
+            if (!gameState.isGameActive) return;
+            
+            const letter = this.dataset.letter;
+            const isCorrect = this.dataset.isCorrect === 'true';
+            
+            if (isCorrect && !gameState.selectedLetters.includes(letter)) {
+                // 正确字母
+                gameState.selectedLetters.push(letter);
+                this.classList.add('correct');
+                
+                // 更新单词显示
+                updateWordDisplay();
+                
+                // 检查是否完成
+                if (gameState.selectedLetters.length === gameState.currentWord.length) {
+                    wordComplete();
+                }
+                
+                // 增加连击和分数
+                gameState.combo++;
+                const timeBonus = Math.floor(gameState.timeLeft * 10);
+                const comboBonus = gameState.combo * 50;
+                gameState.score += 100 + timeBonus + comboBonus;
+                
+            } else if (!isCorrect) {
+                // 错误字母
+                this.classList.add('wrong');
+                gameState.combo = 0;
+                gameState.score = Math.max(0, gameState.score - 50);
+            }
+            
+            // 移除泡泡
+            setTimeout(() => {
+                this.remove();
+            }, 300);
+            
+            updateGameDisplay();
+        }
+
+        // 更新单词显示
+        function updateWordDisplay() {
+            const word = gameState.currentWord;
+            let displayWord = '';
+            
+            for (let i = 0; i < word.length; i++) {
+                if (gameState.selectedLetters.includes(word[i])) {
+                    displayWord += word[i];
+                } else {
+                    displayWord += '_';
+                }
+            }
+            
+            wordPlaceholder.textContent = displayWord;
+        }
+
+        // 单词完成
+        function wordComplete() {
+            gameState.correctWords++;
+            gameState.totalWords++;
+            
+            // 显示完成动画
+            wordPlaceholder.textContent = gameState.currentWord;
+            wordPlaceholder.style.color = '#10B981';
+            
+            // 延迟进入下一关
+            setTimeout(() => {
+                if (gameState.isGameActive) {
+                    nextWord();
+                }
+            }, 2000);
+        }
+
+        // 开始计时器
+        function startTimer() {
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+            }
+            
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                countdownEl.textContent = gameState.timeLeft;
+                
+                if (gameState.timeLeft <= 0) {
+                    timeUp();
+                }
+            }, 1000);
+        }
+
+        // 时间到
+        function timeUp() {
+            clearInterval(gameState.timer);
+            gameState.combo = 0;
+            gameState.totalWords++;
+            
+            // 显示正确答案
+            wordPlaceholder.textContent = gameState.currentWord;
+            wordPlaceholder.style.color = '#EF4444';
+            
+            setTimeout(() => {
+                if (gameState.isGameActive) {
+                    nextWord();
+                }
+            }, 2000);
+        }
+
+        // 更新游戏显示
+        function updateGameDisplay() {
+            levelDisplay.textContent = gameState.level;
+            scoreDisplay.textContent = gameState.score;
+            comboDisplay.textContent = gameState.combo;
+        }
+
+
+
+        // 工具函数：打乱数组
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // 初始化按钮样式
+        document.addEventListener('DOMContentLoaded', () => {
+            const style = document.createElement('style');
+            style.textContent = `
+                .difficulty-btn {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.25rem;
+                    padding: 1rem;
+                    border-radius: 1rem;
+                    border: 2px solid #e5e7eb;
+                    background: white;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .difficulty-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+                }
+                .difficulty-btn.active {
+                    border-color: #4F46E5;
+                    background: linear-gradient(135deg, #4F46E5, #10B981);
+                    color: white;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html> 

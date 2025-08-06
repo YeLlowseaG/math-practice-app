@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>单词记忆游戏 - 英文单词学习</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        danger: '#EF4444',
+                        neutral: '#F7FFF7',
+                        text: '#1F2937'
+                    },
+                    fontFamily: {
+                        kids: ['"Comic Sans MS"', '"Marker Felt"', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .bounce-light {
+                animation: bounce-light 0.5s ease infinite alternate;
+            }
+            .pulse-slow {
+                animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .scale-hover {
+                transition: transform 0.2s;
+            }
+            .scale-hover:hover {
+                transform: scale(1.05);
+            }
+            .correct-animation {
+                animation: correct 0.6s ease-in-out;
+            }
+            .wrong-animation {
+                animation: wrong 0.6s ease-in-out;
+            }
+            .level-complete {
+                animation: levelComplete 1s ease-in-out;
+            }
+            @keyframes bounce-light {
+                from { transform: translateY(0); }
+                to { transform: translateY(-5px); }
+            }
+            @keyframes correct {
+                0% { transform: scale(1); background-color: #10B981; }
+                50% { transform: scale(1.1); background-color: #34D399; }
+                100% { transform: scale(1); background-color: #10B981; }
+            }
+            @keyframes wrong {
+                0% { transform: translateX(0); background-color: #EF4444; }
+                25% { transform: translateX(-5px); background-color: #F87171; }
+                75% { transform: translateX(5px); background-color: #F87171; }
+                100% { transform: translateX(0); background-color: #EF4444; }
+            }
+            @keyframes levelComplete {
+                0% { transform: scale(1) rotate(0deg); }
+                25% { transform: scale(1.2) rotate(5deg); }
+                75% { transform: scale(1.2) rotate(-5deg); }
+                100% { transform: scale(1) rotate(0deg); }
+            }
+            @keyframes button-press {
+                0% { transform: scale(1); }
+                50% { transform: scale(0.95); }
+                100% { transform: scale(1); }
+            }
+            
+            .button-press {
+                animation: button-press 0.2s ease-in-out;
+            }
+            
+            .word-card {
+                min-height: 120px;
+                transition: all 0.3s ease;
+                border: 3px solid transparent;
+            }
+            .word-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+            }
+            .word-card.flipped {
+                transform: rotateY(180deg);
+                background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            }
+            .word-card.matched {
+                background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+                border-color: #10B981;
+            }
+            .word-card.wrong {
+                background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+                border-color: #EF4444;
+                animation: wrong 0.6s ease-in-out;
+            }
+            
+            /* 移动端优化 */
+            @media (max-width: 768px) {
+                .word-card {
+                    min-height: 100px;
+                    font-size: 1rem;
+                    padding: 12px 8px;
+                }
+                .float-animation {
+                    animation: none;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .word-card {
+                    min-height: 90px;
+                    font-size: 0.9rem;
+                    padding: 10px 6px;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen font-kids text-text">
+    
+    <!-- 开始界面 -->
+    <div id="start-screen" class="flex flex-col items-center justify-center min-h-screen p-4 relative">
+        <div class="text-center max-w-2xl mx-auto bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300">
+            <!-- 标题区域 -->
+            <div class="mb-8">
+                <div class="w-24 h-24 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center text-white text-4xl shadow-lg mx-auto mb-6 bounce-light">
+                    <i class="fa fa-puzzle-piece"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-600 to-secondary mb-4 text-shadow">
+                    🧩 单词记忆游戏
+                </h1>
+                <p class="text-lg text-gray-600 mb-2">翻牌配对，学习英文单词</p>
+                <p class="text-base text-gray-500">适合4-10岁儿童</p>
+            </div>
+            
+            <!-- 返回按钮 -->
+            <button onclick="window.location.href='index.html'" 
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-full mb-6 scale-hover">
+                <i class="fa fa-home mr-2"></i>返回首页
+            </button>
+            
+            <!-- 游戏说明 -->
+            <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 mb-8">
+                <h3 class="text-xl font-bold text-primary mb-4">🎯 游戏规则</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                    <div class="flex items-center p-3">
+                        <div class="text-2xl mr-3">👆</div>
+                        <div>
+                            <h4 class="font-bold text-gray-700">翻开卡片</h4>
+                            <p class="text-sm text-gray-600">点击卡片看英文单词</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3">
+                        <div class="text-2xl mr-3">🎯</div>
+                        <div>
+                            <h4 class="font-bold text-gray-700">找到配对</h4>
+                            <p class="text-sm text-gray-600">找相同单词组成一对</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3">
+                        <div class="text-2xl mr-3">🔊</div>
+                        <div>
+                            <h4 class="font-bold text-gray-700">听发音</h4>
+                            <p class="text-sm text-gray-600">点击喇叭听单词读音</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3">
+                        <div class="text-2xl mr-3">🏆</div>
+                        <div>
+                            <h4 class="font-bold text-gray-700">完成挑战</h4>
+                            <p class="text-sm text-gray-600">配对所有单词获胜</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 难度选择 -->
+            <div class="mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">📚 选择难度</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="selectDifficulty('easy')" 
+                            class="difficulty-btn bg-secondary/10 border-2 border-secondary/20 hover:border-secondary/40 p-4 rounded-2xl text-center scale-hover">
+                        <div class="text-3xl mb-2">🌟</div>
+                        <h4 class="font-bold text-secondary mb-1">简单</h4>
+                        <p class="text-sm text-gray-600">3x2 = 6张卡片</p>
+                        <p class="text-xs text-secondary">基础单词</p>
+                    </button>
+                    <button onclick="selectDifficulty('medium')" 
+                            class="difficulty-btn bg-accent/10 border-2 border-accent/20 hover:border-accent/40 p-4 rounded-2xl text-center scale-hover">
+                        <div class="text-3xl mb-2">⭐⭐</div>
+                        <h4 class="font-bold text-accent mb-1">中等</h4>
+                        <p class="text-sm text-gray-600">4x3 = 12张卡片</p>
+                        <p class="text-xs text-accent">常用单词</p>
+                    </button>
+                    <button onclick="selectDifficulty('hard')" 
+                            class="difficulty-btn bg-danger/10 border-2 border-danger/20 hover:border-danger/40 p-4 rounded-2xl text-center scale-hover">
+                        <div class="text-3xl mb-2">⭐⭐⭐</div>
+                        <h4 class="font-bold text-danger mb-1">困难</h4>
+                        <p class="text-sm text-gray-600">4x4 = 16张卡片</p>
+                        <p class="text-xs text-danger">进阶单词</p>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 开始游戏按钮 -->
+            <button id="start-game-btn" onclick="startGame()" disabled
+                    class="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-lg transform transition-all duration-300 scale-hover disabled:opacity-50 disabled:cursor-not-allowed">
+                开始游戏 <i class="fa fa-play ml-2"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="hidden flex flex-col min-h-screen p-4">
+        <!-- 游戏头部 -->
+        <div class="bg-white rounded-2xl shadow-lg p-4 mb-4">
+            <div class="flex justify-between items-center">
+                <button onclick="backToStart()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-full scale-hover">
+                    <i class="fa fa-arrow-left mr-2"></i>返回
+                </button>
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-gray-800">🧩 单词记忆</h2>
+                    <p class="text-sm text-gray-600">翻牌配对游戏</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-600">得分</p>
+                    <p id="game-score" class="text-xl font-bold text-primary">0</p>
+                </div>
+            </div>
+            <div class="flex justify-center items-center mt-3 space-x-6">
+                <div class="text-center">
+                    <p class="text-xs text-gray-500">已配对</p>
+                    <p id="matched-pairs" class="text-lg font-bold text-secondary">0</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-gray-500">总对数</p>
+                    <p id="total-pairs" class="text-lg font-bold text-gray-700">0</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs text-gray-500">翻牌次数</p>
+                    <p id="flip-count" class="text-lg font-bold text-accent">0</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 游戏区域 -->
+        <div class="flex-1 flex items-center justify-center">
+            <div id="game-board" class="grid gap-3 bg-white rounded-2xl shadow-lg p-6">
+                <!-- 卡片将动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 结果界面 -->
+    <div id="result-screen" class="hidden flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="text-center max-w-xl mx-auto bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300">
+            <div id="result-icon" class="text-8xl mb-6 level-complete">🎉</div>
+            <h2 id="result-title" class="text-3xl font-bold text-primary mb-4">恭喜完成！</h2>
+            
+            <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 mb-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <p class="text-2xl font-bold text-primary" id="final-score">0</p>
+                        <p class="text-sm text-gray-600">最终得分</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-2xl font-bold text-secondary" id="final-flips">0</p>
+                        <p class="text-sm text-gray-600">翻牌次数</p>
+                    </div>
+                </div>
+                <div class="mt-4 text-center">
+                    <p id="performance-text" class="text-lg font-bold text-accent">表现优秀！</p>
+                </div>
+            </div>
+            
+            <div class="space-x-4">
+                <button onclick="startGame()" 
+                        class="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-6 py-3 rounded-2xl scale-hover">
+                    <i class="fa fa-refresh mr-2"></i>再玩一次
+                </button>
+                <button onclick="backToStart()" 
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-2xl scale-hover">
+                    <i class="fa fa-home mr-2"></i>返回开始
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏数据
+        const wordData = {
+            easy: ['cat', 'dog', 'sun'],
+            medium: ['apple', 'house', 'water', 'book', 'tree', 'car'],
+            hard: ['elephant', 'rainbow', 'butterfly', 'mountain', 'computer', 'birthday', 'sandwich', 'playground']
+        };
+
+        // 游戏状态
+        let currentDifficulty = null;
+        let gameBoard = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let totalPairs = 0;
+        let score = 0;
+        let flipCount = 0;
+
+        // 游戏管理器
+        class WordMemoryGame {
+            constructor() {
+                this.initSpeechSynthesis();
+            }
+
+            // 初始化语音合成
+            initSpeechSynthesis() {
+                this.voices = [];
+                this.englishVoice = null;
+                
+                if ('speechSynthesis' in window) {
+                    const loadVoices = () => {
+                        this.voices = speechSynthesis.getVoices();
+                        this.englishVoice = this.voices.find(voice => 
+                            voice.lang.includes('en') && 
+                            (voice.name.includes('English') || voice.lang === 'en-US')
+                        ) || this.voices[0];
+                        console.log('选择英语语音:', this.englishVoice?.name);
+                    };
+
+                    if (this.voices.length === 0) {
+                        speechSynthesis.onvoiceschanged = loadVoices;
+                    } else {
+                        loadVoices();
+                    }
+                }
+            }
+
+            // 播放英文发音
+            speak(text, rate = 0.8) {
+                if (!('speechSynthesis' in window) || !this.englishVoice) {
+                    console.log('语音不可用，显示文字:', text);
+                    return;
+                }
+
+                // 处理单词发音
+                let speakText = text.toLowerCase();
+
+                const utterance = new SpeechSynthesisUtterance(speakText);
+                utterance.voice = this.englishVoice;
+                utterance.rate = rate;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.9;
+                utterance.lang = 'en-US';
+
+                console.log(`🔊 播放发音: "${text}" -> "${speakText}"`);
+
+                speechSynthesis.cancel();
+                speechSynthesis.speak(utterance);
+            }
+
+            // 记录学习进度
+            recordProgress(completed) {
+                if (completed) {
+                    const points = Math.max(100 - flipCount * 2, 20); // 翻牌越少得分越高
+                    score += points;
+                }
+
+                // 调用进度记录系统
+                if (window.recordLearningProgress) {
+                    window.recordLearningProgress('english', 'memory', score, 60);
+                }
+            }
+        }
+
+        const gameManager = new WordMemoryGame();
+
+        // 选择难度
+        function selectDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            
+            // 重置所有按钮样式
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-primary');
+            });
+            
+            // 高亮选中的按钮
+            event.target.closest('.difficulty-btn').classList.add('ring-4', 'ring-primary');
+            
+            // 启用开始按钮
+            const startBtn = document.getElementById('start-game-btn');
+            startBtn.disabled = false;
+            startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        // 开始游戏
+        function startGame() {
+            if (!currentDifficulty) {
+                alert('请先选择难度！');
+                return;
+            }
+
+            // 重置游戏状态
+            flippedCards = [];
+            matchedPairs = 0;
+            score = 0;
+            flipCount = 0;
+
+            // 生成游戏板
+            generateGameBoard();
+            
+            // 切换界面
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            updateGameStats();
+        }
+
+        // 生成游戏板
+        function generateGameBoard() {
+            const words = wordData[currentDifficulty];
+            const boardSize = {
+                easy: { cols: 3, rows: 2 },
+                medium: { cols: 4, rows: 3 },
+                hard: { cols: 4, rows: 4 }
+            };
+
+            const { cols, rows } = boardSize[currentDifficulty];
+            totalPairs = (cols * rows) / 2;
+            
+            // 创建卡片对
+            const cardPairs = [];
+            for (let i = 0; i < totalPairs; i++) {
+                const word = words[i % words.length];
+                cardPairs.push(word, word);
+            }
+            
+            // 打乱卡片
+            gameBoard = cardPairs.sort(() => Math.random() - 0.5);
+            
+            // 创建游戏板DOM
+            const board = document.getElementById('game-board');
+            board.innerHTML = '';
+            board.className = `grid gap-3 bg-white rounded-2xl shadow-lg p-6 grid-cols-${cols}`;
+            board.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+            
+            gameBoard.forEach((word, index) => {
+                const card = document.createElement('div');
+                card.className = 'word-card bg-gradient-to-br from-primary to-purple-600 text-white rounded-xl cursor-pointer flex flex-col items-center justify-center p-4 text-center scale-hover';
+                card.innerHTML = `
+                    <div class="card-front flex flex-col items-center justify-center h-full">
+                        <i class="fa fa-question text-3xl mb-2"></i>
+                        <p class="text-sm">点击翻开</p>
+                    </div>
+                    <div class="card-back hidden flex-col items-center justify-center h-full">
+                        <p class="text-xl font-bold mb-2">${word}</p>
+                        <button onclick="gameManager.speak('${word}')" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-1 text-sm">
+                            <i class="fa fa-volume-up"></i>
+                        </button>
+                    </div>
+                `;
+                card.dataset.word = word;
+                card.dataset.index = index;
+                card.onclick = () => flipCard(index);
+                board.appendChild(card);
+            });
+        }
+
+        // 翻牌
+        function flipCard(index) {
+            if (flippedCards.length >= 2) return;
+            
+            const card = document.querySelector(`[data-index="${index}"]`);
+            if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+            
+            // 翻开卡片
+            card.classList.add('flipped');
+            card.querySelector('.card-front').classList.add('hidden');
+            card.querySelector('.card-back').classList.remove('hidden');
+            flippedCards.push({ index, word: gameBoard[index], element: card });
+            
+            flipCount++;
+            updateGameStats();
+            
+            // 播放单词发音
+            gameManager.speak(gameBoard[index]);
+            
+            // 检查配对
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 1000);
+            }
+        }
+
+        // 检查配对
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            
+            if (card1.word === card2.word) {
+                // 配对成功
+                card1.element.classList.add('matched', 'correct-animation');
+                card2.element.classList.add('matched', 'correct-animation');
+                
+                matchedPairs++;
+                score += Math.max(50 - flipCount, 10);
+                
+                // 播放成功音效
+                setTimeout(() => gameManager.speak('Excellent!'), 200);
+                
+                // 检查游戏结束
+                if (matchedPairs === totalPairs) {
+                    setTimeout(gameComplete, 1500);
+                }
+            } else {
+                // 配对失败
+                card1.element.classList.add('wrong-animation');
+                card2.element.classList.add('wrong-animation');
+                
+                setTimeout(() => {
+                    // 翻回去
+                    card1.element.classList.remove('flipped', 'wrong-animation');
+                    card1.element.querySelector('.card-front').classList.remove('hidden');
+                    card1.element.querySelector('.card-back').classList.add('hidden');
+                    
+                    card2.element.classList.remove('flipped', 'wrong-animation');
+                    card2.element.querySelector('.card-front').classList.remove('hidden');
+                    card2.element.querySelector('.card-back').classList.add('hidden');
+                }, 800);
+            }
+            
+            flippedCards = [];
+            updateGameStats();
+        }
+
+        // 更新游戏统计
+        function updateGameStats() {
+            document.getElementById('game-score').textContent = score;
+            document.getElementById('matched-pairs').textContent = matchedPairs;
+            document.getElementById('total-pairs').textContent = totalPairs;
+            document.getElementById('flip-count').textContent = flipCount;
+        }
+
+        // 游戏完成
+        function gameComplete() {
+            gameManager.recordProgress(true);
+            
+            // 显示结果
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-flips').textContent = flipCount;
+            
+            // 评估表现
+            let performance = '';
+            const efficiency = flipCount / (totalPairs * 2); // 理想翻牌次数的比率
+            
+            if (efficiency <= 1.2) {
+                performance = '完美！记忆力超强！';
+                document.getElementById('result-icon').textContent = '🏆';
+            } else if (efficiency <= 1.5) {
+                performance = '优秀！表现很棒！';
+                document.getElementById('result-icon').textContent = '🌟';
+            } else if (efficiency <= 2.0) {
+                performance = '良好！继续练习！';
+                document.getElementById('result-icon').textContent = '👍';
+            } else {
+                performance = '加油！多练习记忆力！';
+                document.getElementById('result-icon').textContent = '💪';
+            }
+            
+            document.getElementById('performance-text').textContent = performance;
+            
+            // 切换到结果界面
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+        }
+
+        // 返回开始界面
+        function backToStart() {
+            document.getElementById('start-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

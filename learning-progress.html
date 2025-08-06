@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习进度中心 - 智能分析与建议</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .progress-ring-circle {
+            transition: stroke-dasharray 0.35s;
+            transform-origin: 50% 50%;
+        }
+        .ai-suggestion {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+        }
+        .achievement-badge {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin: 5px;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+        }
+        .skill-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 20px;
+            margin: 10px 0;
+        }
+        .skill-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 10px;
+            transition: width 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="max-w-6xl mx-auto">
+        <!-- 头部导航 -->
+        <div class="card p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <button onclick="window.location.href='index.html'" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full mr-4">
+                        <i class="fa fa-home mr-2"></i>返回首页
+                    </button>
+                    <h1 class="text-3xl font-bold text-gray-800">📊 学习进度中心</h1>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-600">今日学习时间</p>
+                    <p class="text-2xl font-bold text-blue-600" id="today-study-time">0分钟</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI 学习建议卡片 -->
+        <div class="ai-suggestion mb-6">
+            <div class="flex items-center mb-4">
+                <i class="fa fa-robot text-3xl mr-3"></i>
+                <h2 class="text-xl font-bold">🤖 AI 学习建议</h2>
+            </div>
+            <div id="ai-suggestions">
+                <p>正在分析您的学习数据，生成个性化建议...</p>
+            </div>
+        </div>
+
+        <!-- 数据统计面板 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <!-- 总体进度 -->
+            <div class="card p-6 text-center">
+                <div class="relative w-24 h-24 mx-auto mb-4">
+                    <svg class="progress-ring w-full h-full">
+                        <circle cx="48" cy="48" r="40" stroke="#f0f0f0" stroke-width="8" fill="none"/>
+                        <circle id="overall-progress-circle" cx="48" cy="48" r="40" stroke="#4facfe" 
+                                stroke-width="8" fill="none" stroke-dasharray="0 251.2"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="overall-percentage" class="text-xl font-bold text-blue-600">0%</span>
+                    </div>
+                </div>
+                <h3 class="font-bold text-gray-700">总体进度</h3>
+                <p class="text-sm text-gray-500">所有科目平均</p>
+            </div>
+
+            <!-- 连续学习天数 -->
+            <div class="card p-6 text-center">
+                <i class="fa fa-fire text-4xl text-orange-500 mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-700" id="streak-days">0</h3>
+                <p class="text-sm text-gray-500">连续学习天数</p>
+            </div>
+
+            <!-- 本周正确率 -->
+            <div class="card p-6 text-center">
+                <i class="fa fa-bullseye text-4xl text-green-500 mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-700" id="weekly-accuracy">0%</h3>
+                <p class="text-sm text-gray-500">本周正确率</p>
+            </div>
+
+            <!-- 获得徽章 -->
+            <div class="card p-6 text-center">
+                <i class="fa fa-trophy text-4xl text-yellow-500 mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-700" id="total-badges">0</h3>
+                <p class="text-sm text-gray-500">获得徽章</p>
+            </div>
+        </div>
+
+        <!-- 学科进度详情 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- 拼音学习进度 -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">📝 拼音学习进度</h3>
+                
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">声母掌握</span>
+                        <span id="consonant-mastery">0/23</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div id="consonant-progress" class="skill-progress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">韵母掌握</span>
+                        <span id="vowel-mastery">0/24</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div id="vowel-progress" class="skill-progress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <i class="fa fa-lightbulb mr-2"></i>
+                        <span id="pinyin-tip">继续练习，掌握更多拼音知识！</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 数学练习进度 -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">🔢 数学练习进度</h3>
+                
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">加法练习</span>
+                        <span id="addition-score">平均分: 0</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div id="addition-progress" class="skill-progress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">减法练习</span>
+                        <span id="subtraction-score">平均分: 0</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div id="subtraction-progress" class="skill-progress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <p class="text-sm text-green-800">
+                        <i class="fa fa-calculator mr-2"></i>
+                        <span id="math-tip">数学基础很重要，坚持练习会有进步！</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 成就徽章展示 -->
+        <div class="card p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">🏆 成就徽章</h3>
+            <div class="flex flex-wrap" id="achievements-container">
+                <!-- 徽章将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <!-- 学习历史图表 -->
+        <div class="card p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">📈 学习历史</h3>
+            <div class="h-64 flex items-end justify-center space-x-2" id="chart-container">
+                <!-- 简单的柱状图 -->
+            </div>
+        </div>
+
+        <!-- 快速开始学习 -->
+        <div class="card p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">🚀 继续学习</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="window.location.href='pinyin-game.html'" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-lg transition-colors">
+                    <i class="fa fa-book text-2xl mb-2"></i>
+                    <p class="font-bold">拼音练习</p>
+                    <p class="text-sm opacity-90">继续学习声母韵母</p>
+                </button>
+                <button onclick="window.location.href='math-practice.html'" 
+                        class="bg-green-500 hover:bg-green-600 text-white p-4 rounded-lg transition-colors">
+                    <i class="fa fa-calculator text-2xl mb-2"></i>
+                    <p class="font-bold">数学练习</p>
+                    <p class="text-sm opacity-90">加减法计算训练</p>
+                </button>
+                <button onclick="window.location.href='antonym-game.html'" 
+                        class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition-colors">
+                    <i class="fa fa-users text-2xl mb-2"></i>
+                    <p class="font-bold">反义词对战</p>
+                    <p class="text-sm opacity-90">词汇知识挑战</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 学习数据管理类
+        class LearningProgressManager {
+            constructor() {
+                this.data = this.loadData();
+                this.init();
+            }
+
+            // 加载本地存储数据
+            loadData() {
+                const defaultData = {
+                    totalStudyTime: 0,
+                    todayStudyTime: 0,
+                    lastStudyDate: null,
+                    streakDays: 0,
+                    subjects: {
+                        pinyin: {
+                            consonants: { completed: [], totalScore: 0, attempts: 0 },
+                            vowels: { completed: [], totalScore: 0, attempts: 0 }
+                        },
+                        math: {
+                            addition: { totalScore: 0, attempts: 0, bestStreak: 0 },
+                            subtraction: { totalScore: 0, attempts: 0, bestStreak: 0 }
+                        },
+                        vocabulary: {
+                            antonyms: { totalScore: 0, attempts: 0, wordsLearned: [] }
+                        }
+                    },
+                    achievements: [],
+                    dailyHistory: {}
+                };
+
+                const stored = localStorage.getItem('learningProgress');
+                return stored ? { ...defaultData, ...JSON.parse(stored) } : defaultData;
+            }
+
+            // 保存数据
+            saveData() {
+                localStorage.setItem('learningProgress', JSON.stringify(this.data));
+            }
+
+            // 初始化界面
+            init() {
+                this.updateTodayTime();
+                this.calculateOverallProgress();
+                this.updateStreakDays();
+                this.updateSubjectProgress();
+                this.generateAchievements();
+                this.generateAISuggestions();
+                this.createLearningChart();
+            }
+
+            // 更新今日学习时间
+            updateTodayTime() {
+                const today = new Date().toDateString();
+                const lastDate = this.data.lastStudyDate;
+                
+                if (lastDate !== today) {
+                    this.data.todayStudyTime = 0;
+                    this.data.lastStudyDate = today;
+                }
+
+                document.getElementById('today-study-time').textContent = 
+                    Math.round(this.data.todayStudyTime / 60) + '分钟';
+            }
+
+            // 计算总体进度
+            calculateOverallProgress() {
+                let totalProgress = 0;
+                let subjects = 0;
+
+                // 拼音进度
+                const consonantProgress = (this.data.subjects.pinyin.consonants.completed.length / 23) * 100;
+                const vowelProgress = (this.data.subjects.pinyin.vowels.completed.length / 24) * 100;
+                const pinyinProgress = (consonantProgress + vowelProgress) / 2;
+                totalProgress += pinyinProgress;
+                subjects++;
+
+                // 数学进度 (基于正确率)
+                const mathSubjects = this.data.subjects.math;
+                let mathProgress = 0;
+                let mathCount = 0;
+                
+                Object.values(mathSubjects).forEach(subject => {
+                    if (subject.attempts > 0) {
+                        mathProgress += (subject.totalScore / subject.attempts);
+                        mathCount++;
+                    }
+                });
+                
+                if (mathCount > 0) {
+                    totalProgress += (mathProgress / mathCount);
+                    subjects++;
+                }
+
+                const overallProgress = subjects > 0 ? (totalProgress / subjects) : 0;
+                
+                // 更新环形进度条
+                this.updateCircularProgress('overall-progress-circle', overallProgress);
+                document.getElementById('overall-percentage').textContent = 
+                    Math.round(overallProgress) + '%';
+            }
+
+            // 更新环形进度条
+            updateCircularProgress(elementId, percentage) {
+                const circle = document.getElementById(elementId);
+                const radius = 40;
+                const circumference = 2 * Math.PI * radius;
+                const offset = circumference - (percentage / 100 * circumference);
+                circle.style.strokeDasharray = `${circumference} ${circumference}`;
+                circle.style.strokeDashoffset = offset;
+            }
+
+            // 更新连续学习天数
+            updateStreakDays() {
+                // 计算连续学习天数的逻辑
+                document.getElementById('streak-days').textContent = this.data.streakDays;
+                
+                // 计算本周正确率
+                const weeklyAccuracy = this.calculateWeeklyAccuracy();
+                document.getElementById('weekly-accuracy').textContent = Math.round(weeklyAccuracy) + '%';
+            }
+
+            // 计算本周正确率
+            calculateWeeklyAccuracy() {
+                // 简化版本，实际应该基于最近7天的数据
+                let totalScore = 0;
+                let totalAttempts = 0;
+
+                Object.values(this.data.subjects).forEach(subject => {
+                    Object.values(subject).forEach(activity => {
+                        if (activity.totalScore !== undefined) {
+                            totalScore += activity.totalScore;
+                            totalAttempts += activity.attempts;
+                        }
+                    });
+                });
+
+                return totalAttempts > 0 ? (totalScore / totalAttempts) * 100 : 0;
+            }
+
+            // 更新学科进度
+            updateSubjectProgress() {
+                // 拼音进度
+                const consonants = this.data.subjects.pinyin.consonants;
+                const vowels = this.data.subjects.pinyin.vowels;
+                
+                const consonantPercent = (consonants.completed.length / 23) * 100;
+                const vowelPercent = (vowels.completed.length / 24) * 100;
+                
+                document.getElementById('consonant-mastery').textContent = 
+                    `${consonants.completed.length}/23`;
+                document.getElementById('consonant-progress').style.width = consonantPercent + '%';
+                document.getElementById('consonant-progress').textContent = 
+                    Math.round(consonantPercent) + '%';
+                
+                document.getElementById('vowel-mastery').textContent = 
+                    `${vowels.completed.length}/24`;
+                document.getElementById('vowel-progress').style.width = vowelPercent + '%';
+                document.getElementById('vowel-progress').textContent = 
+                    Math.round(vowelPercent) + '%';
+
+                // 数学进度
+                const math = this.data.subjects.math;
+                
+                Object.keys(math).forEach(subject => {
+                    const data = math[subject];
+                    const avgScore = data.attempts > 0 ? (data.totalScore / data.attempts) : 0;
+                    const percentage = Math.min(avgScore, 100);
+                    
+                    document.getElementById(`${subject}-score`).textContent = 
+                        `平均分: ${Math.round(avgScore)}`;
+                    document.getElementById(`${subject}-progress`).style.width = percentage + '%';
+                    document.getElementById(`${subject}-progress`).textContent = 
+                        Math.round(percentage) + '%';
+                });
+            }
+
+            // 生成成就徽章
+            generateAchievements() {
+                const achievements = [
+                    { id: 'first_game', icon: '🎮', name: '初次体验', condition: () => true },
+                    { id: 'pinyin_beginner', icon: '📝', name: '拼音入门', 
+                      condition: () => this.data.subjects.pinyin.consonants.completed.length >= 5 },
+                    { id: 'math_star', icon: '⭐', name: '数学之星', 
+                      condition: () => this.data.subjects.math.addition.attempts >= 10 },
+                    { id: 'consistent_learner', icon: '🔥', name: '坚持学习', 
+                      condition: () => this.data.streakDays >= 3 },
+                    { id: 'speed_master', icon: '⚡', name: '速度大师', 
+                      condition: () => this.data.subjects.math.addition.bestStreak >= 5 }
+                ];
+
+                const container = document.getElementById('achievements-container');
+                container.innerHTML = '';
+
+                achievements.forEach(achievement => {
+                    const earned = achievement.condition();
+                    const badge = document.createElement('div');
+                    badge.className = `achievement-badge ${earned ? '' : 'opacity-30'}`;
+                    badge.innerHTML = `${achievement.icon}`;
+                    badge.title = achievement.name;
+                    container.appendChild(badge);
+                });
+
+                // 更新徽章总数
+                const earnedBadges = achievements.filter(a => a.condition()).length;
+                document.getElementById('total-badges').textContent = earnedBadges;
+            }
+
+            // 生成AI学习建议
+            generateAISuggestions() {
+                const suggestions = [];
+                
+                // 基于拼音进度的建议
+                const consonantProgress = this.data.subjects.pinyin.consonants.completed.length;
+                const vowelProgress = this.data.subjects.pinyin.vowels.completed.length;
+                
+                if (consonantProgress < 10) {
+                    suggestions.push("🎯 建议重点练习声母，目前掌握度较低。可以每天练习5个声母。");
+                }
+                
+                if (vowelProgress < 12) {
+                    suggestions.push("📚 韵母学习需要加强，建议结合实际汉字练习。");
+                }
+
+                // 基于数学成绩的建议
+                const mathData = this.data.subjects.math;
+                if (mathData.addition.attempts > 0) {
+                    const additionAvg = mathData.addition.totalScore / mathData.addition.attempts;
+                    if (additionAvg < 70) {
+                        suggestions.push("🔢 加法练习需要更多时间，建议从小数字开始练习。");
+                    }
+                }
+
+                // 基于学习频率的建议
+                if (this.data.streakDays < 2) {
+                    suggestions.push("📅 建议建立每日学习习惯，每天15-20分钟效果最佳。");
+                }
+
+                // 个性化推荐
+                if (consonantProgress > vowelProgress) {
+                    suggestions.push("✨ 你在声母学习上表现很好！可以尝试更有挑战的拼音组合练习。");
+                }
+
+                // 默认建议
+                if (suggestions.length === 0) {
+                    suggestions.push("🌟 学习进度良好！建议保持当前的学习节奏，继续加油！");
+                }
+
+                const container = document.getElementById('ai-suggestions');
+                container.innerHTML = suggestions.map(s => 
+                    `<div class="mb-2 p-3 bg-white bg-opacity-20 rounded-lg">${s}</div>`
+                ).join('');
+            }
+
+            // 创建学习历史图表
+            createLearningChart() {
+                const container = document.getElementById('chart-container');
+                container.innerHTML = '';
+                
+                // 生成最近7天的模拟数据
+                const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                const data = [20, 35, 15, 40, 25, 30, 45]; // 分钟数
+
+                days.forEach((day, index) => {
+                    const bar = document.createElement('div');
+                    const height = Math.max(data[index] * 4, 10); // 最小高度10px
+                    
+                    bar.className = 'flex flex-col items-center';
+                    bar.innerHTML = `
+                        <div style="height: ${height}px; width: 30px;" 
+                             class="bg-gradient-to-t from-blue-400 to-blue-600 rounded-t-lg mb-2 flex items-end justify-center text-white text-xs font-bold pb-1">
+                            ${data[index]}
+                        </div>
+                        <span class="text-xs text-gray-600">${day}</span>
+                    `;
+                    
+                    container.appendChild(bar);
+                });
+            }
+
+            // 记录学习活动
+            recordActivity(subject, activity, score, timeSpent = 0) {
+                const subjectData = this.data.subjects[subject];
+                if (subjectData && subjectData[activity]) {
+                    subjectData[activity].totalScore += score;
+                    subjectData[activity].attempts += 1;
+                }
+                
+                this.data.totalStudyTime += timeSpent;
+                this.data.todayStudyTime += timeSpent;
+                
+                this.saveData();
+                this.init(); // 重新初始化显示
+            }
+        }
+
+        // 全局进度管理器实例
+        let progressManager;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            progressManager = new LearningProgressManager();
+            
+            // 模拟一些学习数据（仅用于演示）
+            if (progressManager.data.subjects.pinyin.consonants.completed.length === 0) {
+                // 添加一些示例数据
+                progressManager.data.subjects.pinyin.consonants.completed = ['b', 'p', 'm', 'f', 'd'];
+                progressManager.data.subjects.pinyin.vowels.completed = ['a', 'o', 'e', 'i'];
+                progressManager.data.subjects.math.addition.totalScore = 850;
+                progressManager.data.subjects.math.addition.attempts = 12;
+                progressManager.data.streakDays = 3;
+                progressManager.data.todayStudyTime = 900; // 15分钟
+                progressManager.saveData();
+                progressManager.init();
+            }
+        });
+
+        // 导出给其他页面使用的函数
+        window.recordLearningProgress = function(subject, activity, score, timeSpent = 0) {
+            if (progressManager) {
+                progressManager.recordActivity(subject, activity, score, timeSpent);
+            }
+        };
+    </script>
+</body>
+</html>
