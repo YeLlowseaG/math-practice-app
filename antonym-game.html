@@ -71,6 +71,48 @@
                 padding: 10px !important;
                 margin: 10px auto !important;
             }
+            
+            /* iPad 和 Android 平板强制桁面版布局 */
+            .is-tablet-desktop {
+                /* 强制使用桁面版样式 */
+            }
+            
+            .is-tablet-desktop body {
+                overflow: visible !important;
+            }
+            
+            /* 平板横屏模式下的特别样式 */
+            @media screen and (min-width: 768px) and (min-height: 600px) {
+                .tablet-landscape #game-screen {
+                    display: flex !important;
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    min-height: 100vh !important;
+                }
+                
+                .tablet-landscape .game-container {
+                    max-width: none !important;
+                    width: 100% !important;
+                    display: flex !important;
+                    flex-direction: row !important;
+                }
+                
+                .tablet-landscape .player-section {
+                    width: 50% !important;
+                    height: 100vh !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    justify-content: center !important;
+                    align-items: center !important;
+                }
+                
+                .tablet-landscape #options-player1,
+                .tablet-landscape #options-player2 {
+                    width: 400px !important;
+                    height: 300px !important;
+                }
+            }
         }
     </style>
 </head>
@@ -479,6 +521,44 @@
             { word: "犹豫", pinyin: "yóu yù", antonym: "果断", antonymPinyin: "guǒ duàn" },
             { word: "软弱", pinyin: "ruǎn ruò", antonym: "坚强", antonymPinyin: "jiān qiáng" }
         ];
+        
+        // 检测iPad和Android平板，强制使用桁面版布局
+        function detectTabletAndApplyDesktopLayout() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isIPad = /ipad/.test(userAgent) || 
+                          (/macintosh/.test(userAgent) && navigator.maxTouchPoints > 1);
+            const isAndroidTablet = /android/.test(userAgent) && 
+                                   !/mobile/.test(userAgent) &&
+                                   (screen.width >= 768 || screen.height >= 768);
+            
+            const isTablet = isIPad || isAndroidTablet;
+            
+            if (isTablet) {
+                // 添加平板标识
+                document.documentElement.classList.add('is-tablet-desktop');
+                document.body.classList.add('tablet-landscape');
+                
+                // 强制显示桁面版布局
+                document.body.style.overflow = 'visible';
+                
+                console.log('检测到平板设备（反义词对战），应用桁面版布局');
+            }
+            
+            return isTablet;
+        }
+        
+        // 页面加载时立即检测
+        detectTabletAndApplyDesktopLayout();
+        
+        // 监听屏幕方向变化
+        window.addEventListener('orientationchange', function() {
+            setTimeout(detectTabletAndApplyDesktopLayout, 100);
+        });
+        
+        // 监听窗口尺寸变化
+        window.addEventListener('resize', function() {
+            detectTabletAndApplyDesktopLayout();
+        });
         
         // 游戏状态变量
         let currentWord = null;

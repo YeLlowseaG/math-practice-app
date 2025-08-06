@@ -102,20 +102,34 @@
             /* 移动端优化 */
             @media (max-width: 768px) {
                 .option-btn {
-                    min-height: 64px;
+                    min-height: 60px;
                     font-size: 1.1rem;
-                    padding: 16px 12px;
+                    padding: 14px 20px;
+                    margin: 6px;
+                    word-wrap: break-word;
+                    white-space: normal;
+                    line-height: 1.2;
                 }
                 .float-animation {
                     animation: none;
+                }
+                #options-container {
+                    gap: 12px;
+                    max-width: 100%;
                 }
             }
             
             @media (max-width: 480px) {
                 .option-btn {
-                    min-height: 56px;
+                    min-height: 54px;
                     font-size: 1rem;
-                    padding: 12px 8px;
+                    padding: 12px 16px;
+                    margin: 4px;
+                }
+                #options-container {
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                    padding: 0 10px;
                 }
             }
         }
@@ -129,71 +143,74 @@
         <button onclick="window.location.href='index.html'" class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 text-sm font-bold text-gray-600 hover:text-gray-800 z-40">
             <i class="fa fa-home mr-2"></i>首页
         </button>
-        <div class="text-center max-w-lg mx-auto bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-500">
-            <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-4">拼音小达人</h1>
-            <p class="text-lg mb-6 text-gray-600">听读音选拼音<br>快乐学拼音，轻松识汉字！</p>
+        <div class="text-center max-w-md mx-auto bg-white rounded-2xl shadow-xl p-6 transform transition-all duration-500">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-3">拼音小达人</h1>
+            <p class="text-sm mb-4 text-gray-600">听读音选拼音<br>快乐学拼音，轻松识汉字！</p>
             
-            <div class="flex justify-center mb-8">
-                <div class="w-32 h-32 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-5xl shadow-lg relative overflow-hidden float-animation">
+            <div class="flex justify-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-2xl shadow-lg relative overflow-hidden float-animation">
                     <i class="fa fa-volume-up"></i>
                     <div class="absolute inset-0 bg-white opacity-20 rounded-full animate-ping"></div>
                 </div>
             </div>
             
             <!-- 学习模式选择 -->
-            <div class="mb-6">
-                <h3 class="text-lg font-bold text-gray-700 mb-3">选择学习内容</h3>
+            <div class="mb-5">
+                <h3 class="text-base font-bold text-gray-700 mb-2">选择学习内容</h3>
                 
                 <!-- 基础学习 -->
-                <div class="mb-4">
-                    <h4 class="text-md font-bold text-gray-600 mb-2 flex items-center">
-                        <i class="fa fa-graduation-cap mr-2"></i>基础学习
+                <div class="mb-3">
+                    <h4 class="text-sm font-bold text-gray-600 mb-2 flex items-center justify-center">
+                        <i class="fa fa-graduation-cap mr-1"></i>基础学习
                     </h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button class="mode-btn bg-blue-500 text-white px-4 py-3 rounded-full font-bold shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95" data-mode="consonants">
-                            <i class="fa fa-volume-up mr-2"></i>声母学习<br><span class="text-xs">b p m f d t...</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="mode-btn bg-blue-500 text-white px-3 py-2 rounded-xl text-sm font-bold shadow-md transform transition-all duration-300 hover:scale-105 active:scale-95" data-mode="consonants">
+                            <i class="fa fa-volume-up mr-1"></i>声母学习<br><span class="text-xs opacity-80">b p m f d t...</span>
                         </button>
-                        <button class="mode-btn bg-purple-500 text-white px-4 py-3 rounded-full font-bold shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95" data-mode="vowels">
-                            <i class="fa fa-music mr-2"></i>韵母学习<br><span class="text-xs">a o e i u ü...</span>
+                        <button class="mode-btn bg-purple-500 text-white px-3 py-2 rounded-xl text-sm font-bold shadow-md transform transition-all duration-300 hover:scale-105 active:scale-95" data-mode="vowels">
+                            <i class="fa fa-music mr-1"></i>韵母学习<br><span class="text-xs opacity-80">a o e i u ü...</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- 综合练习 -->
-                <div class="mb-4">
-                    <h4 class="text-md font-bold text-gray-600 mb-2 flex items-center">
-                        <i class="fa fa-gamepad mr-2"></i>综合练习
+                <div class="mb-3">
+                    <h4 class="text-sm font-bold text-gray-600 mb-2 flex items-center justify-center">
+                        <i class="fa fa-gamepad mr-1"></i>综合练习
                     </h4>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button class="difficulty-btn bg-success text-white px-4 py-3 rounded-full font-bold shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95" data-level="easy">
-                            <i class="fa fa-star mr-1"></i>启蒙<br><span class="text-xs">简单字词</span>
+                    <div class="grid grid-cols-2 gap-1">
+                        <button class="difficulty-btn bg-green-500 text-white px-2 py-2 rounded-xl text-xs font-bold shadow-md transform transition-all duration-300 hover:scale-105 active:scale-95" data-level="beginner">
+                            🌟入门<br><span class="text-xs opacity-80">单字拼音</span>
                         </button>
-                        <button class="difficulty-btn bg-accent text-white px-4 py-3 rounded-full font-bold shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95" data-level="medium">
-                            <i class="fa fa-star mr-1"></i>进阶<br><span class="text-xs">词汇组合</span>
+                        <button class="difficulty-btn bg-blue-500 text-white px-2 py-2 rounded-xl text-xs font-bold shadow-md transform transition-all duration-300 hover:scale-105 active:scale-95" data-level="basic">
+                            🌟基础<br><span class="text-xs opacity-80">双字词汇</span>
                         </button>
-                        <button class="difficulty-btn bg-danger text-white px-4 py-3 rounded-full font-bold shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95" data-level="hard">
-                            <i class="fa fa-star mr-1"></i>挑战<br><span class="text-xs">复杂音节</span>
+                        <button class="difficulty-btn bg-orange-500 text-white px-2 py-2 rounded-xl text-xs font-bold shadow-md transform transition-all duration-300 hover:scale-105 active:scale-95" data-level="advanced">
+                            🌟进阶<br><span class="text-xs opacity-80">三字词汇</span>
+                        </button>
+                        <button class="difficulty-btn bg-red-500 text-white px-2 py-2 rounded-xl text-xs font-bold shadow-md transform transition-all duration-300 hover:scale-105 active:scale-95" data-level="expert">
+                            🌟挑战<br><span class="text-xs opacity-80">复杂音节</span>
                         </button>
                     </div>
                 </div>
             </div>
             
             <!-- 倒计时开关 -->
-            <div class="mb-6 flex items-center justify-center gap-4 bg-gray-50 rounded-2xl p-4">
-                <i class="fa fa-clock-o text-gray-600"></i>
-                <span class="text-gray-700 font-medium">倒计时模式</span>
+            <div class="mb-4 flex items-center justify-center gap-3 bg-gray-50 rounded-xl p-3">
+                <i class="fa fa-clock-o text-gray-600 text-sm"></i>
+                <span class="text-gray-700 font-medium text-sm">倒计时模式</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="timer-toggle" class="sr-only peer" checked>
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
                 </label>
                 <span class="text-xs text-gray-500" id="timer-description">根据难度限时</span>
             </div>
             
-            <button id="start-btn" class="bg-primary hover:bg-pink-400 text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                开始学习 <i class="fa fa-play ml-2"></i>
+            <button id="start-btn" class="bg-primary hover:bg-pink-400 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-md transform transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                开始学习 <i class="fa fa-play ml-1"></i>
             </button>
             
-            <div class="mt-6 text-sm text-gray-500">
+            <div class="mt-4 text-xs text-gray-500">
                 <p>适合年龄：5-8岁</p>
                 <p>目标：通过听力训练掌握拼音！</p>
             </div>
@@ -257,11 +274,11 @@
                 <!-- 选项按钮将通过JavaScript动态生成 -->
             </div>
 
-            <!-- 反馈信息 -->
-            <div id="feedback" class="mt-8 text-center min-h-[80px] flex items-center justify-center">
-                <div id="feedback-content" class="hidden">
-                    <p id="feedback-text" class="text-2xl font-bold mb-2"></p>
-                    <p id="feedback-detail" class="text-lg text-gray-600"></p>
+            <!-- 反馈信息 - 移动到顶部更明显的位置 -->
+            <div id="feedback" class="fixed top-20 left-0 right-0 z-50 flex items-center justify-center pointer-events-none">
+                <div id="feedback-content" class="hidden bg-white rounded-2xl shadow-2xl p-4 border-4 border-primary/20 max-w-sm mx-auto pointer-events-auto">
+                    <p id="feedback-text" class="text-xl font-bold mb-2 text-center"></p>
+                    <div id="feedback-detail" class="text-sm text-gray-600 text-center"></div>
                 </div>
             </div>
         </div>
@@ -359,12 +376,13 @@
         const totalQuestionsSpan = document.getElementById('total-questions');
         const restartBtn = document.getElementById('restart-btn');
 
-        // 分场景拼音数据库 - 按你的需求重新设计
+        // 分场景拼音数据库 - 4个难度等级
         const pinyinData = {
-            easy: {
-                name: '启蒙级',
-                description: '单韵母+简单声母',
-                timeLimit: 15,
+            // 🌟 入门 - 单字拼音
+            beginner: {
+                name: '入门级',
+                description: '单字拼音练习',
+                timeLimit: 20,
                 scenarios: {
                     animals: {
                         name: '动物园',
@@ -396,10 +414,42 @@
                     }
                 }
             },
-            medium: {
+            // 🌟 基础 - 双字词汇  
+            basic: {
+                name: '基础级',
+                description: '双字词汇练习',
+                timeLimit: 18,
+                scenarios: {
+                    family: {
+                        name: '温馨家庭',
+                        icon: '🏠',
+                        data: [
+                            { char: '爸爸', pinyin: 'bàba', options: ['bàba', 'bába', 'bǎba', 'bāba'], emoji: '👨', tip: '爸爸很高大' },
+                            { char: '妈妈', pinyin: 'māma', options: ['māma', 'máma', 'mǎma', 'màma'], emoji: '👩', tip: '妈妈很温柔' },
+                            { char: '爷爷', pinyin: 'yéye', options: ['yéye', 'yēye', 'yěye', 'yèye'], emoji: '👴', tip: '爷爷会讲故事' },
+                            { char: '奶奶', pinyin: 'nǎinai', options: ['nǎinai', 'nāinai', 'náinai', 'nàinai'], emoji: '👵', tip: '奶奶做饭香' },
+                            { char: '哥哥', pinyin: 'gēge', options: ['gēge', 'gége', 'gěge', 'gège'], emoji: '👦', tip: '哥哥保护我' },
+                            { char: '姐姐', pinyin: 'jiějie', options: ['jiějie', 'jiējie', 'jiéjie', 'jiècjie'], emoji: '👧', tip: '姐姐很美丽' }
+                        ]
+                    },
+                    daily: {
+                        name: '日常用品',
+                        icon: '🎒',
+                        data: [
+                            { char: '书包', pinyin: 'shūbāo', options: ['shūbāo', 'shúbāo', 'shǔbāo', 'shùbāo'], emoji: '🎒', tip: '书包装课本' },
+                            { char: '水杯', pinyin: 'shuǐbēi', options: ['shuǐbēi', 'shuíbēi', 'shuìbēi', 'shuībēi'], emoji: '🥤', tip: '水杯喝水用' },
+                            { char: '玩具', pinyin: 'wánjù', options: ['wánjù', 'wǎnjù', 'wànjù', 'wānjù'], emoji: '🧸', tip: '玩具真好玩' },
+                            { char: '衣服', pinyin: 'yīfu', options: ['yīfu', 'yífu', 'yǐfu', 'yìfu'], emoji: '👕', tip: '衣服要穿好' },
+                            { char: '鞋子', pinyin: 'xiézi', options: ['xiézi', 'xiēzi', 'xiězi', 'xièzi'], emoji: '👟', tip: '鞋子保护脚' }
+                        ]
+                    }
+                }
+            },
+            // 🌟 进阶 - 三字词汇
+            advanced: {
                 name: '进阶级',
-                description: '复韵母+声调变化',
-                timeLimit: 12,
+                description: '三字词汇练习',
+                timeLimit: 15,
                 scenarios: {
                     school: {
                         name: '校园生活',
@@ -412,25 +462,14 @@
                             { char: '课本', pinyin: 'kèběn', options: ['kèběn', 'kēběn', 'kéběn', 'kěběn'], emoji: '📖', tip: '课本里有知识' },
                             { char: '铅笔', pinyin: 'qiānbǐ', options: ['qiānbǐ', 'qiánbǐ', 'qiǎnbǐ', 'qiànbǐ'], emoji: '✏️', tip: '铅笔用来写字' }
                         ]
-                    },
-                    family: {
-                        name: '温馨家庭',
-                        icon: '🏠',
-                        data: [
-                            { char: '爸爸', pinyin: 'bàba', options: ['bàba', 'bába', 'bǎba', 'bāba'], emoji: '👨', tip: '爸爸很高大' },
-                            { char: '妈妈', pinyin: 'māma', options: ['māma', 'máma', 'mǎma', 'màma'], emoji: '👩', tip: '妈妈很温柔' },
-                            { char: '爷爷', pinyin: 'yéye', options: ['yéye', 'yēye', 'yěye', 'yèye'], emoji: '👴', tip: '爷爷会讲故事' },
-                            { char: '奶奶', pinyin: 'nǎinai', options: ['nǎinai', 'nāinai', 'náinai', 'nàinai'], emoji: '👵', tip: '奶奶做饭香' },
-                            { char: '哥哥', pinyin: 'gēge', options: ['gēge', 'gége', 'gěge', 'gège'], emoji: '👦', tip: '哥哥保护我' },
-                            { char: '姐姐', pinyin: 'jiějie', options: ['jiějie', 'jiējie', 'jiéjie', 'jiècjie'], emoji: '👧', tip: '姐姐很美丽' }
-                        ]
                     }
                 }
             },
-            hard: {
+            // 🌟 挑战 - 复杂音节
+            expert: {
                 name: '挑战级',
-                description: '三拼音节+复杂词汇',
-                timeLimit: 10,
+                description: '复杂音节练习',
+                timeLimit: 12,
                 scenarios: {
                     nature: {
                         name: '自然世界',
@@ -445,6 +484,59 @@
                         ]
                     }
                 }
+            },
+            // 兼容旧的难度名称
+            easy: {
+                name: '启蒙级',
+                description: '单字拼音练习',
+                timeLimit: 20,
+                scenarios: {
+                    animals: {
+                        name: '动物园',
+                        icon: '🐾',
+                        data: [
+                            { char: '马', pinyin: 'mǎ', options: ['mǎ', 'mā', 'má'], emoji: '🐴', tip: '小马跑得快' },
+                            { char: '牛', pinyin: 'niú', options: ['niú', 'niū', 'niǔ'], emoji: '🐄', tip: '大黄牛很强壮' },
+                            { char: '羊', pinyin: 'yáng', options: ['yáng', 'yāng', 'yǎng'], emoji: '🐑', tip: '小羊咩咩叫' },
+                            { char: '猪', pinyin: 'zhū', options: ['zhū', 'zhú', 'zhǔ'], emoji: '🐷', tip: '小猪爱睡觉' },
+                            { char: '狗', pinyin: 'gǒu', options: ['gǒu', 'gōu', 'góu'], emoji: '🐶', tip: '小狗汪汪叫' },
+                            { char: '猫', pinyin: 'māo', options: ['māo', 'máo', 'mǎo'], emoji: '🐱', tip: '小猫喵喵叫' }
+                        ]
+                    }
+                }
+            },
+            medium: {
+                name: '基础级',
+                description: '双字词汇练习', 
+                timeLimit: 18,
+                scenarios: {
+                    family: {
+                        name: '温馨家庭',
+                        icon: '🏠',
+                        data: [
+                            { char: '爸爸', pinyin: 'bàba', options: ['bàba', 'bába', 'bǎba', 'bāba'], emoji: '👨', tip: '爸爸很高大' },
+                            { char: '妈妈', pinyin: 'māma', options: ['māma', 'máma', 'mǎma', 'màma'], emoji: '👩', tip: '妈妈很温柔' },
+                            { char: '爷爷', pinyin: 'yéye', options: ['yéye', 'yēye', 'yěye', 'yèye'], emoji: '👴', tip: '爷爷会讲故事' },
+                            { char: '奶奶', pinyin: 'nǎinai', options: ['nǎinai', 'nāinai', 'náinai', 'nàinai'], emoji: '👵', tip: '奶奶做饭香' }
+                        ]
+                    }
+                }
+            },
+            hard: {
+                name: '进阶级',
+                description: '三字词汇练习',
+                timeLimit: 15,
+                scenarios: {
+                    school: {
+                        name: '校园生活',
+                        icon: '🏫',
+                        data: [
+                            { char: '老师', pinyin: 'lǎoshī', options: ['lǎoshī', 'láoshī', 'làoshī', 'lāoshī'], emoji: '👩‍🏫', tip: '老师教我们知识' },
+                            { char: '同学', pinyin: 'tóngxué', options: ['tóngxué', 'tōngxué', 'tǒngxué', 'tòngxué'], emoji: '👫', tip: '同学一起学习' },
+                            { char: '教室', pinyin: 'jiàoshì', options: ['jiàoshì', 'jiāoshì', 'jiáoshì', 'jiǎoshì'], emoji: '🏫', tip: '教室里很安静' }
+                        ]
+                    }
+                }
             }
         };
 
@@ -455,29 +547,29 @@
                 description: '学习23个声母的发音',
                 timeLimit: 20,
                 data: [
-                    { char: 'b', pinyin: 'b', sound: 'bō', options: ['b', 'p', 'd'], emoji: '👦', tip: 'b像个6，嘴巴抿着发音', example: '爸ba' },
-                    { char: 'p', pinyin: 'p', sound: 'pō', options: ['p', 'b', 't'], emoji: '💨', tip: 'p像个小旗，嘴巴送气发音', example: '跑pǎo' },
-                    { char: 'm', pinyin: 'm', sound: 'mō', options: ['m', 'n', 'f'], emoji: '👄', tip: 'm像两扇门，嘴巴闭着发音', example: '妈mā' },
-                    { char: 'f', pinyin: 'f', sound: 'fō', options: ['f', 'h', 'm'], emoji: '🌬️', tip: 'f像一根拐杖，上牙咬下唇', example: '飞fēi' },
-                    { char: 'd', pinyin: 'd', sound: 'dē', options: ['d', 't', 'b'], emoji: '🥁', tip: 'd像半个圆，舌尖顶上齿', example: '大dà' },
-                    { char: 't', pinyin: 't', sound: 'tē', options: ['t', 'd', 'p'], emoji: '☂️', tip: 't像小伞，舌尖顶上齿送气', example: '兔tù' },
-                    { char: 'n', pinyin: 'n', sound: 'nē', options: ['n', 'l', 'm'], emoji: '👃', tip: 'n像门洞，舌尖顶上齿', example: '牛niú' },
-                    { char: 'l', pinyin: 'l', sound: 'lē', options: ['l', 'n', 'r'], emoji: '🏃', tip: 'l像数字1，舌尖顶上齿', example: '老lǎo' },
-                    { char: 'g', pinyin: 'g', sound: 'gē', options: ['g', 'k', 'd'], emoji: '🪝', tip: 'g像9字钩，舌根顶软腭', example: '狗gǒu' },
-                    { char: 'k', pinyin: 'k', sound: 'kē', options: ['k', 'g', 't'], emoji: '🔑', tip: 'k像机关枪，舌根顶软腭送气', example: '看kàn' },
-                    { char: 'h', pinyin: 'h', sound: 'hē', options: ['h', 'f', 'x'], emoji: '😤', tip: 'h像椅子，舌根轻微摩擦', example: '好hǎo' },
-                    { char: 'j', pinyin: 'j', sound: 'jī', options: ['j', 'q', 'z'], emoji: '🪝', tip: 'j像秤钩，舌面前部贴硬腭', example: '鸡jī' },
-                    { char: 'q', pinyin: 'q', sound: 'qī', options: ['q', 'j', 'c'], emoji: '🎈', tip: 'q像气球，舌面前部贴硬腭送气', example: '七qī' },
-                    { char: 'x', pinyin: 'x', sound: 'xī', options: ['x', 's', 'h'], emoji: '❌', tip: 'x像乘号，舌面前部接近硬腭', example: '西xī' },
-                    { char: 'z', pinyin: 'z', sound: 'zī', options: ['z', 'c', 'j'], emoji: '🦓', tip: 'z像数字2，舌尖前伸', example: '字zì' },
-                    { char: 'c', pinyin: 'c', sound: 'cī', options: ['c', 'z', 'q'], emoji: '🌙', tip: 'c像弯月，舌尖前伸送气', example: '草cǎo' },
-                    { char: 's', pinyin: 's', sound: 'sī', options: ['s', 'x', 'sh'], emoji: '🐍', tip: 's像蛇形，舌尖前伸', example: '四sì' },
-                    { char: 'zh', pinyin: 'zh', sound: 'zhī', options: ['zh', 'z', 'ch'], emoji: '🕷️', tip: 'zh像蜘蛛，舌尖翘起', example: '中zhōng' },
-                    { char: 'ch', pinyin: 'ch', sound: 'chī', options: ['ch', 'zh', 'c'], emoji: '🚗', tip: 'ch像车轮，舌尖翘起送气', example: '吃chī' },
-                    { char: 'sh', pinyin: 'sh', sound: 'shī', options: ['sh', 's', 'zh'], emoji: '🤫', tip: 'sh像嘘声，舌尖翘起', example: '十shí' },
-                    { char: 'r', pinyin: 'r', sound: 'rī', options: ['r', 'l', 'y'], emoji: '☀️', tip: 'r像小苗，舌尖翘起', example: '人rén' },
-                    { char: 'y', pinyin: 'y', sound: 'yī', options: ['y', 'w', 'r'], emoji: '🌱', tip: 'y像小树，舌面前部上升', example: '一yī' },
-                    { char: 'w', pinyin: 'w', sound: 'wū', options: ['w', 'y', 'u'], emoji: '〰️', tip: 'w像波浪，嘴巴圆圆的', example: '我wǒ' }
+                    { char: 'b', pinyin: 'b', sound: '玻', options: ['b', 'p', 'd'], emoji: '👦', tip: 'b像个6，嘴巴抿着发音', example: '爸ba' },
+                    { char: 'p', pinyin: 'p', sound: '坡', options: ['p', 'b', 't'], emoji: '💨', tip: 'p像个小旗，嘴巴送气发音', example: '跑pǎo' },
+                    { char: 'm', pinyin: 'm', sound: '摸', options: ['m', 'n', 'f'], emoji: '👄', tip: 'm像两扇门，嘴巴闭着发音', example: '妈mā' },
+                    { char: 'f', pinyin: 'f', sound: '佛', options: ['f', 'h', 'm'], emoji: '🌬️', tip: 'f像一根拐杖，上牙咬下唇', example: '飞fēi' },
+                    { char: 'd', pinyin: 'd', sound: '得', options: ['d', 't', 'b'], emoji: '🥁', tip: 'd像半个圆，舌尖顶上齿', example: '大dà' },
+                    { char: 't', pinyin: 't', sound: '特', options: ['t', 'd', 'p'], emoji: '☂️', tip: 't像小伞，舌尖顶上齿送气', example: '兔tù' },
+                    { char: 'n', pinyin: 'n', sound: '讷', options: ['n', 'l', 'm'], emoji: '👃', tip: 'n像门洞，舌尖顶上齿', example: '牛niú' },
+                    { char: 'l', pinyin: 'l', sound: '勒', options: ['l', 'n', 'r'], emoji: '🏃', tip: 'l像数字1，舌尖顶上齿', example: '老lǎo' },
+                    { char: 'g', pinyin: 'g', sound: '哥', options: ['g', 'k', 'd'], emoji: '🪝', tip: 'g像9字钩，舌根顶软腭', example: '狗gǒu' },
+                    { char: 'k', pinyin: 'k', sound: '科', options: ['k', 'g', 't'], emoji: '🔑', tip: 'k像机关枪，舌根顶软腭送气', example: '看kàn' },
+                    { char: 'h', pinyin: 'h', sound: '喝', options: ['h', 'f', 'x'], emoji: '😤', tip: 'h像椅子，舌根轻微摩擦', example: '好hǎo' },
+                    { char: 'j', pinyin: 'j', sound: '基', options: ['j', 'q', 'z'], emoji: '🪝', tip: 'j像秤钩，舌面前部贴硬腭', example: '鸡jī' },
+                    { char: 'q', pinyin: 'q', sound: '欺', options: ['q', 'j', 'c'], emoji: '🎈', tip: 'q像气球，舌面前部贴硬腭送气', example: '七qī' },
+                    { char: 'x', pinyin: 'x', sound: '希', options: ['x', 's', 'h'], emoji: '❌', tip: 'x像乘号，舌面前部接近硬腭', example: '西xī' },
+                    { char: 'z', pinyin: 'z', sound: '资', options: ['z', 'c', 'j'], emoji: '🦓', tip: 'z像数字2，舌尖前伸', example: '字zì' },
+                    { char: 'c', pinyin: 'c', sound: '雌', options: ['c', 'z', 'q'], emoji: '🌙', tip: 'c像弯月，舌尖前伸送气', example: '草cǎo' },
+                    { char: 's', pinyin: 's', sound: '思', options: ['s', 'x', 'sh'], emoji: '🐍', tip: 's像蛇形，舌尖前伸', example: '四sì' },
+                    { char: 'zh', pinyin: 'zh', sound: '知', options: ['zh', 'z', 'ch'], emoji: '🕷️', tip: 'zh像蜘蛛，舌尖翘起', example: '中zhōng' },
+                    { char: 'ch', pinyin: 'ch', sound: '吃', options: ['ch', 'zh', 'c'], emoji: '🚗', tip: 'ch像车轮，舌尖翘起送气', example: '吃chī' },
+                    { char: 'sh', pinyin: 'sh', sound: '诗', options: ['sh', 's', 'zh'], emoji: '🤫', tip: 'sh像嘘声，舌尖翘起', example: '十shí' },
+                    { char: 'r', pinyin: 'r', sound: '日', options: ['r', 'l', 'y'], emoji: '☀️', tip: 'r像小苗，舌尖翘起', example: '人rén' },
+                    { char: 'y', pinyin: 'y', sound: '衣', options: ['y', 'w', 'r'], emoji: '🌱', tip: 'y像小树，舌面前部上升', example: '一yī' },
+                    { char: 'w', pinyin: 'w', sound: '乌', options: ['w', 'y', 'u'], emoji: '〰️', tip: 'w像波浪，嘴巴圆圆的', example: '我wǒ' }
                 ]
             },
             vowels: {
@@ -486,31 +578,31 @@
                 timeLimit: 20,
                 data: [
                     // 单韵母
-                    { char: 'a', pinyin: 'a', sound: 'ā', options: ['a', 'o', 'e'], emoji: '👄', tip: '嘴巴张大，发"啊"音', example: '爸bà', type: '单韵母' },
-                    { char: 'o', pinyin: 'o', sound: 'ō', options: ['o', 'a', 'u'], emoji: '⭕', tip: '嘴巴圆圆，发"哦"音', example: '哦ò', type: '单韵母' },
-                    { char: 'e', pinyin: 'e', sound: 'ē', options: ['e', 'a', 'i'], emoji: '😯', tip: '嘴半开，发"鹅"音', example: '鹅é', type: '单韵母' },
-                    { char: 'i', pinyin: 'i', sound: 'ī', options: ['i', 'u', 'y'], emoji: '😊', tip: '嘴角拉开，发"衣"音', example: '衣yī', type: '单韵母' },
-                    { char: 'u', pinyin: 'u', sound: 'ū', options: ['u', 'o', 'w'], emoji: '🤐', tip: '嘴巴撅起，发"乌"音', example: '乌wū', type: '单韵母' },
-                    { char: 'ü', pinyin: 'ü', sound: 'ǖ', options: ['ü', 'u', 'i'], emoji: '💋', tip: '像吹口哨，发"鱼"音', example: '鱼yú', type: '单韵母' },
+                    { char: 'a', pinyin: 'a', sound: '啊', options: ['a', 'o', 'e'], emoji: '👄', tip: '嘴巴张大，发"啊"音', example: '爸bà', type: '单韵母' },
+                    { char: 'o', pinyin: 'o', sound: '喔', options: ['o', 'a', 'u'], emoji: '⭕', tip: '嘴巴圆圆，发"喔"音', example: '哦ò', type: '单韵母' },
+                    { char: 'e', pinyin: 'e', sound: '鹅', options: ['e', 'a', 'i'], emoji: '😯', tip: '嘴半开，发"鹅"音', example: '鹅é', type: '单韵母' },
+                    { char: 'i', pinyin: 'i', sound: '衣', options: ['i', 'u', 'y'], emoji: '😊', tip: '嘴角拉开，发"衣"音', example: '衣yī', type: '单韵母' },
+                    { char: 'u', pinyin: 'u', sound: '乌', options: ['u', 'o', 'w'], emoji: '🤐', tip: '嘴巴撅起，发"乌"音', example: '乌wū', type: '单韵母' },
+                    { char: 'ü', pinyin: 'ü', sound: '迂', options: ['ü', 'u', 'i'], emoji: '💋', tip: '像吹口哨，发"迂"音', example: '鱼yú', type: '单韵母' },
                     
                     // 复韵母
-                    { char: 'ai', pinyin: 'ai', sound: 'ái', options: ['ai', 'ao', 'ei'], emoji: '🤲', tip: 'a+i，从"啊"到"衣"', example: '爱ài', type: '复韵母' },
-                    { char: 'ei', pinyin: 'ei', sound: 'éi', options: ['ei', 'ai', 'ui'], emoji: '👋', tip: 'e+i，从"鹅"到"衣"', example: '黑hēi', type: '复韵母' },
-                    { char: 'ui', pinyin: 'ui', sound: 'uí', options: ['ui', 'iu', 'ai'], emoji: '🌊', tip: 'u+i，从"乌"到"衣"', example: '水shuǐ', type: '复韵母' },
-                    { char: 'ao', pinyin: 'ao', sound: 'áo', options: ['ao', 'ou', 'ai'], emoji: '😮', tip: 'a+o，从"啊"到"哦"', example: '猫māo', type: '复韵母' },
-                    { char: 'ou', pinyin: 'ou', sound: 'óu', options: ['ou', 'ao', 'iu'], emoji: '👴', tip: 'o+u，从"哦"到"乌"', example: '口kǒu', type: '复韵母' },
-                    { char: 'iu', pinyin: 'iu', sound: 'íu', options: ['iu', 'ui', 'ou'], emoji: '🏊', tip: 'i+u，从"衣"到"乌"', example: '牛niú', type: '复韵母' },
+                    { char: 'ai', pinyin: 'ai', sound: '哀', options: ['ai', 'ao', 'ei'], emoji: '🤲', tip: 'a+i，从"啊"到"衣"', example: '爱ài', type: '复韵母' },
+                    { char: 'ei', pinyin: 'ei', sound: '诶', options: ['ei', 'ai', 'ui'], emoji: '👋', tip: 'e+i，从"鹅"到"衣"', example: '黑hēi', type: '复韵母' },
+                    { char: 'ui', pinyin: 'ui', sound: '威', options: ['ui', 'iu', 'ai'], emoji: '🌊', tip: 'u+i，从"乌"到"衣"', example: '水shuǐ', type: '复韵母' },
+                    { char: 'ao', pinyin: 'ao', sound: '熬', options: ['ao', 'ou', 'ai'], emoji: '😮', tip: 'a+o，从"啊"到"哦"', example: '猫māo', type: '复韵母' },
+                    { char: 'ou', pinyin: 'ou', sound: '欧', options: ['ou', 'ao', 'iu'], emoji: '👴', tip: 'o+u，从"哦"到"乌"', example: '口kǒu', type: '复韵母' },
+                    { char: 'iu', pinyin: 'iu', sound: '优', options: ['iu', 'ui', 'ou'], emoji: '🏊', tip: 'i+u，从"衣"到"乌"', example: '牛niú', type: '复韵母' },
                     
                     // 鼻韵母
-                    { char: 'an', pinyin: 'an', sound: 'án', options: ['an', 'en', 'ang'], emoji: '👃', tip: 'a+n，发"安"音', example: '安ān', type: '鼻韵母' },
-                    { char: 'en', pinyin: 'en', sound: 'én', options: ['en', 'an', 'in'], emoji: '🤔', tip: 'e+n，发"恩"音', example: '恩ēn', type: '鼻韵母' },
-                    { char: 'in', pinyin: 'in', sound: 'ín', options: ['in', 'un', 'en'], emoji: '📌', tip: 'i+n，发"因"音', example: '因yīn', type: '鼻韵母' },
-                    { char: 'un', pinyin: 'un', sound: 'ún', options: ['un', 'in', 'ün'], emoji: '🌙', tip: 'u+n，发"温"音', example: '文wén', type: '鼻韵母' },
-                    { char: 'ün', pinyin: 'ün', sound: 'ǘn', options: ['ün', 'un', 'in'], emoji: '🎵', tip: 'ü+n，发"晕"音', example: '云yún', type: '鼻韵母' },
-                    { char: 'ang', pinyin: 'ang', sound: 'áng', options: ['ang', 'eng', 'an'], emoji: '😮', tip: 'a+ng，发"昂"音', example: '昂áng', type: '后鼻韵母' },
-                    { char: 'eng', pinyin: 'eng', sound: 'éng', options: ['eng', 'ang', 'ing'], emoji: '🔔', tip: 'e+ng，发"鞥"音', example: '灯dēng', type: '后鼻韵母' },
-                    { char: 'ing', pinyin: 'ing', sound: 'íng', options: ['ing', 'ong', 'eng'], emoji: '🌟', tip: 'i+ng，发"英"音', example: '英yīng', type: '后鼻韵母' },
-                    { char: 'ong', pinyin: 'ong', sound: 'óng', options: ['ong', 'ing', 'ang'], emoji: '🔊', tip: 'o+ng，发"轰"音', example: '红hóng', type: '后鼻韵母' }
+                    { char: 'an', pinyin: 'an', sound: '安', options: ['an', 'en', 'ang'], emoji: '👃', tip: 'a+n，发"安"音', example: '安ān', type: '鼻韵母' },
+                    { char: 'en', pinyin: 'en', sound: '恩', options: ['en', 'an', 'in'], emoji: '🤔', tip: 'e+n，发"恩"音', example: '恩ēn', type: '鼻韵母' },
+                    { char: 'in', pinyin: 'in', sound: '因', options: ['in', 'un', 'en'], emoji: '📌', tip: 'i+n，发"因"音', example: '因yīn', type: '鼻韵母' },
+                    { char: 'un', pinyin: 'un', sound: '温', options: ['un', 'in', 'ün'], emoji: '🌙', tip: 'u+n，发"温"音', example: '文wén', type: '鼻韵母' },
+                    { char: 'ün', pinyin: 'ün', sound: '晕', options: ['ün', 'un', 'in'], emoji: '🎵', tip: 'ü+n，发"晕"音', example: '云yún', type: '鼻韵母' },
+                    { char: 'ang', pinyin: 'ang', sound: '昂', options: ['ang', 'eng', 'an'], emoji: '😮', tip: 'a+ng，发"昂"音', example: '昂áng', type: '后鼻韵母' },
+                    { char: 'eng', pinyin: 'eng', sound: '鞥', options: ['eng', 'ang', 'ing'], emoji: '🔔', tip: 'e+ng，发"鞥"音', example: '灯dēng', type: '后鼻韵母' },
+                    { char: 'ing', pinyin: 'ing', sound: '英', options: ['ing', 'ong', 'eng'], emoji: '🌟', tip: 'i+ng，发"英"音', example: '英yīng', type: '后鼻韵母' },
+                    { char: 'ong', pinyin: 'ong', sound: '嗡', options: ['ong', 'ing', 'ang'], emoji: '🔊', tip: 'o+ng，发"嗡"音', example: '红hóng', type: '后鼻韵母' }
                 ]
             }
         };
@@ -528,11 +620,11 @@
             modeBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     // 清除所有选中状态
-                    modeBtns.forEach(b => b.classList.remove('ring-4', 'ring-white'));
-                    difficultyBtns.forEach(b => b.classList.remove('ring-4', 'ring-white'));
+                    modeBtns.forEach(b => b.classList.remove('ring-4', 'ring-primary'));
+                    difficultyBtns.forEach(b => b.classList.remove('ring-4', 'ring-primary'));
                     
                     // 添加当前按钮的选中状态
-                    this.classList.add('ring-4', 'ring-white');
+                    this.classList.add('ring-4', 'ring-primary');
                     currentGameMode = this.dataset.mode;
                     currentLevel = ''; // 清除难度选择
                     
@@ -552,11 +644,11 @@
             difficultyBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     // 清除所有选中状态
-                    modeBtns.forEach(b => b.classList.remove('ring-4', 'ring-white'));
-                    difficultyBtns.forEach(b => b.classList.remove('ring-4', 'ring-white'));
+                    modeBtns.forEach(b => b.classList.remove('ring-4', 'ring-primary'));
+                    difficultyBtns.forEach(b => b.classList.remove('ring-4', 'ring-primary'));
                     
                     // 添加当前按钮的选中状态
-                    this.classList.add('ring-4', 'ring-white');
+                    this.classList.add('ring-4', 'ring-primary');
                     currentLevel = this.dataset.level;
                     currentGameMode = 'difficulty'; // 设置为难度模式
                     
@@ -623,20 +715,48 @@
             gameActive = true;
             clearInterval(timerInterval);
             
-            // 根据难度设置题目数量和时间
-            switch(currentLevel) {
-                case 'easy':
-                    totalQuestions = 10;
-                    timeLeft = 15;
-                    break;
-                case 'medium':
-                    totalQuestions = 12;
-                    timeLeft = 20;
-                    break;
-                case 'hard':
-                    totalQuestions = 15;
-                    timeLeft = 25;
-                    break;
+            // 根据游戏模式设置题目数量和时间
+            if (currentGameMode === 'consonants' || currentGameMode === 'vowels') {
+                // 基础学习模式
+                totalQuestions = basicLearningData[currentGameMode].data.length;
+                timeLeft = basicLearningData[currentGameMode].timeLimit;
+            } else {
+                // 综合练习模式
+                switch(currentLevel) {
+                    case 'beginner':
+                        totalQuestions = 8;
+                        timeLeft = 20;
+                        break;
+                    case 'basic':
+                        totalQuestions = 10;
+                        timeLeft = 18;
+                        break;
+                    case 'advanced':
+                        totalQuestions = 12;
+                        timeLeft = 15;
+                        break;
+                    case 'expert':
+                        totalQuestions = 15;
+                        timeLeft = 12;
+                        break;
+                    // 兼容旧的难度名称
+                    case 'easy':
+                        totalQuestions = 8;
+                        timeLeft = 20;
+                        break;
+                    case 'medium':
+                        totalQuestions = 10;
+                        timeLeft = 18;
+                        break;
+                    case 'hard':
+                        totalQuestions = 12;
+                        timeLeft = 15;
+                        break;
+                    default:
+                        totalQuestions = 8;
+                        timeLeft = 20;
+                        break;
+                }
             }
             
             // 更新显示
@@ -702,14 +822,19 @@
             const playBtnText = document.getElementById('play-btn-text');
             
             if (currentGameMode === 'consonants' || currentGameMode === 'vowels') {
-                // 基础学习：显示拼音字母
+                // 基础学习：初始隐藏拼音字母，只显示问号
                 characterDisplay.innerHTML = `
                     <div class="flex flex-col items-center justify-center gap-3">
                         <span class="text-4xl">${questionData.emoji}</span>
-                        <span class="text-8xl font-bold text-primary bg-white px-6 py-4 rounded-2xl shadow-lg border-4 border-primary/20">${questionData.char}</span>
+                        <div id="question-mark" class="text-8xl font-bold text-gray-400 bg-gray-100 px-8 py-6 rounded-2xl shadow-lg border-4 border-gray-200">
+                            ?
+                        </div>
+                        <div id="hidden-answer" class="hidden text-8xl font-bold text-primary bg-white px-6 py-4 rounded-2xl shadow-lg border-4 border-primary/20">
+                            ${questionData.char}
+                        </div>
                         <div class="text-center">
-                            <p class="text-lg text-gray-600">这是什么${currentGameMode === 'consonants' ? '声母' : '韵母'}？</p>
-                            <p class="text-sm text-gray-500 mt-1">${questionData.tip}</p>
+                            <p class="text-lg text-gray-600">听音选择正确的${currentGameMode === 'consonants' ? '声母' : '韵母'}</p>
+                            <p class="text-sm text-gray-500 mt-1">点击播放按钮听读音</p>
                         </div>
                     </div>
                 `;
@@ -720,7 +845,7 @@
                 // 自动播放一次读音帮助学习
                 setTimeout(() => {
                     playCurrentSound();
-                }, 500);
+                }, 800);
                 
             } else {
                 // 综合练习：显示汉字
@@ -791,6 +916,17 @@
             
             const isCorrect = selectedOption === currentPinyin;
             
+            // 在基础学习模式中，显示隐藏的答案
+            if (currentGameMode === 'consonants' || currentGameMode === 'vowels') {
+                const questionMark = document.getElementById('question-mark');
+                const hiddenAnswer = document.getElementById('hidden-answer');
+                if (questionMark && hiddenAnswer) {
+                    questionMark.classList.add('hidden');
+                    hiddenAnswer.classList.remove('hidden');
+                    hiddenAnswer.classList.add('level-complete'); // 添加动画效果
+                }
+            }
+            
             // 视觉反馈
             if (isCorrect) {
                 buttonElement.classList.add('correct-animation');
@@ -799,7 +935,24 @@
                 showFeedback(true, '太棒了！', `${currentCharacter} 的拼音就是 ${currentPinyin}`);
                 
                 // 更新分数和连击
-                const baseScore = currentLevel === 'easy' ? 10 : currentLevel === 'medium' ? 15 : 20;
+                let baseScore = 10;
+                switch(currentLevel) {
+                    case 'beginner':
+                    case 'easy':
+                        baseScore = 10;
+                        break;
+                    case 'basic':
+                    case 'medium':
+                        baseScore = 15;
+                        break;
+                    case 'advanced':
+                        baseScore = 20;
+                        break;
+                    case 'expert':
+                    case 'hard':
+                        baseScore = 25;
+                        break;
+                }
                 const comboBonus = Math.min(combo * 2, 20);
                 const timeBonus = isTimerEnabled ? Math.max(0, Math.floor(timeLeft)) : 0;
                 const questionScore = baseScore + comboBonus + timeBonus;
@@ -831,19 +984,20 @@
             // 播放读音
             setTimeout(() => {
                 playCurrentSound();
-            }, 500);
+            }, 800);
             
             // 延迟进入下一题
             setTimeout(() => {
                 gameActive = true;
+                hideFeedback(); // 隐藏反馈
                 nextQuestion();
-            }, 3000);
+            }, 3500);
         }
 
         // 显示反馈
         function showFeedback(isCorrect, title, detail) {
             feedbackText.textContent = title;
-            feedbackText.className = `text-2xl font-bold mb-2 ${isCorrect ? 'text-success' : 'text-danger'}`;
+            feedbackText.className = `text-xl font-bold mb-2 ${isCorrect ? 'text-success' : 'text-danger'}`;
             
             // 根据游戏模式显示不同的详细信息
             let feedbackHTML = detail;
@@ -855,17 +1009,17 @@
                     if (isCorrect) {
                         feedbackHTML = `
                             <div class="text-center">
-                                <p class="text-lg mb-2">${currentData.tip}</p>
-                                <p class="text-md text-gray-600">例如：<span class="font-bold text-primary">${currentData.example}</span></p>
-                                ${currentData.type ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mt-2">${currentData.type}</span>` : ''}
+                                <p class="text-sm mb-2">${currentData.tip}</p>
+                                <p class="text-xs text-gray-600">例如：<span class="font-bold text-primary">${currentData.example}</span></p>
+                                ${currentData.type ? `<span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mt-1">${currentData.type}</span>` : ''}
                             </div>
                         `;
                     } else {
                         feedbackHTML = `
                             <div class="text-center">
-                                <p class="text-lg mb-2">正确答案是：<span class="font-bold text-success">${currentPinyin}</span></p>
-                                <p class="text-md text-gray-600 mb-2">${currentData.tip}</p>
-                                <p class="text-sm text-gray-500">例如：<span class="font-bold">${currentData.example}</span></p>
+                                <p class="text-sm mb-2">正确答案是：<span class="font-bold text-success">${currentPinyin}</span></p>
+                                <p class="text-xs text-gray-600 mb-1">${currentData.tip}</p>
+                                <p class="text-xs text-gray-500">例如：<span class="font-bold">${currentData.example}</span></p>
                             </div>
                         `;
                     }
@@ -874,21 +1028,54 @@
             
             feedbackDetail.innerHTML = feedbackHTML;
             feedbackContent.classList.remove('hidden');
+            
+            // 添加显示动画
+            setTimeout(() => {
+                feedbackContent.classList.add('level-complete');
+            }, 100);
+        }
+        
+        // 隐藏反馈
+        function hideFeedback() {
+            feedbackContent.classList.add('hidden');
+            feedbackContent.classList.remove('level-complete');
         }
 
         // 开始计时
         function startTimer() {
-            // 根据难度设置时间
-            switch(currentLevel) {
-                case 'easy':
-                    timeLeft = 15;
-                    break;
-                case 'medium':
-                    timeLeft = 20;
-                    break;
-                case 'hard':
-                    timeLeft = 25;
-                    break;
+            // 根据游戏模式设置时间
+            if (currentGameMode === 'consonants' || currentGameMode === 'vowels') {
+                // 基础学习模式使用更长的时间
+                timeLeft = basicLearningData[currentGameMode].timeLimit;
+            } else {
+                // 综合练习模式根据难度设置时间
+                switch(currentLevel) {
+                    case 'beginner':
+                        timeLeft = 20;
+                        break;
+                    case 'basic':
+                        timeLeft = 18;
+                        break;
+                    case 'advanced':
+                        timeLeft = 15;
+                        break;
+                    case 'expert':
+                        timeLeft = 12;
+                        break;
+                    // 兼容旧的难度名称
+                    case 'easy':
+                        timeLeft = 20;
+                        break;
+                    case 'medium':
+                        timeLeft = 18;
+                        break;
+                    case 'hard':
+                        timeLeft = 15;
+                        break;
+                    default:
+                        timeLeft = 20;
+                        break;
+                }
             }
             
             updateTimer();
@@ -969,14 +1156,44 @@
                     textToSpeak = currentCharacter;
                 }
                 
+                // 先停止所有正在播放的语音
+                speechSynthesis.cancel();
+                
                 const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                
+                // 设置中文语音参数
                 utterance.lang = 'zh-CN';
-                utterance.rate = 0.7; // 稍慢一些，便于儿童听清
-                utterance.pitch = 1.2; // 稍高一些，更适合儿童
+                utterance.rate = 0.6; // 适合儿童的慢速
+                utterance.pitch = 1.1; // 稍高音调
+                utterance.volume = 0.9;
+                
+                // 尝试选择中文语音
+                utterance.onvoiceschanged = () => {
+                    const voices = speechSynthesis.getVoices();
+                    const chineseVoice = voices.find(voice => 
+                        voice.lang === 'zh-CN' || voice.lang === 'zh' || 
+                        voice.name.includes('Chinese') || voice.name.includes('中文')
+                    );
+                    if (chineseVoice) {
+                        utterance.voice = chineseVoice;
+                    }
+                };
+                
+                // 如果语音列表已加载，直接设置
+                const voices = speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    const chineseVoice = voices.find(voice => 
+                        voice.lang === 'zh-CN' || voice.lang === 'zh' || 
+                        voice.name.includes('Chinese') || voice.name.includes('中文')
+                    );
+                    if (chineseVoice) {
+                        utterance.voice = chineseVoice;
+                    }
+                }
                 
                 // 设置不同模式的语速
                 if (currentGameMode === 'consonants' || currentGameMode === 'vowels') {
-                    utterance.rate = 0.6; // 基础学习更慢
+                    utterance.rate = 0.5; // 基础学习更慢
                 }
                 
                 speechSynthesis.speak(utterance);
@@ -986,6 +1203,10 @@
                 setTimeout(() => {
                     playSoundBtn.classList.remove('sound-wave');
                 }, 1500);
+            } else {
+                // 如果不支持语音合成，显示提示
+                console.log('浏览器不支持语音合成功能');
+                alert('您的浏览器不支持语音功能，请尝试使用Chrome或Safari浏览器');
             }
         }
 
