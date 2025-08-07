@@ -483,8 +483,13 @@
             currentChain = [];
             longestChain = [];
             selectedCard = null;
+            wordsLearned.clear();
+            categoryStats = {};
+            difficultyLevel = 1;
+            
             generateWordCards();
             updateUI();
+            updateLearningStats();
             setupEventListeners();
         }
         
@@ -810,17 +815,20 @@
                 return;
             }
             
-            currentChain.forEach((word, index) => {
+            currentChain.forEach((wordData, index) => {
                 const wordSpan = document.createElement('span');
-                wordSpan.className = 'bg-purple-100 text-purple-800 px-2 py-1 rounded-lg font-bold';
-                wordSpan.textContent = word;
+                wordSpan.className = 'bg-purple-100 text-purple-800 px-3 py-2 rounded-lg font-bold border border-purple-200 inline-block text-center';
+                wordSpan.innerHTML = `
+                    <div class="font-bold">${wordData.word}</div>
+                    <div class="text-xs text-purple-600 mt-1">${wordData.translation}</div>
+                `;
                 
                 chainDisplay.appendChild(wordSpan);
                 
                 if (index < currentChain.length - 1) {
                     const arrow = document.createElement('span');
-                    arrow.className = 'text-purple-600 mx-1';
-                    arrow.textContent = '→';
+                    arrow.className = 'text-purple-600 mx-2 inline-flex items-center';
+                    arrow.innerHTML = '<i class="fa fa-arrow-right text-lg"></i>';
                     chainDisplay.appendChild(arrow);
                 }
             });
@@ -833,13 +841,68 @@
             if (currentChain.length === 0) {
                 targetElement.textContent = '连接任意两个单词开始';
             } else {
-                const lastWord = currentChain[currentChain.length - 1];
-                const firstWord = currentChain[0];
+                const lastWord = currentChain[currentChain.length - 1].word;
+                const firstWord = currentChain[0].word;
                 const lastLetter = lastWord.charAt(lastWord.length - 1);
                 const firstLetter = firstWord.charAt(0);
                 
                 targetElement.textContent = `寻找以 ${lastLetter} 开头或以 ${firstLetter} 结尾的单词`;
             }
+        }
+        
+        // 更新分类统计
+        function updateCategoryStats(category) {
+            if (!categoryStats[category]) {
+                categoryStats[category] = 0;
+            }
+            categoryStats[category]++;
+        }
+        
+        // 更新学习统计显示
+        function updateLearningStats() {
+            document.getElementById('words-learned').textContent = wordsLearned.size;
+            document.getElementById('animals-count').textContent = categoryStats.animals || 0;
+            document.getElementById('nature-count').textContent = categoryStats.nature || 0;
+            document.getElementById('objects-count').textContent = categoryStats.objects || 0;
+            document.getElementById('food-count').textContent = categoryStats.food || 0;
+            
+            // 更新难度显示
+            const difficultyNames = ['初级', '中级', '高级'];
+            document.getElementById('current-difficulty').textContent = difficultyNames[difficultyLevel - 1] || '初级';
+        }
+        
+        // 检查难度升级
+        function checkDifficultyUpgrade() {
+            const totalLearned = wordsLearned.size;
+            
+            if (totalLearned >= 20 && difficultyLevel === 1) {
+                difficultyLevel = 2;
+                showUpgradeMessage('恭喜升级到中级难度！解锁更多高级单词！');
+            } else if (totalLearned >= 35 && difficultyLevel === 2) {
+                difficultyLevel = 3;
+                showUpgradeMessage('太棒了！升级到高级难度！挑战最难的单词！');
+            }
+        }
+        
+        // 显示升级消息
+        function showUpgradeMessage(message) {
+            const popup = document.createElement('div');
+            popup.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-2xl z-50';
+            popup.innerHTML = `
+                <div class="text-center">
+                    <div class="text-2xl mb-2">🎉</div>
+                    <div>${message}</div>
+                </div>
+            `;
+            
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                popup.remove();
+                // 重新生成卡片以包含新难度的单词
+                generateWordCards();
+                setupEventListeners();
+            }, 3000);
         }
         
         // 创建得分弹窗
