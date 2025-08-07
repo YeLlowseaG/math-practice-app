@@ -187,6 +187,17 @@
                 </div>
             </div>
             
+            <!-- 倒计时开关 -->
+            <div class="mb-5 flex items-center justify-center gap-4 bg-gray-50 rounded-2xl p-3">
+                <i class="fa fa-clock-o text-gray-600"></i>
+                <span class="text-gray-700 font-medium">倒计时模式</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="timer-toggle" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+                <span class="text-xs text-gray-500">15秒答题</span>
+            </div>
+            
             <!-- 游戏说明 -->
             <div class="mb-5">
                 <div class="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-4 text-sm">
@@ -904,6 +915,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('字母认知游戏初始化完成');
             initSpeechSynthesis();
+            
+            // 倒计时开关逻辑
+            document.getElementById('timer-toggle').addEventListener('change', function() {
+                // 默认已开启倒计时，无需额外文字切换
+                console.log('倒计时模式:', this.checked ? '开启' : '关闭');
+            });
         });
     </script>
 </body>
