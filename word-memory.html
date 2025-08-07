@@ -315,11 +315,67 @@
     </div>
 
     <script>
-        // 游戏数据
+        // 游戏数据 - 300个单词库
         const wordData = {
-            easy: ['cat', 'dog', 'sun'],
-            medium: ['apple', 'house', 'water', 'book', 'tree', 'car'],
-            hard: ['elephant', 'rainbow', 'butterfly', 'mountain', 'computer', 'birthday', 'sandwich', 'playground']
+            // 简单难度：100个基础单词（3-4个字母，日常物品）
+            easy: [
+                // 动物类
+                'cat', 'dog', 'pig', 'cow', 'fox', 'rat', 'bat', 'bee', 'ant', 'bug',
+                'owl', 'hen', 'ram', 'yak', 'elk', 'ape', 'doe', 'cub', 'kid', 'pup',
+                // 食物类
+                'egg', 'pie', 'jam', 'tea', 'ice', 'ham', 'nut', 'fig', 'yam', 'pea',
+                'bun', 'gum', 'cod', 'rye', 'oat', 'soy', 'ale', 'rum', 'gin', 'dip',
+                // 物品类
+                'pen', 'cup', 'pot', 'pan', 'bag', 'box', 'key', 'toy', 'hat', 'cap',
+                'map', 'web', 'net', 'rod', 'axe', 'saw', 'pin', 'mat', 'rug', 'bed',
+                // 自然类
+                'sun', 'sky', 'sea', 'mud', 'dew', 'fog', 'ice', 'gem', 'ore', 'oil',
+                'bay', 'dam', 'pit', 'den', 'log', 'oak', 'ivy', 'fir', 'ash', 'elm',
+                // 身体类
+                'eye', 'ear', 'arm', 'leg', 'toe', 'jaw', 'gut', 'rib', 'hip', 'lip',
+                // 颜色/形状
+                'red', 'big', 'hot', 'new', 'old', 'wet', 'dry', 'fat', 'raw', 'odd'
+            ],
+            
+            // 中等难度：100个常用单词（4-6个字母，生活场景）
+            medium: [
+                // 家庭生活
+                'house', 'table', 'chair', 'window', 'kitchen', 'bedroom', 'garden', 'family', 'mother', 'father',
+                'sister', 'brother', 'dinner', 'breakfast', 'shower', 'toilet', 'carpet', 'picture', 'mirror', 'drawer',
+                // 学校教育
+                'school', 'teacher', 'student', 'lesson', 'pencil', 'paper', 'ruler', 'eraser', 'crayon', 'marker',
+                'book', 'page', 'story', 'letter', 'number', 'color', 'shape', 'circle', 'square', 'triangle',
+                // 食物饮料
+                'water', 'juice', 'milk', 'bread', 'butter', 'cheese', 'banana', 'apple', 'orange', 'grape',
+                'cookie', 'candy', 'pizza', 'burger', 'french', 'salad', 'soup', 'rice', 'pasta', 'chicken',
+                // 交通工具
+                'car', 'bus', 'train', 'plane', 'boat', 'bike', 'truck', 'taxi', 'metro', 'rocket',
+                // 动物扩展
+                'horse', 'sheep', 'goat', 'duck', 'fish', 'bird', 'mouse', 'rabbit', 'tiger', 'lion',
+                // 时间天气
+                'today', 'tomorrow', 'morning', 'evening', 'sunny', 'cloudy', 'rainy', 'windy', 'snowy', 'storm',
+                // 运动娱乐
+                'game', 'sport', 'music', 'dance', 'sing', 'play', 'run', 'jump', 'swim', 'climb'
+            ],
+            
+            // 困难难度：100个进阶单词（6+个字母，复杂概念）
+            hard: [
+                // 科技数码
+                'computer', 'keyboard', 'monitor', 'printer', 'scanner', 'camera', 'television', 'telephone', 'internet', 'website',
+                'software', 'hardware', 'digital', 'wireless', 'bluetooth', 'satellite', 'algorithm', 'database', 'password', 'download',
+                // 自然地理
+                'mountain', 'volcano', 'earthquake', 'hurricane', 'tornado', 'desert', 'forest', 'jungle', 'waterfall', 'glacier',
+                'continent', 'peninsula', 'archipelago', 'plateau', 'canyon', 'valley', 'meadow', 'prairie', 'tundra', 'savanna',
+                // 身体健康
+                'skeleton', 'muscle', 'nervous', 'digestive', 'respiratory', 'circulatory', 'medicine', 'hospital', 'doctor', 'nurse',
+                'vitamin', 'protein', 'calcium', 'exercise', 'nutrition', 'surgery', 'therapy', 'treatment', 'diagnosis', 'symptom',
+                // 社会文化
+                'government', 'democracy', 'election', 'president', 'parliament', 'constitution', 'citizenship', 'community', 'society', 'culture',
+                'tradition', 'festival', 'ceremony', 'celebration', 'anniversary', 'graduation', 'wedding', 'birthday', 'holiday', 'vacation',
+                // 科学概念
+                'chemistry', 'physics', 'biology', 'mathematics', 'geometry', 'algebra', 'microscope', 'telescope', 'laboratory', 'experiment',
+                'hypothesis', 'theory', 'discovery', 'invention', 'evolution', 'genetics', 'molecule', 'element', 'compound', 'reaction'
+            ]
         };
 
         // 游戏状态
@@ -437,9 +493,15 @@
             updateGameStats();
         }
 
+        // 从单词库中随机选择单词
+        function getRandomWords(difficulty, count) {
+            const allWords = wordData[difficulty];
+            const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, count);
+        }
+        
         // 生成游戏板
         function generateGameBoard() {
-            const words = wordData[currentDifficulty];
             const boardSize = {
                 easy: { cols: 3, rows: 2 },
                 medium: { cols: 4, rows: 3 },
@@ -449,12 +511,14 @@
             const { cols, rows } = boardSize[currentDifficulty];
             totalPairs = (cols * rows) / 2;
             
+            // 从单词库随机选择需要的单词数量
+            const selectedWords = getRandomWords(currentDifficulty, totalPairs);
+            
             // 创建卡片对
             const cardPairs = [];
-            for (let i = 0; i < totalPairs; i++) {
-                const word = words[i % words.length];
-                cardPairs.push(word, word);
-            }
+            selectedWords.forEach(word => {
+                cardPairs.push(word, word); // 每个单词创建两张卡片
+            });
             
             // 打乱卡片
             gameBoard = cardPairs.sort(() => Math.random() - 0.5);
