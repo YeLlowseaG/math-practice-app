@@ -95,7 +95,6 @@
                 box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
             }
             .word-card.flipped {
-                transform: rotateY(180deg);
                 background: linear-gradient(135deg, #10B981 0%, #059669 100%);
             }
             .word-card.matched {
@@ -133,92 +132,96 @@
 <body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen font-kids text-text">
     
     <!-- 开始界面 -->
-    <div id="start-screen" class="flex flex-col items-center justify-center min-h-screen p-4 relative">
-        <div class="text-center max-w-2xl mx-auto bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300">
-            <!-- 标题区域 -->
-            <div class="mb-8">
-                <div class="w-24 h-24 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center text-white text-4xl shadow-lg mx-auto mb-6 bounce-light">
+    <div id="start-screen" class="flex flex-col items-center justify-center min-h-screen p-8 relative">
+        <!-- 返回首页按钮 -->
+        <button onclick="window.location.href='index.html'" class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 text-sm font-bold text-gray-600 hover:text-gray-800 z-40">
+            <i class="fa fa-home mr-2"></i>首页
+        </button>
+        
+        <div class="text-center w-full max-w-sm mx-auto bg-white rounded-3xl shadow-2xl p-6 transform transition-all duration-500">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent mb-3">单词记忆</h1>
+            <p class="text-base mb-4 text-gray-600">翻牌配对游戏<br>记住单词配对！</p>
+            
+            <div class="flex justify-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-3xl shadow-lg relative overflow-hidden float-animation">
                     <i class="fa fa-puzzle-piece"></i>
-                </div>
-                <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-600 to-secondary mb-4 text-shadow">
-                    🧩 单词记忆游戏
-                </h1>
-                <p class="text-lg text-gray-600 mb-2">翻牌配对，学习英文单词</p>
-                <p class="text-base text-gray-500">适合4-10岁儿童</p>
-            </div>
-            
-            <!-- 返回按钮 -->
-            <button onclick="window.location.href='index.html'" 
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-full mb-6 scale-hover">
-                <i class="fa fa-home mr-2"></i>返回首页
-            </button>
-            
-            <!-- 游戏说明 -->
-            <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 mb-8">
-                <h3 class="text-xl font-bold text-primary mb-4">🎯 游戏规则</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                    <div class="flex items-center p-3">
-                        <div class="text-2xl mr-3">👆</div>
-                        <div>
-                            <h4 class="font-bold text-gray-700">翻开卡片</h4>
-                            <p class="text-sm text-gray-600">点击卡片看英文单词</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center p-3">
-                        <div class="text-2xl mr-3">🎯</div>
-                        <div>
-                            <h4 class="font-bold text-gray-700">找到配对</h4>
-                            <p class="text-sm text-gray-600">找相同单词组成一对</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center p-3">
-                        <div class="text-2xl mr-3">🔊</div>
-                        <div>
-                            <h4 class="font-bold text-gray-700">听发音</h4>
-                            <p class="text-sm text-gray-600">点击喇叭听单词读音</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center p-3">
-                        <div class="text-2xl mr-3">🏆</div>
-                        <div>
-                            <h4 class="font-bold text-gray-700">完成挑战</h4>
-                            <p class="text-sm text-gray-600">配对所有单词获胜</p>
-                        </div>
-                    </div>
+                    <div class="absolute inset-0 bg-white opacity-20 rounded-full animate-ping"></div>
                 </div>
             </div>
             
             <!-- 难度选择 -->
-            <div class="mb-8">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">📚 选择难度</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="mb-5">
+                <h3 class="text-base font-bold mb-3">选择难度</h3>
+                <div class="grid grid-cols-1 gap-3">
                     <button onclick="selectDifficulty('easy')" 
-                            class="difficulty-btn bg-secondary/10 border-2 border-secondary/20 hover:border-secondary/40 p-4 rounded-2xl text-center scale-hover">
-                        <div class="text-3xl mb-2">🌟</div>
-                        <h4 class="font-bold text-secondary mb-1">简单</h4>
-                        <p class="text-sm text-gray-600">3x2 = 6张卡片</p>
-                        <p class="text-xs text-secondary">基础单词</p>
+                            class="difficulty-btn bg-secondary/10 border-2 border-secondary/20 hover:border-secondary/40 p-3 rounded-2xl text-center scale-hover transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="text-2xl mr-3">🌟</div>
+                                <div>
+                                    <h4 class="font-bold text-secondary text-left">简单</h4>
+                                    <p class="text-xs text-gray-600 text-left">3×2 基础单词</p>
+                                </div>
+                            </div>
+                            <div class="text-sm text-secondary">6张</div>
+                        </div>
                     </button>
                     <button onclick="selectDifficulty('medium')" 
-                            class="difficulty-btn bg-accent/10 border-2 border-accent/20 hover:border-accent/40 p-4 rounded-2xl text-center scale-hover">
-                        <div class="text-3xl mb-2">⭐⭐</div>
-                        <h4 class="font-bold text-accent mb-1">中等</h4>
-                        <p class="text-sm text-gray-600">4x3 = 12张卡片</p>
-                        <p class="text-xs text-accent">常用单词</p>
+                            class="difficulty-btn bg-accent/10 border-2 border-accent/20 hover:border-accent/40 p-3 rounded-2xl text-center scale-hover transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="text-2xl mr-3">⭐⭐</div>
+                                <div>
+                                    <h4 class="font-bold text-accent text-left">中等</h4>
+                                    <p class="text-xs text-gray-600 text-left">4×3 常用单词</p>
+                                </div>
+                            </div>
+                            <div class="text-sm text-accent">12张</div>
+                        </div>
                     </button>
                     <button onclick="selectDifficulty('hard')" 
-                            class="difficulty-btn bg-danger/10 border-2 border-danger/20 hover:border-danger/40 p-4 rounded-2xl text-center scale-hover">
-                        <div class="text-3xl mb-2">⭐⭐⭐</div>
-                        <h4 class="font-bold text-danger mb-1">困难</h4>
-                        <p class="text-sm text-gray-600">4x4 = 16张卡片</p>
-                        <p class="text-xs text-danger">进阶单词</p>
+                            class="difficulty-btn bg-danger/10 border-2 border-danger/20 hover:border-danger/40 p-3 rounded-2xl text-center scale-hover transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="text-2xl mr-3">⭐⭐⭐</div>
+                                <div>
+                                    <h4 class="font-bold text-danger text-left">困难</h4>
+                                    <p class="text-xs text-gray-600 text-left">4×4 进阶单词</p>
+                                </div>
+                            </div>
+                            <div class="text-sm text-danger">16张</div>
+                        </div>
                     </button>
+                </div>
+            </div>
+            
+            <!-- 游戏说明 -->
+            <div class="mb-5">
+                <div class="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-4 text-sm">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex items-center">
+                            <span class="text-lg mr-2">👆</span>
+                            <span class="text-gray-700">翻开卡片</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-lg mr-2">🎯</span>
+                            <span class="text-gray-700">找到配对</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-lg mr-2">🔊</span>
+                            <span class="text-gray-700">听发音</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-lg mr-2">🏆</span>
+                            <span class="text-gray-700">完成挑战</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <!-- 开始游戏按钮 -->
             <button id="start-game-btn" onclick="startGame()" disabled
-                    class="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-lg transform transition-all duration-300 scale-hover disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="w-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform transition-all duration-300 scale-hover disabled:opacity-50 disabled:cursor-not-allowed">
                 开始游戏 <i class="fa fa-play ml-2"></i>
             </button>
         </div>
@@ -346,27 +349,13 @@
                 }
             }
 
-            // 播放英文发音
+            // 播放英文发音  
             speak(text, rate = 0.8) {
-                if (!('speechSynthesis' in window) || !this.englishVoice) {
-                    console.log('语音不可用，显示文字:', text);
-                    return;
-                }
-
-                // 处理单词发音
-                let speakText = text.toLowerCase();
-
-                const utterance = new SpeechSynthesisUtterance(speakText);
-                utterance.voice = this.englishVoice;
-                utterance.rate = rate;
-                utterance.pitch = 1.0;
-                utterance.volume = 0.9;
-                utterance.lang = 'en-US';
-
-                console.log(`🔊 播放发音: "${text}" -> "${speakText}"`);
-
-                speechSynthesis.cancel();
-                speechSynthesis.speak(utterance);
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'en-US';
+                    speechSynthesis.speak(utterance);
+                }, 100);
             }
 
             // 记录学习进度
@@ -493,8 +482,7 @@
             flipCount++;
             updateGameStats();
             
-            // 播放单词发音
-            gameManager.speak(gameBoard[index]);
+            // 不自动播放，让用户点击卡片上的播放按钮
             
             // 检查配对
             if (flippedCards.length === 2) {
@@ -514,8 +502,7 @@
                 matchedPairs++;
                 score += Math.max(50 - flipCount, 10);
                 
-                // 播放成功音效
-                setTimeout(() => gameManager.speak('Excellent!'), 200);
+                // 不自动播放成功音效
                 
                 // 检查游戏结束
                 if (matchedPairs === totalPairs) {

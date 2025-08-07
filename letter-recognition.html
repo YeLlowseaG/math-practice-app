@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>字母认知 - ABC学习游戏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        danger: '#EF4444',
+                        neutral: '#F7FFF7',
+                        text: '#1F2937'
+                    },
+                    fontFamily: {
+                        kids: ['"Comic Sans MS"', '"Marker Felt"', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .bounce-light {
+                animation: bounce-light 0.5s ease infinite alternate;
+            }
+            .pulse-slow {
+                animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .scale-hover {
+                transition: transform 0.2s;
+            }
+            .scale-hover:hover {
+                transform: scale(1.05);
+            }
+            .correct-animation {
+                animation: correct 0.6s ease-in-out;
+            }
+            .wrong-animation {
+                animation: wrong 0.6s ease-in-out;
+            }
+            .level-complete {
+                animation: levelComplete 1s ease-in-out;
+            }
+            @keyframes bounce-light {
+                from { transform: translateY(0); }
+                to { transform: translateY(-5px); }
+            }
+            @keyframes correct {
+                0% { transform: scale(1); background-color: #10B981; }
+                50% { transform: scale(1.1); background-color: #34D399; }
+                100% { transform: scale(1); background-color: #10B981; }
+            }
+            @keyframes wrong {
+                0% { transform: translateX(0); background-color: #EF4444; }
+                25% { transform: translateX(-5px); background-color: #F87171; }
+                75% { transform: translateX(5px); background-color: #F87171; }
+                100% { transform: translateX(0); background-color: #EF4444; }
+            }
+            @keyframes levelComplete {
+                0% { transform: scale(1) rotate(0deg); }
+                25% { transform: scale(1.2) rotate(5deg); }
+                75% { transform: scale(1.2) rotate(-5deg); }
+                100% { transform: scale(1) rotate(0deg); }
+            }
+            @keyframes button-press {
+                0% { transform: scale(1); }
+                50% { transform: scale(0.95); }
+                100% { transform: scale(1); }
+            }
+            
+            .button-press {
+                animation: button-press 0.2s ease-in-out;
+            }
+            
+            /* 移动端优化 */
+            @media (max-width: 768px) {
+                .option-btn {
+                    min-height: 64px;
+                    font-size: 1.1rem;
+                    padding: 16px 12px;
+                }
+                .float-animation {
+                    animation: none;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .option-btn {
+                    min-height: 60px;
+                    font-size: 1rem;
+                    padding: 12px 8px;
+                }
+                .main-content {
+                    padding: 1rem;
+                }
+                .game-card {
+                    padding: 1.5rem;
+                }
+                #target-letter {
+                    font-size: clamp(4rem, 15vw, 8rem) !important;
+                }
+                .text-xl {
+                    font-size: 1rem;
+                }
+                .text-2xl {
+                    font-size: 1.25rem;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen font-kids text-text overflow-hidden">
+    
+    <!-- 开始界面 -->
+    <div id="start-screen" class="flex flex-col items-center justify-center min-h-screen p-8 relative">
+        <!-- 返回首页按钮 -->
+        <button onclick="window.location.href='index.html'" class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 text-sm font-bold text-gray-600 hover:text-gray-800 z-40">
+            <i class="fa fa-home mr-2"></i>首页
+        </button>
+        <div class="text-center w-full max-w-sm mx-auto bg-white rounded-3xl shadow-2xl p-6 transform transition-all duration-500">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-3">字母认知</h1>
+            <p class="text-base mb-4 text-gray-600">学习ABC字母<br>听发音选字母！</p>
+            
+            <div class="flex justify-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-3xl shadow-lg relative overflow-hidden float-animation">
+                    <i class="fa fa-font"></i>
+                    <div class="absolute inset-0 bg-white opacity-20 rounded-full animate-ping"></div>
+                </div>
+            </div>
+            
+            <!-- 难度选择 -->
+            <div class="mb-5">
+                <h3 class="text-base font-bold mb-3">选择难度</h3>
+                <div class="grid grid-cols-1 gap-3">
+                    <button onclick="selectDifficulty('easy')" 
+                            class="difficulty-btn bg-secondary/10 border-2 border-secondary/20 hover:border-secondary/40 p-3 rounded-2xl text-center scale-hover transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="text-2xl mr-3">🌟</div>
+                                <div>
+                                    <h4 class="font-bold text-secondary text-left">简单</h4>
+                                    <p class="text-xs text-gray-600 text-left">A-H 字母</p>
+                                </div>
+                            </div>
+                            <div class="text-sm text-secondary">8个</div>
+                        </div>
+                    </button>
+                    <button onclick="selectDifficulty('medium')" 
+                            class="difficulty-btn bg-accent/10 border-2 border-accent/20 hover:border-accent/40 p-3 rounded-2xl text-center scale-hover transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="text-2xl mr-3">⭐⭐</div>
+                                <div>
+                                    <h4 class="font-bold text-accent text-left">中等</h4>
+                                    <p class="text-xs text-gray-600 text-left">A-P 字母</p>
+                                </div>
+                            </div>
+                            <div class="text-sm text-accent">16个</div>
+                        </div>
+                    </button>
+                    <button onclick="selectDifficulty('hard')" 
+                            class="difficulty-btn bg-danger/10 border-2 border-danger/20 hover:border-danger/40 p-3 rounded-2xl text-center scale-hover transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="text-2xl mr-3">⭐⭐⭐</div>
+                                <div>
+                                    <h4 class="font-bold text-danger text-left">困难</h4>
+                                    <p class="text-xs text-gray-600 text-left">A-Z 全部</p>
+                                </div>
+                            </div>
+                            <div class="text-sm text-danger">26个</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 游戏说明 -->
+            <div class="mb-5">
+                <div class="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-4 text-sm">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex items-center">
+                            <span class="text-lg mr-2">🔊</span>
+                            <span class="text-gray-700">听发音</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-lg mr-2">👆</span>
+                            <span class="text-gray-700">点击选择</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-lg mr-2">🎯</span>
+                            <span class="text-gray-700">选对字母</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-lg mr-2">🏆</span>
+                            <span class="text-gray-700">闯关挑战</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 开始游戏按钮 -->
+            <button id="start-game-btn" onclick="startGame()" disabled
+                    class="w-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform transition-all duration-300 scale-hover disabled:opacity-50 disabled:cursor-not-allowed">
+                开始学习 <i class="fa fa-play ml-2"></i>
+            </button>
+        </div>
+        
+        <!-- 装饰元素 -->
+        <div class="absolute top-10 left-10 text-5xl text-primary/30">
+            <i class="fa fa-star bounce-light"></i>
+        </div>
+        <div class="absolute bottom-10 right-10 text-5xl text-secondary/30">
+            <i class="fa fa-heart bounce-light" style="animation-delay: 0.3s"></i>
+        </div>
+        <div class="absolute top-1/4 right-20 text-4xl text-accent/30">
+            <i class="fa fa-trophy bounce-light" style="animation-delay: 0.6s"></i>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="hidden h-screen flex flex-col">
+        <!-- 顶部信息栏 -->
+        <div class="flex justify-between items-center p-3 bg-white/80 backdrop-blur-sm shadow-md">
+            <!-- 左侧信息 -->
+            <div class="flex items-center gap-3">
+                <!-- 返回首页按钮 -->
+                <button onclick="window.location.href='index.html'" class="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full shadow-md transition-all duration-300 hover:scale-105 active:scale-95 text-sm font-bold text-gray-600 hover:text-gray-800">
+                    <i class="fa fa-home mr-1"></i><span class="hidden sm:inline">首页</span>
+                </button>
+                <div class="bg-primary px-4 py-2 rounded-full text-white font-bold shadow-md">
+                    <span>关卡 </span><span id="level-display">1</span>
+                </div>
+                <div class="bg-secondary px-4 py-2 rounded-full text-white font-bold shadow-md">
+                    <span>连击 </span><span id="combo-display">0</span>
+                </div>
+            </div>
+            
+            <!-- 中间计时器 -->
+            <div id="timer" class="bg-accent text-white px-6 py-3 rounded-full shadow-md">
+                <i class="fa fa-clock-o mr-2"></i>
+                <span id="countdown" class="text-xl font-bold">倒计时 15.0</span>
+            </div>
+            
+            <!-- 右侧分数 -->
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 rounded-full text-white font-bold shadow-md">
+                <i class="fa fa-star mr-2"></i>
+                <span id="score-display">0</span>
+            </div>
+        </div>
+        
+        <!-- 关卡进度条 -->
+        <div class="bg-gray-100 border-b border-gray-200">
+            <div class="px-4 py-2">
+                <div class="flex items-center justify-between mb-2">
+                    <span id="progress-text" class="text-sm font-medium text-gray-600">第1关</span>
+                    <span id="progress-percentage" class="text-sm font-medium text-gray-600">0/10</span>
+                </div>
+                <div class="bg-gray-200 h-3 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-primary to-secondary h-full transition-all duration-500 ease-out"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主要游戏区域 -->
+        <div class="flex-1 flex flex-col items-center p-6">
+            <!-- 反馈信息 - 移到顶部 -->
+            <div id="feedback" class="mb-4 text-center text-3xl font-bold h-16 flex items-center justify-center">
+                <!-- 反馈信息显示区域 -->
+            </div>
+            
+            <!-- 目标显示 -->
+            <div class="bg-white rounded-3xl shadow-2xl p-8 text-center mb-6 transform transition-all duration-500">
+                <p class="text-gray-500 text-lg mb-4" id="question-type">听发音选择字母</p>
+                
+                <!-- 发音区域 - 统一显示在上方 -->
+                <div id="pronunciation-area" class="mb-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="text-6xl text-blue-500 mr-4">🔊</div>
+                        <button onclick="playCurrentLetterSound()" class="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-6 py-4 shadow-lg transition-all duration-300 hover:scale-105">
+                            <i class="fa fa-volume-up text-xl mr-2"></i>
+                            <span class="font-bold">播放发音</span>
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-gray-400 text-lg" id="pronunciation-text">/ei/</p>
+                        <p class="text-[clamp(2rem,6vw,4rem)] font-bold text-text mt-2" id="reference-letter">A</p>
+                    </div>
+                </div>
+                
+                <p class="text-gray-400 text-sm mt-2" id="target-hint">点击播放发音，选择对应的字母</p>
+            </div>
+            
+            <!-- 选项区域 -->
+            <div id="options-container" class="grid grid-cols-2 gap-4 max-w-xl w-full mt-auto mb-4">
+                <!-- 选项会动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 结果界面 -->
+    <div id="result-screen" class="hidden flex flex-col items-center justify-center h-screen p-6 bg-white/90 backdrop-blur-md">
+        <div class="text-center max-w-lg mx-auto">
+            <div id="result-icon" class="text-8xl mb-6">🎉</div>
+            <h2 id="result-title" class="text-[clamp(2rem,5vw,3rem)] font-bold mb-6">恭喜完成！</h2>
+            
+            <div class="bg-neutral rounded-2xl shadow-lg p-8 mb-8">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="text-center">
+                        <div class="text-primary text-3xl font-bold" id="final-score">0</div>
+                        <div class="text-gray-600">总分数</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-secondary text-3xl font-bold" id="final-level">1</div>
+                        <div class="text-gray-600">到达关卡</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-accent text-3xl font-bold" id="final-accuracy">0%</div>
+                        <div class="text-gray-600">准确率</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-purple-500 text-3xl font-bold" id="max-combo">0</div>
+                        <div class="text-gray-600">最高连击</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 成就显示 -->
+            <div id="achievements" class="mb-8">
+                <!-- 成就徽章会动态生成 -->
+            </div>
+            
+            <!-- 学习统计 -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+                <h3 class="text-lg font-bold mb-4 text-primary">🎯 学习成果</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-green-600 text-2xl font-bold" id="letters-learned">0</div>
+                        <div class="text-sm text-gray-600">已掌握字母</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-blue-600 text-2xl font-bold" id="words-learned">0</div>
+                        <div class="text-sm text-gray-600">学会单词</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-4">
+                <button onclick="restartGame()" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                    <i class="fa fa-refresh mr-2"></i>再来一次
+                </button>
+                <button onclick="window.location.href='index.html'" class="bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold py-3 px-6 rounded-2xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
+                    <i class="fa fa-home mr-2"></i>返回首页
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        const letterSounds = {
+            'A': 'ei', 'B': 'bi:', 'C': 'si:', 'D': 'di:', 'E': 'i:', 'F': 'ef',
+            'G': 'dʒi:', 'H': 'eitʃ', 'I': 'ai', 'J': 'dʒei', 'K': 'kei', 'L': 'el',
+            'M': 'em', 'N': 'en', 'O': 'əu', 'P': 'pi:', 'Q': 'kju:', 'R': 'a:(r)',
+            'S': 'es', 'T': 'ti:', 'U': 'ju:', 'V': 'vi:', 'W': 'dʌblju:', 'X': 'eks',
+            'Y': 'wai', 'Z': 'zi:'
+        };
+        
+        // 语音合成管理器
+        let voices = [];
+        let englishVoice = null;
+        const letterWords = {
+            'A': 'Apple', 'B': 'Ball', 'C': 'Cat', 'D': 'Dog', 'E': 'Egg', 'F': 'Fish',
+            'G': 'Goat', 'H': 'Hat', 'I': 'Ice', 'J': 'Jump', 'K': 'Key', 'L': 'Lion',
+            'M': 'Moon', 'N': 'Net', 'O': 'Orange', 'P': 'Pen', 'Q': 'Queen', 'R': 'Red',
+            'S': 'Sun', 'T': 'Tree', 'U': 'Up', 'V': 'Van', 'W': 'Water', 'X': 'Box',
+            'Y': 'Yellow', 'Z': 'Zoo'
+        };
+        const letterWordsChinese = {
+            'A': '苹果', 'B': '球', 'C': '猫', 'D': '狗', 'E': '鸡蛋', 'F': '鱼',
+            'G': '山羊', 'H': '帽子', 'I': '冰', 'J': '跳', 'K': '钥匙', 'L': '狮子',
+            'M': '月亮', 'N': '网', 'O': '橙子', 'P': '笔', 'Q': '女王', 'R': '红色',
+            'S': '太阳', 'T': '树', 'U': '向上', 'V': '货车', 'W': '水', 'X': '盒子',
+            'Y': '黄色', 'Z': '动物园'
+        };
+        
+        let currentDifficulty = null;
+        let currentLevel = 1;
+        let currentQuestion = 0;
+        let questionsPerLevel = 10;
+        let score = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let correctAnswers = 0;
+        let totalAnswers = 0;
+        let timeLeft = 15;
+        let timerInterval = null;
+        let currentLetter = '';
+        let currentQuestionType = 'sound'; // 固定为听发音选字母
+        let gameRunning = false;
+        
+        // 学习统计
+        let learnedLetters = new Set();
+        let learnedWords = new Set();
+        
+        // 问题类型
+        const questionTypes = [
+            'sound',     // 听发音选字母（主要题型）
+            'identify',  // 看字母选字母名称
+            'next',      // 下一个字母
+            'word',      // 字母对应单词
+            'case'       // 大小写转换
+        ];
+        
+        // 初始化语音合成
+        function initSpeechSynthesis() {
+            if ('speechSynthesis' in window) {
+                const loadVoices = () => {
+                    voices = speechSynthesis.getVoices();
+                    englishVoice = voices.find(voice => 
+                        voice.lang.includes('en') && 
+                        (voice.name.includes('English') || voice.lang === 'en-US')
+                    ) || voices[0];
+                    console.log('选择英语语音:', englishVoice?.name);
+                };
+
+                if (voices.length === 0) {
+                    speechSynthesis.onvoiceschanged = loadVoices;
+                } else {
+                    loadVoices();
+                }
+            }
+        }
+
+        // 播放英文发音
+        function speakLetter(text, rate = 0.8) {
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                speechSynthesis.speak(utterance);
+            }, 100);
+        }
+        
+        // 播放当前题目的发音
+        function playCurrentLetterSound() {
+            if (currentLetter) {
+                if (currentQuestionType === 'sound') {
+                    // 听发音题型：播放字母发音
+                    speakLetter(currentLetter);
+                } else if (currentQuestionType === 'word') {
+                    // 单词题型：播放单词发音
+                    speakLetter(letterWords[currentLetter]);
+                } else {
+                    // 其他题型：播放字母发音
+                    speakLetter(currentLetter);
+                }
+            }
+        }
+
+        // 初始化游戏
+        // 选择难度
+        function selectDifficulty(difficulty) {
+            currentDifficulty = difficulty;
+            
+            // 重置所有按钮样式
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-primary');
+            });
+            
+            // 高亮选中的按钮
+            event.target.closest('.difficulty-btn').classList.add('ring-4', 'ring-primary');
+            
+            // 启用开始按钮
+            const startBtn = document.getElementById('start-game-btn');
+            startBtn.disabled = false;
+            startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        
+        function startGame() {
+            if (!currentDifficulty) {
+                alert('请先选择难度！');
+                return;
+            }
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            currentLevel = 1;
+            currentQuestion = 0;
+            score = 0;
+            combo = 0;
+            maxCombo = 0;
+            correctAnswers = 0;
+            totalAnswers = 0;
+            learnedLetters.clear();
+            learnedWords.clear();
+            gameRunning = true;
+            
+            // 初始化语音
+            initSpeechSynthesis();
+            
+            updateUI();
+            nextQuestion();
+            startTimer();
+        }
+        
+        // 生成下一个问题
+        function nextQuestion() {
+            if (!gameRunning) return;
+            
+            if (currentQuestion >= questionsPerLevel) {
+                levelComplete();
+                return;
+            }
+            
+            currentQuestion++;
+            timeLeft = Math.max(10, 18 - currentLevel); // 随关卡增加难度，缩短时间
+            
+            // 只有一种题型：听发音选字母
+            currentQuestionType = 'sound';
+            
+            // 根据难度选择字母范围
+            let letterRange;
+            switch (currentDifficulty) {
+                case 'easy':
+                    letterRange = 8;  // A-H
+                    break;
+                case 'medium':
+                    letterRange = 16; // A-P
+                    break;
+                case 'hard':
+                default:
+                    letterRange = 26; // A-Z
+                    break;
+            }
+            
+            const letterIndex = Math.floor(Math.random() * letterRange);
+            currentLetter = letters[letterIndex];
+            
+            generateQuestion();
+            updateUI();
+            
+            // 不自动播放，让用户手动点击播放按钮
+        }
+        
+        // 生成问题和选项
+        function generateQuestion() {
+            const questionElement = document.getElementById('question-type');
+            const hintElement = document.getElementById('target-hint');
+            const pronunciationText = document.getElementById('pronunciation-text');
+            const referenceLetter = document.getElementById('reference-letter');
+            const optionsContainer = document.getElementById('options-container');
+            
+            optionsContainer.innerHTML = '';
+            
+            let correctAnswer = '';
+            let options = [];
+            
+            // 统一布局：上面始终显示发音区域，下面显示字母选项
+            switch (currentQuestionType) {
+                case 'sound':
+                    // 听发音选字母 - 主要题型
+                    questionElement.textContent = '听发音，选择对应的字母';
+                    pronunciationText.textContent = letterSounds[currentLetter];
+                    referenceLetter.style.display = 'none';  // 隐藏参考字母
+                    hintElement.textContent = '点击播放发音，然后从下面选择对应的字母';
+                    correctAnswer = currentLetter;
+                    options = generateLetterOptions(currentLetter);
+                    break;
+                    
+                case 'identify':
+                    // 看字母选字母名称
+                    questionElement.textContent = '这个字母叫什么？';
+                    pronunciationText.textContent = '点击播放听字母名称';
+                    referenceLetter.style.display = 'block';
+                    referenceLetter.textContent = currentLetter;
+                    hintElement.textContent = '上面显示字母，点击播放听发音，然后从下面选择正确的字母名称';
+                    correctAnswer = letterSounds[currentLetter];
+                    options = generateSoundOptions(currentLetter);
+                    break;
+                    
+                case 'next':
+                    // 下一个字母
+                    questionElement.textContent = '下一个字母是什么？';
+                    pronunciationText.textContent = '点击播放听当前字母';
+                    referenceLetter.style.display = 'block';
+                    referenceLetter.textContent = currentLetter;
+                    hintElement.textContent = '上面显示当前字母，按字母表顺序从下面选择下一个字母';
+                    const nextIndex = letters.indexOf(currentLetter) + 1;
+                    correctAnswer = nextIndex < 26 ? letters[nextIndex] : 'Z';
+                    options = generateLetterOptions(correctAnswer);
+                    break;
+                    
+                case 'word':
+                    // 字母对应单词
+                    questionElement.textContent = '这个字母开头的单词是？';
+                    pronunciationText.textContent = '点击播放听字母发音';
+                    referenceLetter.style.display = 'block';
+                    referenceLetter.textContent = currentLetter;
+                    hintElement.textContent = '上面显示字母，点击播放发音，然后从下面选择以这个字母开头的单词';
+                    correctAnswer = letterWords[currentLetter];
+                    options = generateWordOptions(currentLetter);
+                    break;
+                    
+                case 'case':
+                    // 大小写转换
+                    const isUpper = Math.random() > 0.5;
+                    questionElement.textContent = isUpper ? '对应的小写字母是？' : '对应的大写字母是？';
+                    pronunciationText.textContent = '点击播放听字母发音';
+                    referenceLetter.style.display = 'block';
+                    referenceLetter.textContent = isUpper ? currentLetter : currentLetter.toLowerCase();
+                    hintElement.textContent = '上面显示字母，从下面选择对应的大小写形式';
+                    correctAnswer = isUpper ? currentLetter.toLowerCase() : currentLetter.toUpperCase();
+                    options = generateCaseOptions(currentLetter, isUpper);
+                    break;
+            }
+            
+            // 生成选项按钮 - 统一显示在下方
+            options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn bg-white hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-300 rounded-2xl p-4 text-center font-bold transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg';
+                button.innerHTML = `<span class="text-lg">${option}</span>`;
+                button.onclick = () => selectOption(option, correctAnswer, button);
+                optionsContainer.appendChild(button);
+            });
+        }
+        
+        // 生成字母选项
+        function generateLetterOptions(correct) {
+            const options = [correct];
+            const usedLetters = new Set([correct]);
+            
+            while (options.length < 4) {
+                const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+                if (!usedLetters.has(randomLetter)) {
+                    options.push(randomLetter);
+                    usedLetters.add(randomLetter);
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+        
+        // 生成发音选项
+        function generateSoundOptions(correct) {
+            const correctSound = letterSounds[correct];
+            const options = [correctSound];
+            const usedSounds = new Set([correctSound]);
+            
+            while (options.length < 4) {
+                const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+                const randomSound = letterSounds[randomLetter];
+                if (!usedSounds.has(randomSound)) {
+                    options.push(randomSound);
+                    usedSounds.add(randomSound);
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+        
+        // 生成字母选项 - 用于next题型
+        function generateNextOptions(correct) {
+            return generateLetterOptions(correct);
+        }
+        
+        // 生成单词选项
+        function generateWordOptions(correct) {
+            const correctWord = letterWords[correct];
+            const options = [correctWord];
+            const usedWords = new Set([correctWord]);
+            
+            while (options.length < 4) {
+                const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+                const randomWord = letterWords[randomLetter];
+                if (!usedWords.has(randomWord)) {
+                    options.push(randomWord);
+                    usedWords.add(randomWord);
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+        
+        // 生成大小写选项
+        function generateCaseOptions(correct, isTargetUpper) {
+            const correctAnswer = isTargetUpper ? correct.toLowerCase() : correct.toUpperCase();
+            const options = [correctAnswer];
+            const usedOptions = new Set([correctAnswer, isTargetUpper ? correct : correct.toLowerCase()]);
+            
+            while (options.length < 4) {
+                const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+                const option = isTargetUpper ? randomLetter.toLowerCase() : randomLetter.toUpperCase();
+                if (!usedOptions.has(option)) {
+                    options.push(option);
+                    usedOptions.add(option);
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+        
+        // 洗牌函数
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        // 选择选项
+        function selectOption(selected, correct, button) {
+            if (!gameRunning) return;
+            
+            totalAnswers++;
+            button.classList.add('button-press');
+            
+            const isCorrect = selected === correct;
+            
+            if (isCorrect) {
+                correctAnswers++;
+                combo++;
+                maxCombo = Math.max(maxCombo, combo);
+                const points = 10 + combo * 2; // 连击加分
+                score += points;
+                
+                // 记录学习进度
+                learnedLetters.add(currentLetter);
+                if (currentQuestionType === 'word') {
+                    learnedWords.add(letterWords[currentLetter]);
+                }
+                
+                button.classList.add('correct-animation');
+                showFeedback(`正确！+${points}分`, 'text-green-500');
+                
+                // 不自动播放反馈音
+                
+                setTimeout(() => {
+                    nextQuestion();
+                }, 1500);
+            } else {
+                combo = 0;
+                button.classList.add('wrong-animation');
+                showFeedback(`再想想！正确答案是：${correct}`, 'text-red-500');
+                
+                // 不自动播放，用户可手动点击播放按钮
+                
+                setTimeout(() => {
+                    nextQuestion();
+                }, 2500);
+            }
+            
+            updateUI();
+        }
+        
+        // 显示反馈
+        function showFeedback(message, className) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `mb-4 text-center text-2xl font-bold h-16 flex items-center justify-center ${className}`;
+            
+            setTimeout(() => {
+                feedback.textContent = '';
+                feedback.className = 'mb-4 text-center text-3xl font-bold h-16 flex items-center justify-center';
+            }, 1500);
+        }
+        
+        // 关卡完成
+        function levelComplete() {
+            currentLevel++;
+            currentQuestion = 0;
+            
+            if (currentLevel > 10) { // 游戏结束
+                gameComplete();
+                return;
+            }
+            
+            showFeedback(`关卡 ${currentLevel - 1} 完成！`, 'text-purple-500 level-complete');
+            
+            setTimeout(() => {
+                nextQuestion();
+            }, 2000);
+        }
+        
+        // 游戏结束
+        function gameComplete() {
+            gameRunning = false;
+            clearInterval(timerInterval);
+            
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            // 更新结果统计
+            const accuracy = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
+            
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-level').textContent = currentLevel - 1;
+            document.getElementById('final-accuracy').textContent = accuracy + '%';
+            document.getElementById('max-combo').textContent = maxCombo;
+            document.getElementById('letters-learned').textContent = learnedLetters.size;
+            document.getElementById('words-learned').textContent = learnedWords.size;
+            
+            // 生成成就
+            generateAchievements();
+        }
+        
+        // 生成成就徽章
+        function generateAchievements() {
+            const achievements = document.getElementById('achievements');
+            achievements.innerHTML = '';
+            
+            const achievementList = [];
+            
+            if (score >= 500) achievementList.push({ icon: '🏆', title: '高分达人', desc: '获得500+分数' });
+            if (maxCombo >= 10) achievementList.push({ icon: '🔥', title: '连击王', desc: '连击达到10次' });
+            if (learnedLetters.size >= 20) achievementList.push({ icon: '📚', title: '字母大师', desc: '学会20个字母' });
+            if (correctAnswers / totalAnswers >= 0.9) achievementList.push({ icon: '🎯', title: '完美主义', desc: '正确率超过90%' });
+            
+            if (achievementList.length > 0) {
+                const title = document.createElement('h3');
+                title.className = 'text-lg font-bold mb-4 text-accent';
+                title.innerHTML = '🏅 获得成就';
+                achievements.appendChild(title);
+                
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 gap-4';
+                
+                achievementList.forEach(achievement => {
+                    const badge = document.createElement('div');
+                    badge.className = 'bg-yellow-100 border-2 border-yellow-300 rounded-lg p-4 text-center';
+                    badge.innerHTML = `
+                        <div class="text-2xl mb-1">${achievement.icon}</div>
+                        <div class="font-bold text-sm">${achievement.title}</div>
+                        <div class="text-xs text-gray-600">${achievement.desc}</div>
+                    `;
+                    grid.appendChild(badge);
+                });
+                
+                achievements.appendChild(grid);
+            }
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            
+            // 重置难度选择
+            currentDifficulty = null;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-primary');
+            });
+            const startBtn = document.getElementById('start-game-btn');
+            startBtn.disabled = true;
+            startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        
+        // 计时器
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                document.getElementById('countdown').textContent = `倒计时 ${timeLeft.toFixed(1)}`;
+                
+                if (timeLeft <= 0) {
+                    combo = 0;
+                    totalAnswers++;
+                    showFeedback('时间到！', 'text-orange-500');
+                    setTimeout(() => {
+                        nextQuestion();
+                    }, 1500);
+                }
+            }, 100);
+        }
+        
+        // 更新UI
+        function updateUI() {
+            document.getElementById('level-display').textContent = currentLevel;
+            document.getElementById('combo-display').textContent = combo;
+            document.getElementById('score-display').textContent = score;
+            document.getElementById('progress-text').textContent = `第${currentLevel}关`;
+            document.getElementById('progress-percentage').textContent = `${currentQuestion}/${questionsPerLevel}`;
+            
+            const progressPercent = (currentQuestion / questionsPerLevel) * 100;
+            document.getElementById('progress-bar').style.width = progressPercent + '%';
+        }
+        
+        // 页面加载完成初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('字母认知游戏初始化完成');
+            initSpeechSynthesis();
+        });
+    </script>
+</body>
+</html>
