@@ -826,6 +826,11 @@
             document.getElementById('letters-learned').textContent = learnedLetters.size;
             document.getElementById('words-learned').textContent = learnedWords.size;
             
+            // 记录学习进度
+            if (window.recordLearningProgress) {
+                window.recordLearningProgress('english', 'letters', accuracy, 60);
+            }
+            
             // 生成成就
             generateAchievements();
         }

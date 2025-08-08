@@ -142,7 +142,7 @@
         </div>
 
         <!-- 学科进度详情 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <!-- 拼音学习进度 -->
             <div class="card p-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4">📝 拼音学习进度</h3>
@@ -206,6 +206,48 @@
                     </p>
                 </div>
             </div>
+            
+            <!-- 英语学习进度 -->
+            <div class="card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">🔤 英语学习进度</h3>
+            
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">字母认知</span>
+                        <span id="letters-score">平均分: 0</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div id="letters-progress" class="skill-progress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">单词记忆</span>
+                        <span id="memory-score">平均分: 0</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div id="memory-progress" class="skill-progress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">单词连线</span>
+                        <span id="wordconnect-score">平均分: 0</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div id="wordconnect-progress" class="skill-progress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <i class="fa fa-language mr-2"></i>
+                        <span id="english-tip">英语学习要多听多练，循序渐进！</span>
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- 成就徽章展示 -->
@@ -216,18 +258,11 @@
             </div>
         </div>
 
-        <!-- 学习历史图表 -->
-        <div class="card p-6 mb-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">📈 学习历史</h3>
-            <div class="h-64 flex items-end justify-center space-x-2" id="chart-container">
-                <!-- 简单的柱状图 -->
-            </div>
-        </div>
 
         <!-- 快速开始学习 -->
         <div class="card p-6">
             <h3 class="text-xl font-bold text-gray-800 mb-4">🚀 继续学习</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <button onclick="window.location.href='pinyin-game.html'" 
                         class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-lg transition-colors">
                     <i class="fa fa-book text-2xl mb-2"></i>
@@ -240,11 +275,29 @@
                     <p class="font-bold">数学练习</p>
                     <p class="text-sm opacity-90">加减法计算训练</p>
                 </button>
-                <button onclick="window.location.href='antonym-game.html'" 
+                <button onclick="window.location.href='letter-recognition.html'" 
+                        class="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg transition-colors">
+                    <i class="fa fa-font text-2xl mb-2"></i>
+                    <p class="font-bold">字母认知</p>
+                    <p class="text-sm opacity-90">学习26个英文字母</p>
+                </button>
+                <button onclick="window.location.href='word-memory.html'" 
                         class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition-colors">
-                    <i class="fa fa-users text-2xl mb-2"></i>
-                    <p class="font-bold">反义词对战</p>
-                    <p class="text-sm opacity-90">词汇知识挑战</p>
+                    <i class="fa fa-puzzle-piece text-2xl mb-2"></i>
+                    <p class="font-bold">单词记忆</p>
+                    <p class="text-sm opacity-90">翻牌配对记忆单词</p>
+                </button>
+                <button onclick="window.location.href='word-connect.html'" 
+                        class="bg-teal-500 hover:bg-teal-600 text-white p-4 rounded-lg transition-colors">
+                    <i class="fa fa-link text-2xl mb-2"></i>
+                    <p class="font-bold">单词连线</p>
+                    <p class="text-sm opacity-90">连接字母组成单词</p>
+                </button>
+                <button onclick="window.location.href='antonym-solo.html'" 
+                        class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-lg transition-colors">
+                    <i class="fa fa-user text-2xl mb-2"></i>
+                    <p class="font-bold">反义词挑战</p>
+                    <p class="text-sm opacity-90">单人闯关模式</p>
                 </button>
             </div>
         </div>
@@ -276,6 +329,11 @@
                         },
                         vocabulary: {
                             antonyms: { totalScore: 0, attempts: 0, wordsLearned: [] }
+                        },
+                        english: {
+                            letters: { totalScore: 0, attempts: 0, lettersLearned: [] },
+                            memory: { totalScore: 0, attempts: 0, wordsRemembered: [] },
+                            wordConnect: { totalScore: 0, attempts: 0, wordsFound: [] }
                         }
                     },
                     achievements: [],
@@ -373,22 +431,24 @@
                 document.getElementById('weekly-accuracy').textContent = Math.round(weeklyAccuracy) + '%';
             }
 
-            // 计算本周正确率
+            // 计算本周正确率（修复计算错误）
             calculateWeeklyAccuracy() {
-                // 简化版本，实际应该基于最近7天的数据
                 let totalScore = 0;
                 let totalAttempts = 0;
+                let totalMaxScore = 0;
 
                 Object.values(this.data.subjects).forEach(subject => {
                     Object.values(subject).forEach(activity => {
-                        if (activity.totalScore !== undefined) {
+                        if (activity.totalScore !== undefined && activity.attempts > 0) {
                             totalScore += activity.totalScore;
                             totalAttempts += activity.attempts;
+                            // 假设每次游戏满分100分
+                            totalMaxScore += activity.attempts * 100;
                         }
                     });
                 });
 
-                return totalAttempts > 0 ? (totalScore / totalAttempts) * 100 : 0;
+                return totalMaxScore > 0 ? (totalScore / totalMaxScore) * 100 : 0;
             }
 
             // 更新学科进度
@@ -436,10 +496,16 @@
                       condition: () => this.data.subjects.pinyin.consonants.completed.length >= 5 },
                     { id: 'math_star', icon: '⭐', name: '数学之星', 
                       condition: () => this.data.subjects.math.addition.attempts >= 10 },
+                    { id: 'english_starter', icon: '🔤', name: '英语初学者', 
+                      condition: () => this.data.subjects.english.letters.attempts >= 5 },
+                    { id: 'word_master', icon: '🧠', name: '单词大师', 
+                      condition: () => this.data.subjects.english.memory.attempts >= 10 },
                     { id: 'consistent_learner', icon: '🔥', name: '坚持学习', 
                       condition: () => this.data.streakDays >= 3 },
                     { id: 'speed_master', icon: '⚡', name: '速度大师', 
-                      condition: () => this.data.subjects.math.addition.bestStreak >= 5 }
+                      condition: () => this.data.subjects.math.addition.bestStreak >= 5 },
+                    { id: 'multilingual', icon: '🌍', name: '多语者', 
+                      condition: () => this.data.subjects.english.letters.attempts >= 3 && this.data.subjects.pinyin.consonants.completed.length >= 3 }
                 ];
 
                 const container = document.getElementById('achievements-container');
@@ -533,17 +599,63 @@
 
             // 记录学习活动
             recordActivity(subject, activity, score, timeSpent = 0) {
+                console.log(`Recording activity: ${subject}.${activity}, score: ${score}, time: ${timeSpent}`);
+                
                 const subjectData = this.data.subjects[subject];
                 if (subjectData && subjectData[activity]) {
                     subjectData[activity].totalScore += score;
                     subjectData[activity].attempts += 1;
+                    
+                    // 特殊处理：记录学到的内容
+                    if (activity === 'letters' && subjectData[activity].lettersLearned) {
+                        // 可以在这里记录学到的字母
+                    } else if (activity === 'memory' && subjectData[activity].wordsRemembered) {
+                        // 可以在这里记录记住的单词
+                    } else if (activity === 'wordConnect' && subjectData[activity].wordsFound) {
+                        // 可以在这里记录找到的单词
+                    }
+                } else {
+                    console.warn(`Subject ${subject} or activity ${activity} not found in data structure`);
                 }
                 
+                // 更新学习时间
                 this.data.totalStudyTime += timeSpent;
                 this.data.todayStudyTime += timeSpent;
                 
+                // 更新连续学习天数
+                this.updateStreakDaysOnActivity();
+                
+                // 保存数据并更新显示
                 this.saveData();
-                this.init(); // 重新初始化显示
+                this.init();
+            }
+            
+            // 在学习活动时更新连续学习天数
+            updateStreakDaysOnActivity() {
+                const today = new Date().toDateString();
+                const lastDate = this.data.lastStudyDate;
+                
+                if (lastDate !== today) {
+                    if (lastDate) {
+                        const lastStudyDate = new Date(lastDate);
+                        const todayDate = new Date(today);
+                        const diffTime = todayDate - lastStudyDate;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (diffDays === 1) {
+                            // 连续学习
+                            this.data.streakDays += 1;
+                        } else if (diffDays > 1) {
+                            // 中断了，重新开始
+                            this.data.streakDays = 1;
+                        }
+                    } else {
+                        // 第一次学习
+                        this.data.streakDays = 1;
+                    }
+                    
+                    this.data.lastStudyDate = today;
+                }
             }
         }
 
@@ -561,6 +673,10 @@
                 progressManager.data.subjects.pinyin.vowels.completed = ['a', 'o', 'e', 'i'];
                 progressManager.data.subjects.math.addition.totalScore = 850;
                 progressManager.data.subjects.math.addition.attempts = 12;
+                progressManager.data.subjects.english.letters.totalScore = 160;
+                progressManager.data.subjects.english.letters.attempts = 2;
+                progressManager.data.subjects.english.memory.totalScore = 240;
+                progressManager.data.subjects.english.memory.attempts = 3;
                 progressManager.data.streakDays = 3;
                 progressManager.data.todayStudyTime = 900; // 15分钟
                 progressManager.saveData();
