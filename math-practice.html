@@ -1016,6 +1016,12 @@
 
     <!-- 主内容区 -->
     <main class="container">
+        <!-- 我的徽章（数学） -->
+        <section id="math-badges" class="mb-4">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">🏆 我的徽章</h2>
+            <div id="math-badge-grid" class="flex gap-3 flex-wrap items-center"></div>
+            <p class="text-sm text-gray-500 mt-2">本游戏徽章预览（已获高亮，未获灰显）</p>
+        </section>
         <!-- 设置面板 -->
         <div id="settings-panel" class="settings-panel">
             <h2>🎯 练习设置</h2>
@@ -2308,4 +2314,36 @@
 
     </script>
 </body>
+
+<script>
+(function(){
+  const GAME_KEY = 'mathPractice';
+  const badgeDefs = [
+    { id: 'first_correct', name: '首题正确', icon: '🎯' },
+    { id: 'combo_10', name: '连对十题', icon: '🔥' },
+    { id: 'speed_round', name: '极速答题', icon: '⚡' },
+    { id: 'daily_10min', name: '专注十分钟', icon: '⏱️' },
+    { id: 'perfect_round', name: '完美回合', icon: '💎' }
+  ];
+  function getEarnedIds(){
+    try { return JSON.parse(localStorage.getItem('earnedAchievements_' + GAME_KEY) || '[]'); } catch(_) { return []; }
+  }
+  function renderBadgePreview(){
+    const grid = document.getElementById('math-badge-grid');
+    if(!grid) return;
+    const owned = new Set(getEarnedIds());
+    grid.innerHTML = badgeDefs.map(a => {
+      const earned = owned.has(a.id);
+      const base = earned ? 'from-yellow-100 to-orange-100 border-yellow-300 text-amber-900' : 'from-gray-50 to-gray-100 border-gray-200 text-gray-400 opacity-80';
+      return `
+        <div class="relative w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${base} shadow-sm flex flex-col items-center justify-center overflow-hidden" title="${a.name}">
+          <div class="text-2xl mb-1">${a.icon}</div>
+          <div class="text-[10px] font-bold text-center leading-tight px-1">${a.name}</div>
+          ${earned ? '<div class=\"absolute -right-1 -top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\">已获</div>' : ''}
+        </div>`;
+    }).join('');
+  }
+  document.addEventListener('DOMContentLoaded', renderBadgePreview);
+})();
+</script>
 </html>
