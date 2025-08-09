@@ -635,6 +635,9 @@
             gameState.isTimerEnabled = this.checked;
             updateTimerDescription();
         });
+
+        // 首次进入时渲染徽章预览
+        try { renderBadgePreview(); } catch(_) {}
         
         // 更新计时器描述
         function updateTimerDescription() {
