@@ -90,8 +90,12 @@
                 aspect-ratio: 1 / 1;
                 height: auto;
                 overflow: hidden; /* 防止内部内容撑高导致网格高度变化 */
+                min-width: 0; /* 避免网格项以内容最小宽度撑开列宽 */
                 transition: all 0.3s ease;
                 border: 3px solid transparent;
+                display: flex;
+                align-items: center; /* 垂直居中，确保文字始终在卡片中间 */
+                justify-content: center; /* 水平居中 */
             }
             .word-card:hover {
                 transform: translateY(-2px);
@@ -127,6 +131,11 @@
                     padding: 10px 6px;
                 }
             }
+            .card-back { width: 100%; }
+            /* 英文单词不换行，防止被强制拆分 */
+            .card-back .word-en { white-space: nowrap; }
+            /* 中文翻译尽量一行显示 */
+            .card-back .translation { white-space: nowrap; }
         }
     </style>
 </head>
@@ -195,6 +204,16 @@
                     </button>
                 </div>
             </div>
+
+            <!-- 关卡选择（按需隐藏：开始页不展示关卡进度与按钮） -->
+            <div class="mb-5 hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-base font-bold">选择关卡</h3>
+                    <!-- 按需求：不在这里显示关数提示，移到游戏界面显示 -->
+                    <span id="level-hint" class="hidden"></span>
+                </div>
+                <div id="level-select" class="grid grid-cols-5 gap-2"></div>
+            </div>
             
             <!-- 倒计时开关 -->
             <div class="mb-5 flex items-center justify-center gap-4 bg-gray-50 rounded-2xl p-3">
@@ -241,39 +260,55 @@
     
     <!-- 游戏界面 -->
     <div id="game-screen" class="hidden flex flex-col min-h-screen p-4">
-        <!-- 游戏头部 -->
-        <div class="bg-white rounded-2xl shadow-lg p-4 mb-4">
+        <!-- 游戏头部（参考反义词单人版风格） -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-3 mb-4">
             <div class="flex justify-between items-center">
-                <button onclick="backToStart()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-full scale-hover">
-                    <i class="fa fa-arrow-left mr-2"></i>返回
-                </button>
-                <div class="text-center">
-                    <h2 class="text-xl font-bold text-gray-800">🧩 单词记忆</h2>
-                    <p class="text-sm text-gray-600">翻牌配对游戏</p>
+                <!-- 左：返回 + 难度/关卡胶囊 -->
+                <div class="flex items-center gap-2">
+                    <button onclick="backToStart()" class="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full shadow-md transition-all duration-300 hover:scale-105 active:scale-95 text-sm font-bold text-gray-600 hover:text-gray-800">
+                        <i class="fa fa-arrow-left mr-1"></i><span class="hidden sm:inline">返回</span>
+                    </button>
+                    <div id="hud-diff-pill" class="hidden sm:flex bg-gradient-to-r from-primary to-secondary text-white px-3 py-1 rounded-full text-xs font-bold shadow">
+                        <span id="hud-difficulty">-</span>
+                    </div>
+                    <div id="hud-level-pill" class="bg-secondary text-white px-3 py-1 rounded-full text-xs font-bold shadow">
+                        第 <span id="hud-level">-</span> 关
+                    </div>
+                    <span id="hud-progress" class="hidden"></span>
                 </div>
-                <div class="text-right">
-                    <p class="text-sm text-gray-600">得分</p>
-                    <p id="game-score" class="text-xl font-bold text-primary">0</p>
+
+                <!-- 中：倒计时胶囊 -->
+                <div id="wm-timer-wrap" class="hidden bg-accent text-white px-6 py-2 rounded-full shadow-md flex items-center gap-2">
+                    <i class="fa fa-clock-o"></i>
+                    <span id="wm-countdown" class="text-lg font-bold">--:--</span>
+                </div>
+
+                <!-- 右：得分胶囊 -->
+                <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 rounded-full text-white font-bold shadow-md flex items-center gap-2">
+                    <i class="fa fa-star"></i>
+                    <span id="game-score">0</span>
                 </div>
             </div>
-            <div class="flex justify-center items-center mt-3 space-x-6">
-                <div class="text-center">
-                    <p class="text-xs text-gray-500">已配对</p>
-                    <p id="matched-pairs" class="text-lg font-bold text-secondary">0</p>
+
+            <!-- 二级统计：已配对/总对数/翻牌次数 -->
+            <div class="flex justify-center items-center gap-3 mt-2">
+                <div class="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
+                    已配对 <span id="matched-pairs" class="text-secondary font-bold ml-1">0</span>
                 </div>
-                <div class="text-center">
-                    <p class="text-xs text-gray-500">总对数</p>
-                    <p id="total-pairs" class="text-lg font-bold text-gray-700">0</p>
+                <div class="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
+                    总对数 <span id="total-pairs" class="text-gray-800 font-bold ml-1">0</span>
                 </div>
-                <div class="text-center">
-                    <p class="text-xs text-gray-500">翻牌次数</p>
-                    <p id="flip-count" class="text-lg font-bold text-accent">0</p>
+                <div class="bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-700">
+                    翻牌次数 <span id="flip-count" class="text-accent font-bold ml-1">0</span>
                 </div>
             </div>
         </div>
         
         <!-- 游戏区域 -->
         <div class="flex-1 flex items-center justify-center">
+            <div class="absolute top-28 left-0 right-0 flex justify-center pointer-events-none">
+                <div id="wm-feedback" class="pointer-events-none"></div>
+            </div>
             <div id="game-board" class="grid gap-3 bg-white rounded-2xl shadow-lg p-6">
                 <!-- 卡片将动态生成 -->
             </div>
@@ -307,6 +342,10 @@
                         class="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-white px-6 py-3 rounded-2xl scale-hover">
                     <i class="fa fa-refresh mr-2"></i>再玩一次
                 </button>
+                <button id="next-level-btn" onclick="nextLevel()" 
+                        class="hidden bg-secondary hover:bg-emerald-600 text-white px-6 py-3 rounded-2xl scale-hover">
+                    <i class="fa fa-step-forward mr-2"></i>下一关
+                </button>
                 <button onclick="backToStart()" 
                         class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-2xl scale-hover">
                     <i class="fa fa-home mr-2"></i>返回开始
@@ -332,77 +371,68 @@
                 `size=${Math.round(rect.width)}x${Math.round(rect.height)} classes="${cls}"`);
         }
 
-        // 游戏数据 - 300个单词库
-        const wordData = {
-            // 简单难度：100个基础单词（3-4个字母，日常物品）
-            easy: [
-                // 动物类
-                'cat', 'dog', 'pig', 'cow', 'fox', 'rat', 'bat', 'bee', 'ant', 'bug',
-                'owl', 'hen', 'ram', 'yak', 'elk', 'ape', 'doe', 'cub', 'kid', 'pup',
-                // 食物类
-                'egg', 'pie', 'jam', 'tea', 'ice', 'ham', 'nut', 'fig', 'yam', 'pea',
-                'bun', 'gum', 'cod', 'rye', 'oat', 'soy', 'ale', 'rum', 'gin', 'dip',
-                // 物品类
-                'pen', 'cup', 'pot', 'pan', 'bag', 'box', 'key', 'toy', 'hat', 'cap',
-                'map', 'web', 'net', 'rod', 'axe', 'saw', 'pin', 'mat', 'rug', 'bed',
-                // 自然类
-                'sun', 'sky', 'sea', 'mud', 'dew', 'fog', 'ice', 'gem', 'ore', 'oil',
-                'bay', 'dam', 'pit', 'den', 'log', 'oak', 'ivy', 'fir', 'ash', 'elm',
-                // 身体类
-                'eye', 'ear', 'arm', 'leg', 'toe', 'jaw', 'gut', 'rib', 'hip', 'lip',
-                // 颜色/形状
-                'red', 'big', 'hot', 'new', 'old', 'wet', 'dry', 'fat', 'raw', 'odd'
-            ],
-            
-            // 中等难度：100个常用单词（4-6个字母，生活场景）
-            medium: [
-                // 家庭生活
-                'house', 'table', 'chair', 'window', 'kitchen', 'bedroom', 'garden', 'family', 'mother', 'father',
-                'sister', 'brother', 'dinner', 'breakfast', 'shower', 'toilet', 'carpet', 'picture', 'mirror', 'drawer',
-                // 学校教育
-                'school', 'teacher', 'student', 'lesson', 'pencil', 'paper', 'ruler', 'eraser', 'crayon', 'marker',
-                'book', 'page', 'story', 'letter', 'number', 'color', 'shape', 'circle', 'square', 'triangle',
-                // 食物饮料
-                'water', 'juice', 'milk', 'bread', 'butter', 'cheese', 'banana', 'apple', 'orange', 'grape',
-                'cookie', 'candy', 'pizza', 'burger', 'french', 'salad', 'soup', 'rice', 'pasta', 'chicken',
-                // 交通工具
-                'car', 'bus', 'train', 'plane', 'boat', 'bike', 'truck', 'taxi', 'metro', 'rocket',
-                // 动物扩展
-                'horse', 'sheep', 'goat', 'duck', 'fish', 'bird', 'mouse', 'rabbit', 'tiger', 'lion',
-                // 时间天气
-                'today', 'tomorrow', 'morning', 'evening', 'sunny', 'cloudy', 'rainy', 'windy', 'snowy', 'storm',
-                // 运动娱乐
-                'game', 'sport', 'music', 'dance', 'sing', 'play', 'run', 'jump', 'swim', 'climb'
-            ],
-            
-            // 困难难度：100个进阶单词（6+个字母，复杂概念）
-            hard: [
-                // 科技数码
-                'computer', 'keyboard', 'monitor', 'printer', 'scanner', 'camera', 'television', 'telephone', 'internet', 'website',
-                'software', 'hardware', 'digital', 'wireless', 'bluetooth', 'satellite', 'algorithm', 'database', 'password', 'download',
-                // 自然地理
-                'mountain', 'volcano', 'earthquake', 'hurricane', 'tornado', 'desert', 'forest', 'jungle', 'waterfall', 'glacier',
-                'continent', 'peninsula', 'archipelago', 'plateau', 'canyon', 'valley', 'meadow', 'prairie', 'tundra', 'savanna',
-                // 身体健康
-                'skeleton', 'muscle', 'nervous', 'digestive', 'respiratory', 'circulatory', 'medicine', 'hospital', 'doctor', 'nurse',
-                'vitamin', 'protein', 'calcium', 'exercise', 'nutrition', 'surgery', 'therapy', 'treatment', 'diagnosis', 'symptom',
-                // 社会文化
-                'government', 'democracy', 'election', 'president', 'parliament', 'constitution', 'citizenship', 'community', 'society', 'culture',
-                'tradition', 'festival', 'ceremony', 'celebration', 'anniversary', 'graduation', 'wedding', 'birthday', 'holiday', 'vacation',
-                // 科学概念
-                'chemistry', 'physics', 'biology', 'mathematics', 'geometry', 'algebra', 'microscope', 'telescope', 'laboratory', 'experiment',
-                'hypothesis', 'theory', 'discovery', 'invention', 'evolution', 'genetics', 'molecule', 'element', 'compound', 'reaction'
-            ]
+        // 从“本地词典”生成单词池；若词典未加载，临时用内置少量兜底
+        const fallbackWordData = {
+            easy: ['cat','dog','egg','tea','sun','sky','sea','red','bus','car'],
+            medium: ['chair','window','banana','butter','train','metro','music','dance','today','cloudy'],
+            hard: ['computer','keyboard','television','mountain','biology','geometry','internet','website']
         };
 
         // 游戏状态
         let currentDifficulty = null;
+        let currentLevel = 1;
         let gameBoard = [];
         let flippedCards = [];
         let matchedPairs = 0;
         let totalPairs = 0;
         let score = 0;
         let flipCount = 0;
+        let timerEnabled = true;
+        let timerRef = null;
+        let timeLeftSec = 0;
+
+        // 关卡与进度
+        const LEVELS_PER_DIFF = 10;
+        const PROGRESS_KEY = 'wordMemoryProgress';
+        function loadWMProgress(){
+            try{
+                const raw = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+                ['easy','medium','hard'].forEach(d=>{
+                    if(!raw[d]) raw[d] = { unlocked: 1, completed: {} };
+                });
+                return raw;
+            }catch(_){
+                return { easy:{unlocked:1,completed:{}}, medium:{unlocked:1,completed:{}}, hard:{unlocked:1,completed:{}} };
+            }
+        }
+        function saveWMProgress(p){ localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); }
+        function renderLevelButtons(){
+            const container = document.getElementById('level-select');
+            const hint = document.getElementById('level-hint');
+            container.innerHTML = '';
+            if(!currentDifficulty){ hint.textContent = '先选择难度'; return; }
+            const progress = loadWMProgress();
+            const unlocked = progress[currentDifficulty].unlocked || 1;
+            hint.textContent = `已解锁到第 ${unlocked} 关`;
+            for(let i=1;i<=LEVELS_PER_DIFF;i++){
+                const btn = document.createElement('button');
+                const isUnlocked = i <= unlocked;
+                const isCompleted = !!progress[currentDifficulty].completed[i];
+                btn.className = `px-3 py-2 rounded-xl text-sm font-bold border transition ${isUnlocked? 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700':'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'} ${i===currentLevel? 'ring-2 ring-primary':''}`;
+                btn.textContent = `${i}` + (isCompleted? '★':'');
+                if(isUnlocked){
+                    btn.onclick = ()=> selectLevel(i);
+                }
+                container.appendChild(btn);
+            }
+        }
+        function selectLevel(level){
+            currentLevel = level;
+            renderLevelButtons();
+            const startBtn = document.getElementById('start-game-btn');
+            startBtn.disabled = false;
+            startBtn.classList.remove('opacity-50','cursor-not-allowed');
+        }
 
         // 游戏管理器
         class WordMemoryGame {
@@ -483,27 +513,102 @@
         const gameManager = new WordMemoryGame();
         // 简易翻译表（常见基础词）
         const translations = {
+            // 动物与自然
             cat:'猫', dog:'狗', pig:'猪', cow:'牛', fox:'狐狸', rat:'老鼠', bat:'蝙蝠', bee:'蜜蜂', ant:'蚂蚁', bug:'虫子',
-            owl:'猫头鹰', hen:'母鸡', yak:'牦牛', ape:'猿', fish:'鱼', bird:'鸟', horse:'马', sheep:'羊', goat:'山羊', duck:'鸭',
+            owl:'猫头鹰', hen:'母鸡', yak:'牦牛', ape:'猿', fish:'鱼', bird:'鸟', horse:'马', sheep:'羊', goat:'山羊', duck:'鸭子',
+            sun:'太阳', sky:'天空', sea:'海',
+
+            // 食物
             egg:'鸡蛋', pie:'派', jam:'果酱', tea:'茶', ice:'冰', ham:'火腿', nut:'坚果', rice:'米饭', soup:'汤', bread:'面包',
-            water:'水', juice:'果汁', milk:'牛奶', cookie:'饼干', pizza:'披萨', burger:'汉堡', salad:'沙拉', rice:'米饭', pasta:'意大利面', chicken:'鸡肉',
-            car:'汽车', bus:'公交', train:'火车', plane:'飞机', boat:'船', bike:'自行车', truck:'卡车', taxi:'出租车',
-            sun:'太阳', sky:'天空', sea:'海', red:'红色', blue:'蓝色', green:'绿色', apple:'苹果', orange:'橙子', grape:'葡萄'
+            water:'水', juice:'果汁', milk:'牛奶', cookie:'饼干', pizza:'披萨', burger:'汉堡', salad:'沙拉', pasta:'意大利面', chicken:'鸡肉',
+            butter:'黄油',
+
+            // 交通
+            car:'汽车', bus:'公交车', train:'火车', plane:'飞机', boat:'船', bike:'自行车', truck:'卡车', taxi:'出租车', metro:'地铁',
+
+            // 家居/家庭
+            house:'房子', table:'桌子', chair:'椅子', window:'窗户', kitchen:'厨房', bedroom:'卧室', garden:'花园', family:'家庭',
+            mother:'母亲', father:'父亲', sister:'姐妹', brother:'兄弟', dinner:'晚餐', breakfast:'早餐', shower:'淋浴', toilet:'厕所',
+            carpet:'地毯', picture:'图片', mirror:'镜子', drawer:'抽屉',
+
+            // 学校/形状
+            school:'学校', teacher:'老师', student:'学生', lesson:'课程', pencil:'铅笔', paper:'纸', ruler:'尺子', eraser:'橡皮',
+            crayon:'蜡笔', marker:'记号笔', book:'书', page:'页', story:'故事', letter:'字母', number:'数字', color:'颜色',
+            shape:'形状', circle:'圆形', square:'正方形', triangle:'三角形',
+
+            // 颜色与水果
+            red:'红色', blue:'蓝色', green:'绿色', apple:'苹果', orange:'橙子', grape:'葡萄', banana:'香蕉', cheese:'奶酪', cookie:'饼干', candy:'糖果', pizza:'披萨', burger:'汉堡', french:'法语/法国的', salad:'沙拉', soup:'汤', rice:'米饭',
+
+            // 时间
+            today:'今天', tomorrow:'明天', morning:'早晨', evening:'傍晚',
+
+            // 天气
+            sunny:'晴天', cloudy:'多云', rainy:'下雨', windy:'有风', snowy:'下雪', storm:'暴风雨',
+
+            // 动物扩展
+            mouse:'老鼠', rabbit:'兔子', tiger:'老虎', lion:'狮子',
+
+            // 运动娱乐
+            game:'游戏', sport:'运动', music:'音乐', dance:'跳舞', sing:'唱歌', play:'玩耍', run:'跑步', jump:'跳跃', swim:'游泳', climb:'攀爬'
         };
+
+        // 额外：可选本地字典（assets/en-zh-basic.json）。
+        // 说明：浏览器无法直接调用系统词典，因此使用内置 JSON 文件作为“本地词典”。
+        let DICT = {};
+        let dictLoaded = false;
+        // 按难度分组的词典缓存
+        const DICT_BY_DIFF = { easy: {}, medium: {}, hard: {} };
+        async function loadLocalDictionary(){
+            try{
+                const res = await fetch('assets/en-zh-basic.json', { cache: 'no-cache' });
+                if(res.ok){
+                    DICT = await res.json();
+                    dictLoaded = true;
+                    // 将词典按词长粗分难度：<=4 为 easy，5-7 为 medium，其余为 hard
+                    Object.keys(DICT).forEach(w => {
+                        const len = w.length;
+                        const key = len <= 4 ? 'easy' : (len <= 7 ? 'medium' : 'hard');
+                        DICT_BY_DIFF[key][w] = DICT[w];
+                    });
+                    if (DEBUG) console.log('[word-memory] local dictionary loaded, size=', Object.keys(DICT).length);
+                }
+            }catch(e){
+                if (DEBUG) console.warn('[word-memory] load dictionary failed:', e);
+            }
+        }
+        function getZh(word){
+            const k = (word||'').toLowerCase();
+            return translations[k] || DICT[k] || '';
+        }
         
         // 倒计时开关逻辑
         document.getElementById('timer-toggle').addEventListener('change', function() {
             const description = document.getElementById('timer-description');
             if (this.checked) {
                 description.textContent = '根据难度限时';
+                timerEnabled = true;
             } else {
                 description.textContent = '不限时游戏';
+                timerEnabled = false;
+            }
+        });
+
+        // 初始同步开关状态 → 计时逻辑
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleEl = document.getElementById('timer-toggle');
+            const description = document.getElementById('timer-description');
+            if (toggleEl) {
+                timerEnabled = !!toggleEl.checked;
+                description.textContent = toggleEl.checked ? '根据难度限时' : '不限时游戏';
             }
         });
 
         // 选择难度
         function selectDifficulty(difficulty) {
             currentDifficulty = difficulty;
+            // 默认选中当前难度下已解锁的最高关
+            const progress = loadWMProgress();
+            currentLevel = progress[difficulty]?.unlocked || 1;
             
             // 重置所有按钮样式
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
@@ -517,14 +622,21 @@
             const startBtn = document.getElementById('start-game-btn');
             startBtn.disabled = false;
             startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            // 渲染关卡按钮
+            renderLevelButtons();
         }
 
         // 开始游戏
         function startGame() {
             if (!currentDifficulty) {
-                alert('请先选择难度！');
+                alert('请先选择难度和关卡！');
                 return;
             }
+
+            // 读取开始页开关最终状态
+            const toggleEl = document.getElementById('timer-toggle');
+            timerEnabled = toggleEl ? !!toggleEl.checked : true;
 
             // 重置游戏状态
             flippedCards = [];
@@ -541,12 +653,29 @@
             document.getElementById('game-screen').classList.remove('hidden');
             
             updateGameStats();
+
+            // 异步加载本地词典（若未加载）
+            if (!dictLoaded) loadLocalDictionary();
+
+            // 更新 HUD 难度与关卡
+            const dmap = { easy:'简单', medium:'中等', hard:'困难' };
+            document.getElementById('hud-difficulty').textContent = dmap[currentDifficulty] || '-';
+            document.getElementById('hud-level').textContent = String(currentLevel);
+            document.getElementById('hud-progress').textContent = `${currentLevel}/${LEVELS_PER_DIFF}`;
+
+            // 启动倒计时
+            startLevelTimer();
         }
 
         // 从单词库中随机选择单词
         function getRandomWords(difficulty, count) {
-            const allWords = wordData[difficulty];
-            const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+            let pool = [];
+            if (dictLoaded && DICT_BY_DIFF[difficulty]) {
+                pool = Object.keys(DICT_BY_DIFF[difficulty]);
+            } else {
+                pool = fallbackWordData[difficulty] || [];
+            }
+            const shuffled = [...pool].sort(() => Math.random() - 0.5);
             return shuffled.slice(0, count);
         }
         
@@ -577,6 +706,7 @@
             const board = document.getElementById('game-board');
             board.innerHTML = '';
             board.className = `grid gap-3 bg-white rounded-2xl shadow-lg p-6 grid-cols-${cols}`;
+            // 先用 fr 布局渲染一帧，随后用像素锁定尺寸，避免抖动
             board.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
             
             gameBoard.forEach((word, index) => {
@@ -589,7 +719,7 @@
                         <p class="text-sm">点击翻开</p>
                     </div>
                     <div class="card-back hidden flex-col items-center justify-center h-full">
-                        <p class="text-xl font-bold mb-2">${word}</p>
+                        <p class="word-en text-2xl font-bold mb-2 leading-tight">${word}</p>
                         <p class="translation hidden text-white/90 text-sm mb-1"></p>
                         <button onclick="event.stopPropagation(); gameManager.speak('${word}')" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-1 text-sm" aria-label="播放读音">
                             <i class="fa fa-volume-up"></i>
@@ -606,6 +736,9 @@
                 // 监听尺寸变化
                 if (DEBUG) resizeObserver.observe(card);
             });
+
+            // 锁定卡片尺寸，避免运行中抖动；为避免文字换行，适度提高单元格尺寸（加上边距系数）
+            requestAnimationFrame(() => lockCardSizes(cols, 1.12));
         }
 
         // 翻牌
@@ -646,13 +779,14 @@
                 
                 matchedPairs++;
                 score += Math.max(50 - flipCount, 10);
+                showWMFeedback(`太棒了！+${Math.max(50 - flipCount, 10)} 分`, 'success');
                 
                 // 不自动播放成功音效
                 // 显示中文翻译
                 [card1, card2].forEach(c => {
                     const t = c.element.querySelector('.translation');
                     if (t) {
-                        const zh = translations[c.word.toLowerCase()] || '';
+                        const zh = getZh(c.word);
                         if (zh) {
                             t.textContent = zh;
                             t.classList.remove('hidden');
@@ -663,7 +797,8 @@
                 
                 // 检查游戏结束
                 if (matchedPairs === totalPairs) {
-                    setTimeout(gameComplete, 1500);
+                    // 进入“回看单词”短暂停留，再进入结果页（7秒）
+                    startReviewCountdown(7);
                 }
             } else {
                 // 配对失败
@@ -682,10 +817,84 @@
                     card2.element.querySelector('.card-back').classList.add('hidden');
                     if (DEBUG) { logCardSize('after-unflip-1', card1.element); logCardSize('after-unflip-2', card2.element); }
                 }, 800);
+                showWMFeedback('再想想！', 'error');
             }
             
             flippedCards = [];
             updateGameStats();
+        }
+
+        // 计时：按难度/关卡设定总时长（可调整）
+        function getLevelTimeLimitSec(){
+            // 基线：easy 90s, medium 120s, hard 150s；后续关适当增加
+            const base = { easy: 90, medium: 120, hard: 150 }[currentDifficulty] || 120;
+            const bonus = Math.min(currentLevel-1, 9) * 5; // 每关+5秒上限+45
+            return base + bonus;
+        }
+        function startLevelTimer(){
+            clearInterval(timerRef);
+            const wrap = document.getElementById('wm-timer-wrap');
+            const cd = document.getElementById('wm-countdown');
+            if(!timerEnabled){
+                wrap.classList.add('hidden');
+                return;
+            }
+            wrap.classList.remove('hidden');
+            timeLeftSec = getLevelTimeLimitSec();
+            updateCountdownText();
+            timerRef = setInterval(()=>{
+                timeLeftSec -= 1;
+                updateCountdownText();
+                if(timeLeftSec <= 10){ wrap.classList.add('animate-pulse'); }
+                if(timeLeftSec <= 0){
+                    clearInterval(timerRef);
+                    showWMFeedback('时间到！', 'error');
+                    setTimeout(gameComplete, 800);
+                }
+            }, 1000);
+        }
+        function updateCountdownText(){
+            const m = Math.floor(Math.max(0,timeLeftSec)/60).toString().padStart(1,'0');
+            const s = Math.floor(Math.max(0,timeLeftSec)%60).toString().padStart(2,'0');
+            const cd = document.getElementById('wm-countdown');
+            if(cd) cd.textContent = `${m}:${s}`;
+        }
+        function stopLevelTimer(){ clearInterval(timerRef); }
+        
+        // 顶部激励反馈（参考反义词单人版风格）
+        function showWMFeedback(text, type){
+            const box = document.getElementById('wm-feedback');
+            if(!box) return;
+            box.className = '';
+            box.textContent = text;
+            box.classList.add('rounded-full','px-4','py-2','text-sm','font-bold','shadow-lg');
+            if(type==='success') box.classList.add('bg-green-500','text-white');
+            else if(type==='error') box.classList.add('bg-red-500','text-white');
+            else box.classList.add('bg-blue-500','text-white');
+            setTimeout(()=>{ box.textContent=''; box.className=''; }, 1200);
+        }
+
+        // 回看单词：完成后停留 N 秒再显示结果
+        function startReviewCountdown(seconds){
+            stopLevelTimer();
+            // 显示提示
+            showWMFeedback(`先看一看这些单词（${seconds}s）`, 'info');
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 flex items-start justify-center pt-24 pointer-events-none';
+            overlay.innerHTML = `<div class="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full text-gray-700 text-sm shadow">正在回顾...</div>`;
+            document.body.appendChild(overlay);
+            // 确保所有卡片保持翻开状态
+            document.querySelectorAll('#game-board .word-card').forEach(el=>{
+                if(!el.classList.contains('flipped')){
+                    el.classList.add('flipped');
+                    el.querySelector('.card-front')?.classList.add('hidden');
+                    el.querySelector('.card-back')?.classList.remove('hidden');
+                }
+            });
+            setTimeout(()=>{
+                overlay.remove();
+                gameComplete();
+            }, Math.max(1, seconds)*1000);
         }
 
         // 更新游戏统计
@@ -696,8 +905,41 @@
             document.getElementById('flip-count').textContent = flipCount;
         }
 
+        // 计算并锁定卡片像素尺寸，避免由于容器宽度细微变动引起的跳动
+        function lockCardSizes(cols, scaleFactor = 1){
+            const board = document.getElementById('game-board');
+            if (!board) return;
+            const styles = getComputedStyle(board);
+            const paddingLeft = parseFloat(styles.paddingLeft) || 0;
+            const paddingRight = parseFloat(styles.paddingRight) || 0;
+            const columnGap = parseFloat(styles.columnGap || styles.gap) || 0;
+            const boardWidth = board.clientWidth;
+            const usable = boardWidth - paddingLeft - paddingRight - columnGap * (cols - 1);
+            let cell = Math.floor(usable / cols);
+            cell = Math.floor(cell * scaleFactor); // 放大一点，避免英文/中文被挤换行
+            board.style.gridTemplateColumns = `repeat(${cols}, ${cell}px)`;
+            document.querySelectorAll('#game-board .word-card').forEach(el => {
+                el.style.width = cell + 'px';
+                el.style.height = cell + 'px';
+                if (DEBUG) logCardSize('lock-size', el);
+            });
+            if (DEBUG) console.log(`[word-memory][lock-size] boardWidth=${boardWidth}, usable=${usable}, cell=${cell}`);
+        }
+
+        // 监听窗口大小变化，重新锁定（防抖）
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            if (resizeTimer) clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const cols = document.querySelectorAll('#game-board .word-card').length ?
+                    getComputedStyle(document.getElementById('game-board')).gridTemplateColumns.split(' ').length : 0;
+                if (cols > 0) lockCardSizes(cols, 1.12);
+            }, 120);
+        });
+
         // 游戏完成
         function gameComplete() {
+            stopLevelTimer();
             gameManager.recordProgress(true);
             
             // 显示结果
@@ -727,6 +969,17 @@
             // 切换到结果界面
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
+
+            // 记录关卡进度并显示“下一关”
+            const progress = loadWMProgress();
+            progress[currentDifficulty].completed[currentLevel] = true;
+            if(currentLevel < LEVELS_PER_DIFF){
+                progress[currentDifficulty].unlocked = Math.max(progress[currentDifficulty].unlocked, currentLevel + 1);
+                document.getElementById('next-level-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-level-btn').classList.add('hidden');
+            }
+            saveWMProgress(progress);
         }
 
         // 返回开始界面
@@ -734,6 +987,18 @@
             document.getElementById('start-screen').classList.remove('hidden');
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.add('hidden');
+            renderLevelButtons();
+        }
+
+        // 下一关
+        function nextLevel(){
+            const progress = loadWMProgress();
+            const unlocked = progress[currentDifficulty]?.unlocked || 1;
+            if(currentLevel < LEVELS_PER_DIFF && currentLevel < unlocked){
+                currentLevel += 1;
+            }
+            document.getElementById('next-level-btn').classList.add('hidden');
+            startGame();
         }
     </script>
 </body>

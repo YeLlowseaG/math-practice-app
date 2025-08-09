@@ -43,6 +43,9 @@
       .eye-care-primary{background:#4F46E5;color:#fff}
       .eye-care-secondary{background:#E5E7EB;color:#374151}
       .eye-care-badge{display:inline-block;background:#EEF2FF;color:#4F46E5;border-radius:9999px;padding:4px 10px;font-weight:700;margin-bottom:10px}
+      .eye-care-fab{position:fixed;bottom:18px;right:18px;z-index:999998;width:54px;height:54px;border-radius:9999px;border:none;cursor:pointer;box-shadow:0 10px 20px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:#10B981}
+      .eye-care-fab.off{background:#9CA3AF;color:#fff}
+      .eye-care-fab .dot{width:8px;height:8px;border-radius:9999px;background:#fff;position:absolute;top:10px;right:10px;opacity:.9}
     `;
     const style = document.createElement('style');
     style.textContent = css;
@@ -115,16 +118,15 @@
 
   function createToggle() {
     const btn = document.createElement('button');
-    btn.title = '护眼提醒设置';
-    btn.style.position = 'fixed';
-    btn.style.bottom = '16px';
-    btn.style.right = '16px';
-    btn.style.zIndex = '999998';
-    btn.className = 'eye-care-btn eye-care-secondary';
-    btn.textContent = settings.enabled ? '护眼提醒: 开' : '护眼提醒: 关';
+    btn.title = '护眼提醒';
+    btn.className = 'eye-care-fab' + (settings.enabled ? '' : ' off');
+    btn.innerHTML = settings.enabled ? '护' : '关';
+    const dot = document.createElement('span'); dot.className = 'dot'; btn.appendChild(dot);
     btn.addEventListener('click', () => {
       settings.enabled = !settings.enabled; saveSettings(settings);
-      btn.textContent = settings.enabled ? '护眼提醒: 开' : '护眼提醒: 关';
+      btn.className = 'eye-care-fab' + (settings.enabled ? '' : ' off');
+      btn.innerHTML = settings.enabled ? '护' : '关';
+      const d = document.createElement('span'); d.className='dot'; btn.appendChild(d);
       if (settings.enabled) activeSeconds = 0;
     });
     document.body.appendChild(btn);
