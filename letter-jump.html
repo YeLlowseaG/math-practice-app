@@ -366,7 +366,7 @@
             <div id="badge-preview" class="mt-5">
                 <h3 class="text-sm font-bold mb-2">我的徽章</h3>
                 <div id="badge-preview-grid" class="flex justify-center gap-3 flex-wrap"></div>
-                <div class="text-xs text-gray-400 mt-1">本游戏徽章预览（已获高亮，未获灰显）</div>
+                
             </div>
         </div>
         
@@ -403,7 +403,7 @@
             <div class="relative w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${base} shadow-sm flex flex-col items-center justify-center overflow-hidden" title="${a.name}">
               <div class="text-2xl mb-1">${a.icon}</div>
               <div class="text-[10px] font-bold text-center leading-tight px-1">${a.name}</div>
-              ${earned ? '<div class=\"absolute -right-1 -top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\">已获</div>' : ''}
+          ${earned ? '<div class=\"absolute right-1 top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\">已获</div>' : '<div class=\"absolute right-1 top-1 bg-gray-400 text-white text-[10px] px-1 rounded-full shadow\">未获</div>'}
             </div>`;
         }).join('');
       }
