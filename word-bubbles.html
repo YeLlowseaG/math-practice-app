@@ -974,35 +974,9 @@
                 gameState.score = Math.max(0, gameState.score - 20);
             }
             
-            // 移除泡泡：命中时飞向目标卡片
+            // 移除泡泡：按你的要求，命中或错中都原地爆裂消失
             const bubbleEl = this;
-            if (isCorrect) {
-                // 立即冻结当前位置并飞向目标，避免先被左右动画带偏
-                try {
-                    const targetEl = document.getElementById('targets-display');
-                    const tRect = targetEl.getBoundingClientRect();
-                    const bRect = bubbleEl.getBoundingClientRect();
-                    const ghost = bubbleEl.cloneNode(true);
-                    ghost.style.position = 'fixed';
-                    ghost.style.left = (bRect.left) + 'px';
-                    ghost.style.top = (bRect.top) + 'px';
-                    ghost.style.margin = '0';
-                    ghost.style.zIndex = '9999';
-                    ghost.style.animation = 'none';
-                    document.body.appendChild(ghost);
-                    bubbleEl.remove();
-                    const dx = (tRect.left + tRect.width/2) - (bRect.left + bRect.width/2);
-                    const dy = (tRect.top + tRect.height/2) - (bRect.top + bRect.height/2);
-                    requestAnimationFrame(() => {
-                        ghost.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s';
-                        ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.5)`;
-                        ghost.style.opacity = '0.2';
-                    });
-                    setTimeout(() => ghost.remove(), 820);
-                } catch(_) { bubbleEl.remove(); }
-            } else {
-                setTimeout(() => bubbleEl.remove(), 300);
-            }
+            setTimeout(() => bubbleEl.remove(), 300);
             
             updateGameDisplay();
         }
