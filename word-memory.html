@@ -427,8 +427,8 @@
                     utterance.rate = rate;
                     utterance.pitch = 1.0;
                     utterance.volume = 0.95;
-                    speechSynthesis.cancel();
-                    speechSynthesis.speak(utterance);
+                    try { speechSynthesis.cancel(); } catch(_){}
+                    try { speechSynthesis.speak(utterance); } catch(e){ console.warn('TTS 播放失败', e); }
                 };
                 if (!this.englishVoice) {
                     // 等待voices加载再播，避免静音
@@ -563,7 +563,7 @@
                     </div>
                     <div class="card-back hidden flex-col items-center justify-center h-full">
                         <p class="text-xl font-bold mb-2">${word}</p>
-                        <button onclick="gameManager.speak('${word}')" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-1 text-sm">
+                        <button onclick="event.stopPropagation(); gameManager.speak('${word}')" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-1 text-sm" aria-label="播放读音">
                             <i class="fa fa-volume-up"></i>
                         </button>
                     </div>
