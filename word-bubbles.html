@@ -77,7 +77,7 @@
         
         .bubbles-container {
             position: relative;
-            width: 100%;
+            width: 100vw; /* 占满视口宽度，让泡泡从屏幕两侧进入 */
             height: 420px;
             overflow: hidden;
             touch-action: none; /* 提前捕获pointer，避免点击后浏览器延迟与位移 */
@@ -274,7 +274,7 @@
             </div>
             
             <!-- 泡泡区域 -->
-            <div id="bubbles-container" class="bubbles-container mx-auto max-w-4xl">
+            <div id="bubbles-container" class="bubbles-container">
                 <!-- 泡泡会动态生成在这里 -->
             </div>
         </div>
