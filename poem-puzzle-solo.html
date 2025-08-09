@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script defer src="./wellness.js"></script>
+    <!-- 拼音库（浏览器端） -->
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@2.9.0/dist/index.min.js"></script>
     
     <!-- 配置Tailwind自定义颜色和字体 -->
     <script>
@@ -33,6 +35,8 @@
     
     <style type="text/tailwindcss">
         @layer utilities {
+            .pinyin-text { color: #4B5563; font-size: 0.95rem; line-height: 1.1; margin-bottom: 2px; }
+            .pinyin-title { color: #6B7280; font-size: 0.9rem; margin-top: 0.25rem; }
             .text-shadow {
                 text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
             }
@@ -366,8 +370,9 @@
         <div class="flex-1 flex flex-col justify-start items-center p-4 overflow-y-auto">
             <!-- 诗词信息 -->
             <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 text-center max-w-2xl w-full">
-                <h2 id="poem-title" class="text-2xl font-bold font-poem text-poem mb-2">静夜思</h2>
-                <p id="poem-author" class="text-gray-600 font-poem">李白</p>
+                <h2 id="poem-title" class="text-2xl font-bold font-poem text-poem mb-1">静夜思</h2>
+                <div id="poem-title-pinyin" class="pinyin-title"></div>
+                <p id="poem-author" class="text-gray-600 font-poem mt-1">李白</p>
                 <p id="poem-hint" class="text-sm text-gray-500 mt-2">将诗句拖拽到正确的位置</p>
                 
                 <!-- 完成后显示的完整诗词 -->
@@ -461,6 +466,80 @@
 
     <script>
         // 诗词数据库 - 按类型和难度分级（小学1-6年级必修古诗词）
+        // 拼音工具
+        function isPinyinReady(){ return !!(window.pinyinPro && window.pinyinPro.pinyin); }
+        function ensurePinyinReady(onReady){
+            if (isPinyinReady()) { onReady && onReady(); return; }
+            // 动态加载一次
+            if (!document.getElementById('pinyin-lib')){
+                const s = document.createElement('script');
+                s.src = 'https://cdn.jsdelivr.net/npm/pinyin-pro@2.9.0/dist/index.min.js';
+                s.id = 'pinyin-lib';
+                s.onload = () => { onReady && onReady(); };
+                s.onerror = () => {
+                    console.warn('pinyin 库加载失败，尝试备用源');
+                    const s2 = document.createElement('script');
+                    s2.src = 'https://unpkg.com/pinyin-pro@2.9.0/dist/index.min.js';
+                    s2.id = 'pinyin-lib-2';
+                    s2.onload = () => { onReady && onReady(); };
+                    s2.onerror = () => { console.warn('备用源也失败'); };
+                    document.head.appendChild(s2);
+                };
+                document.head.appendChild(s);
+            } else {
+                setTimeout(()=>{ if(isPinyinReady()) onReady && onReady(); }, 300);
+            }
+        }
+        // 本地常见诗词拼音兜底（示例覆盖：小池、江南春）+ 运行时缓存
+        const PINYIN_CACHE_KEY = 'poemPinyinCacheV1';
+        function loadPinyinCache(){
+            try{ return JSON.parse(localStorage.getItem(PINYIN_CACHE_KEY) || '{}'); }catch(_){ return {}; }
+        }
+        function savePinyinCache(cache){
+            try{ localStorage.setItem(PINYIN_CACHE_KEY, JSON.stringify(cache)); }catch(_){ }
+        }
+        let poemPinyinDB = {
+            '小池': {
+                title: 'xiǎo chí',
+                lines: ['quán yǎn wú shēng xī xì liú','shù yīn zhào shuǐ ài qíng róu','xiǎo hé cái lù jiān jiān jiǎo','zǎo yǒu qīng tíng lì shàng tóu']
+            },
+            '江南春': {
+                title: 'jiāng nán chūn',
+                lines: ['qiān lǐ yīng tí lǜ yìng hóng','shuǐ cūn shān guǒ jiǔ qī fēng','nán cháo sì bǎi bā shí sì','duō shǎo lóu tái yān yǔ zhōng']
+            }
+        };
+        // 合并持久化缓存
+        (function mergeCache(){
+            const cache = loadPinyinCache();
+            Object.keys(cache).forEach(title => { poemPinyinDB[title] = cache[title]; });
+        })();
+        function getPinyin(text){
+            try{ return isPinyinReady() ? window.pinyinPro.pinyin(text, {toneType:'symbol', type:'array'}).join(' ') : ''; }
+            catch(_){ return ''; }
+        }
+
+        // 全量预计算并缓存：为每首诗生成拼音（仅在拼音库就绪时执行一次，有网时生成，之后离线使用）
+        function precomputeAllPoemPinyin(){
+            if (!isPinyinReady()) return;
+            const cache = loadPinyinCache();
+            const types = Object.keys(poemDatabase);
+            types.forEach(t => {
+                const diffs = Object.keys(poemDatabase[t]);
+                diffs.forEach(d => {
+                    poemDatabase[t][d].forEach(p => {
+                        const title = p.title;
+                        if (!cache[title]) cache[title] = { title: '', lines: [] };
+                        if (!cache[title].title) cache[title].title = getPinyin(title);
+                        if ((!cache[title].lines || cache[title].lines.length === 0) && Array.isArray(p.lines)){
+                            cache[title].lines = p.lines.map(l => getPinyin(l));
+                        }
+                    });
+                });
+            });
+            savePinyinCache(cache);
+            // 合并到运行时DB
+            Object.keys(cache).forEach(title => { poemPinyinDB[title] = cache[title]; });
+        }
         const poemDatabase = {
             poem: {
                 easy: [
@@ -468,84 +547,182 @@
                         title: "静夜思",
                         author: "李白",
                         lines: ["床前明月光", "疑是地上霜", "举头望明月", "低头思故乡"],
+                        pinyinTitle: "jìng yè sī",
+                        pinyins: [
+                            "chuáng qián míng yuè guāng",
+                            "yí shì dì shàng shuāng",
+                            "jǔ tóu wàng míng yuè",
+                            "dī tóu sī gù xiāng"
+                        ],
                         description: "李白的经典思乡诗"
                     },
                     {
                         title: "春晓",
                         author: "孟浩然",
                         lines: ["春眠不觉晓", "处处闻啼鸟", "夜来风雨声", "花落知多少"],
+                        pinyinTitle: "chūn xiǎo",
+                        pinyins: [
+                            "chūn mián bù jué xiǎo",
+                            "chù chù wén tí niǎo",
+                            "yè lái fēng yǔ shēng",
+                            "huā luò zhī duō shǎo"
+                        ],
                         description: "孟浩然的春日清晨"
                     },
                     {
                         title: "登鹳雀楼",
                         author: "王之涣",
                         lines: ["白日依山尽", "黄河入海流", "欲穷千里目", "更上一层楼"],
+                        pinyinTitle: "dēng guàn què lóu",
+                        pinyins: [
+                            "bái rì yī shān jìn",
+                            "huáng hé rù hǎi liú",
+                            "yù qióng qiān lǐ mù",
+                            "gèng shàng yì céng lóu"
+                        ],
                         description: "王之涣的壮志诗"
                     },
                     {
                         title: "咏鹅",
                         author: "骆宾王",
                         lines: ["鹅，鹅，鹅", "曲项向天歌", "白毛浮绿水", "红掌拨清波"],
+                        pinyinTitle: "yǒng é",
+                        pinyins: [
+                            "é，é，é",
+                            "qǔ xiàng xiàng tiān gē",
+                            "bái máo fú lǜ shuǐ",
+                            "hóng zhǎng bō qīng bō"
+                        ],
                         description: "骆宾王七岁时的咏物诗"
                     },
                     {
                         title: "悯农",
                         author: "李绅",
                         lines: ["锄禾日当午", "汗滴禾下土", "谁知盘中餐", "粒粒皆辛苦"],
+                        pinyinTitle: "mǐn nóng",
+                        pinyins: [
+                            "chú hé rì dāng wǔ",
+                            "hàn dī hé xià tǔ",
+                            "shuí zhī pán zhōng cān",
+                            "lì lì jiē xīn kǔ"
+                        ],
                         description: "李绅的悯农诗"
                     },
                     {
                         title: "风",
                         author: "李峤",
                         lines: ["解落三秋叶", "能开二月花", "过江千尺浪", "入竹万竿斜"],
+                        pinyinTitle: "fēng",
+                        pinyins: [
+                            "jiě luò sān qiū yè",
+                            "néng kāi èr yuè huā",
+                            "guò jiāng qiān chǐ làng",
+                            "rù zhú wàn gān xié"
+                        ],
                         description: "李峤的咏风诗"
                     },
                     {
                         title: "小池",
                         author: "杨万里",
                         lines: ["泉眼无声惜细流", "树阴照水爱晴柔", "小荷才露尖尖角", "早有蜻蜓立上头"],
+                        pinyinTitle: "xiǎo chí",
+                        pinyins: [
+                            "quán yǎn wú shēng xī xì liú",
+                            "shù yīn zhào shuǐ ài qíng róu",
+                            "xiǎo hé cái lù jiān jiān jiǎo",
+                            "zǎo yǒu qīng tíng lì shàng tóu"
+                        ],
                         description: "杨万里的夏日小景"
                     },
                     {
                         title: "梅花",
                         author: "王安石",
                         lines: ["墙角数枝梅", "凌寒独自开", "遥知不是雪", "为有暗香来"],
+                        pinyinTitle: "méi huā",
+                        pinyins: [
+                            "qiáng jiǎo shù zhī méi",
+                            "líng hán dú zì kāi",
+                            "yáo zhī bú shì xuě",
+                            "wèi yǒu àn xiāng lái"
+                        ],
                         description: "王安石的咏梅诗"
                     },
                     {
                         title: "江雪",
                         author: "柳宗元",
                         lines: ["千山鸟飞绝", "万径人踪灭", "孤舟蓑笠翁", "独钓寒江雪"],
+                        pinyinTitle: "jiāng xuě",
+                        pinyins: [
+                            "qiān shān niǎo fēi jué",
+                            "wàn jìng rén zōng miè",
+                            "gū zhōu suō lì wēng",
+                            "dú diào hán jiāng xuě"
+                        ],
                         description: "柳宗元的雪景诗"
                     },
                     {
                         title: "山行",
                         author: "杜牧",
                         lines: ["远上寒山石径斜", "白云生处有人家", "停车坐爱枫林晚", "霜叶红于二月花"],
+                        pinyinTitle: "shān xíng",
+                        pinyins: [
+                            "yuǎn shàng hán shān shí jìng xié",
+                            "bái yún shēng chù yǒu rén jiā",
+                            "tíng chē zuò ài fēng lín wǎn",
+                            "shuāng yè hóng yú èr yuè huā"
+                        ],
                         description: "杜牧的秋山诗"
                     },
                     {
                         title: "清明",
                         author: "杜牧",
                         lines: ["清明时节雨纷纷", "路上行人欲断魂", "借问酒家何处有", "牧童遥指杏花村"],
+                        pinyinTitle: "qīng míng",
+                        pinyins: [
+                            "qīng míng shí jié yǔ fēn fēn",
+                            "lù shàng xíng rén yù duàn hún",
+                            "jiè wèn jiǔ jiā hé chù yǒu",
+                            "mù tóng yáo zhǐ xìng huā cūn"
+                        ],
                         description: "杜牧的清明诗"
                     },
                     {
                         title: "绝句",
                         author: "杜甫",
                         lines: ["两个黄鹂鸣翠柳", "一行白鹭上青天", "窗含西岭千秋雪", "门泊东吴万里船"],
+                        pinyinTitle: "jué jù",
+                        pinyins: [
+                            "liǎng gè huáng lí míng cuì liǔ",
+                            "yì háng bái lù shàng qīng tiān",
+                            "chuāng hán xī lǐng qiān qiū xuě",
+                            "mén bó dōng wú wàn lǐ chuán"
+                        ],
                         description: "杜甫的春日诗"
                     },
                     {
                         title: "石灰吟",
                         author: "于谦",
                         lines: ["千锤万凿出深山", "烈火焚烧若等闲", "粉身碎骨浑不怕", "要留清白在人间"],
+                        pinyinTitle: "shí huī yín",
+                        pinyins: [
+                            "qiān chuí wàn záo chū shēn shān",
+                            "liè huǒ fén shāo ruò děng xián",
+                            "fěn shēn suì gǔ hún bú pà",
+                            "yào liú qīng bái zài rén jiān"
+                        ],
                         description: "于谦的励志诗"
                     },
                     {
                         title: "竹石",
                         author: "郑燮",
                         lines: ["咬定青山不放松", "立根原在破岩中", "千磨万击还坚劲", "任尔东西南北风"],
+                        pinyinTitle: "zhú shí",
+                        pinyins: [
+                            "yǎo dìng qīng shān bú fàng sōng",
+                            "lì gēn yuán zài pò yán zhōng",
+                            "qiān mó wàn jī hái jiān jìn",
+                            "rèn ěr dōng xī nán běi fēng"
+                        ],
                         description: "郑燮的咏竹诗"
                     }
                 ],
@@ -554,60 +731,130 @@
                         title: "赠汪伦",
                         author: "李白",
                         lines: ["李白乘舟将欲行", "忽闻岸上踏歌声", "桃花潭水深千尺", "不及汪伦送我情"],
+                        pinyinTitle: "zèng wāng lún",
+                        pinyins: [
+                            "lǐ bái chéng zhōu jiāng yù xíng",
+                            "hū wén àn shàng tà gē shēng",
+                            "táo huā tán shuǐ shēn qiān chǐ",
+                            "bù jí wāng lún sòng wǒ qíng"
+                        ],
                         description: "李白的友情诗"
                     },
                     {
                         title: "望庐山瀑布",
                         author: "李白",
                         lines: ["日照香炉生紫烟", "遥看瀑布挂前川", "飞流直下三千尺", "疑是银河落九天"],
+                        pinyinTitle: "wàng lú shān pù bù",
+                        pinyins: [
+                            "rì zhào xiāng lú shēng zǐ yān",
+                            "yáo kàn pù bù guà qián chuān",
+                            "fēi liú zhí xià sān qiān chǐ",
+                            "yí shì yín hé luò jiǔ tiān"
+                        ],
                         description: "李白的瀑布奇观"
                     },
                     {
                         title: "早发白帝城",
                         author: "李白",
                         lines: ["朝辞白帝彩云间", "千里江陵一日还", "两岸猿声啼不住", "轻舟已过万重山"],
+                        pinyinTitle: "zǎo fā bái dì chéng",
+                        pinyins: [
+                            "zhāo cí bái dì cǎi yún jiān",
+                            "qiān lǐ jiāng líng yī rì huán",
+                            "liǎng àn yuán shēng tí bù zhù",
+                            "qīng zhōu yǐ guò wàn chóng shān"
+                        ],
                         description: "李白的江行诗"
                     },
                     {
                         title: "望天门山",
                         author: "李白",
                         lines: ["天门中断楚江开", "碧水东流至此回", "两岸青山相对出", "孤帆一片日边来"],
+                        pinyinTitle: "wàng tiān mén shān",
+                        pinyins: [
+                            "tiān mén zhōng duàn chǔ jiāng kāi",
+                            "bì shuǐ dōng liú zhì cǐ huí",
+                            "liǎng àn qīng shān xiāng duì chū",
+                            "gū fān yī piàn rì biān lái"
+                        ],
                         description: "李白的江山诗"
                     },
                     {
                         title: "独坐敬亭山",
                         author: "李白",
                         lines: ["众鸟高飞尽", "孤云独去闲", "相看两不厌", "只有敬亭山"],
+                        pinyinTitle: "dú zuò jìng tíng shān",
+                        pinyins: [
+                            "zhòng niǎo gāo fēi jìn",
+                            "gū yún dú qù xián",
+                            "xiāng kān liǎng bù yàn",
+                            "zhǐ yǒu jìng tíng shān"
+                        ],
                         description: "李白的山居诗"
                     },
                     {
                         title: "夜宿山寺",
                         author: "李白",
                         lines: ["危楼高百尺", "手可摘星辰", "不敢高声语", "恐惊天上人"],
+                        pinyinTitle: "yè sù shān sì",
+                        pinyins: [
+                            "wēi lóu gāo bǎi chǐ",
+                            "shǒu kě zhāi xīng chén",
+                            "bù gǎn gāo shēng yǔ",
+                            "kǒng jīng tiān shàng rén"
+                        ],
                         description: "李白的山寺诗"
                     },
                     {
                         title: "寻隐者不遇",
                         author: "贾岛",
                         lines: ["松下问童子", "言师采药去", "只在此山中", "云深不知处"],
+                        pinyinTitle: "xún yǐn zhě bù yù",
+                        pinyins: [
+                            "sōng xià wèn tóng zǐ",
+                            "yán shī cǎi yào qù",
+                            "zhǐ zài cǐ shān zhōng",
+                            "yún shēn bù zhī chù"
+                        ],
                         description: "贾岛的访友诗"
                     },
                     {
                         title: "池上",
                         author: "白居易",
                         lines: ["小娃撑小艇", "偷采白莲回", "不解藏踪迹", "浮萍一道开"],
+                        pinyinTitle: "chí shàng",
+                        pinyins: [
+                            "xiǎo wá chēng xiǎo tǐng",
+                            "tōu cǎi bái lián huí",
+                            "bù jiě cáng zōng jì",
+                            "fú píng yī dào kāi"
+                        ],
                         description: "白居易的童趣诗"
                     },
                     {
                         title: "小儿垂钓",
                         author: "胡令能",
                         lines: ["蓬头稚子学垂纶", "侧坐莓苔草映身", "路人借问遥招手", "怕得鱼惊不应人"],
+                        pinyinTitle: "xiǎo ér chuí diào",
+                        pinyins: [
+                            "péng tóu zhì zǐ xué chuí lún",
+                            "cè zuò méi tái cǎo yìng shēn",
+                            "lù rén jiè wèn yáo zhāo shǒu",
+                            "pà dé yú jīng bù yìng rén"
+                        ],
                         description: "胡令能的儿童诗"
                     },
                     {
                         title: "九月九日忆山东兄弟",
                         author: "王维",
                         lines: ["独在异乡为异客", "每逢佳节倍思亲", "遥知兄弟登高处", "遍插茱萸少一人"],
+                        pinyinTitle: "jiǔ yuè jiǔ rì yì shān dōng xiōng dì",
+                        pinyins: [
+                            "dú zài yì xiāng wéi yì kè",
+                            "měi féng jiā jié bèi sī qīn",
+                            "yáo zhī xiōng dì dēng gāo chù",
+                            "biàn chā zhū yú shǎo yī rén"
+                        ],
                         description: "王维的思乡诗"
                     }
                 ],
@@ -616,24 +863,70 @@
                         title: "春夜喜雨",
                         author: "杜甫",
                         lines: ["好雨知时节", "当春乃发生", "随风潜入夜", "润物细无声", "野径云俱黑", "江船火独明", "晓看红湿处", "花重锦官城"],
+                        pinyinTitle: "chūn yè xǐ yǔ",
+                        pinyins: [
+                            "hǎo yǔ zhī shí jié",
+                            "dāng chūn nǎi fā shēng",
+                            "suí fēng qián rù yè",
+                            "rùn wù xì wú shēng",
+                            "yě jìng yún jù hēi",
+                            "jiāng chuán huǒ dú míng",
+                            "xiǎo kàn hóng shī chù",
+                            "huā zhòng jǐn guān chéng"
+                        ],
                         description: "杜甫的喜雨诗"
                     },
                     {
                         title: "山居秋暝",
                         author: "王维",
                         lines: ["空山新雨后", "天气晚来秋", "明月松间照", "清泉石上流", "竹喧归浣女", "莲动下渔舟", "随意春芳歇", "王孙自可留"],
+                        pinyinTitle: "shān jū qiū míng",
+                        pinyins: [
+                            "kōng shān xīn yǔ hòu",
+                            "tiān qì wǎn lái qiū",
+                            "míng yuè sōng jiān zhào",
+                            "qīng quán shí shàng liú",
+                            "zhú xuān guī huàn nǚ",
+                            "lián dòng xià yú zhōu",
+                            "suí yì chūn fāng xiē",
+                            "wáng sūn zì kě liú"
+                        ],
                         description: "王维的山居诗"
                     },
                     {
                         title: "过故人庄",
                         author: "孟浩然",
                         lines: ["故人具鸡黍", "邀我至田家", "绿树村边合", "青山郭外斜", "开轩面场圃", "把酒话桑麻", "待到重阳日", "还来就菊花"],
+                        pinyinTitle: "guò gù rén zhuāng",
+                        pinyins: [
+                            "gù rén jù jī shǔ",
+                            "yāo wǒ zhì tián jiā",
+                            "lǜ shù cūn biān hé",
+                            "qīng shān guō wài xié",
+                            "kāi xuān miàn cháng pǔ",
+                            "bǎ jiǔ huà sāng má",
+                            "dài dào chóng yáng rì",
+                            "hái lái jiù jú huā"
+                        ],
                         description: "孟浩然的田园诗"
                     },
                     {
                         title: "长歌行",
                         author: "汉乐府",
                         lines: ["青青园中葵", "朝露待日晞", "阳春布德泽", "万物生光辉", "常恐秋节至", "焜黄华叶衰", "百川东到海", "何时复西归", "少壮不努力", "老大徒伤悲"],
+                        pinyinTitle: "cháng gē xíng",
+                        pinyins: [
+                            "qīng qīng yuán zhōng kuí",
+                            "zhāo lù dài rì xī",
+                            "yáng chūn bù dé zé",
+                            "wàn wù shēng guāng huī",
+                            "cháng kǒng qiū jié zhì",
+                            "kūn huáng huá yè shuāi",
+                            "bǎi chuān dōng dào hǎi",
+                            "hé shí fù xī guī",
+                            "shào zhuàng bù nǔ lì",
+                            "lǎo dà tú shāng bēi"
+                        ],
                         description: "汉乐府的励志诗"
                     }
                 ]
@@ -643,25 +936,53 @@
                     {
                         title: "咏柳",
                         author: "贺知章",
-                        lines: ["碧玉妆成一树高", "万条垂下绿丝绦", "不知细叶谁裁出", "二月春风似剪刀"],
+                         lines: ["碧玉妆成一树高", "万条垂下绿丝绦", "不知细叶谁裁出", "二月春风似剪刀"],
+                         pinyinTitle: "yǒng liǔ",
+                         pinyins: [
+                             "bì yù zhuāng chéng yī shù gāo",
+                             "wàn tiáo chuí xià lǜ sī tāo",
+                             "bù zhī xì yè shéi cái chū",
+                             "èr yuè chūn fēng sì jiǎn dāo"
+                         ],
                         description: "贺知章的咏柳诗"
                     },
                     {
                         title: "村居",
                         author: "高鼎",
-                        lines: ["草长莺飞二月天", "拂堤杨柳醉春烟", "儿童散学归来早", "忙趁东风放纸鸢"],
+                         lines: ["草长莺飞二月天", "拂堤杨柳醉春烟", "儿童散学归来早", "忙趁东风放纸鸢"],
+                         pinyinTitle: "cūn jū",
+                         pinyins: [
+                             "cǎo zhǎng yīng fēi èr yuè tiān",
+                             "fú dī yáng liǔ zuì chūn yān",
+                             "ér tóng sàn xué guī lái zǎo",
+                             "máng chèn dōng fēng fàng zhǐ yuān"
+                         ],
                         description: "高鼎的村居诗"
                     },
                     {
                         title: "元日",
                         author: "王安石",
-                        lines: ["爆竹声中一岁除", "春风送暖入屠苏", "千门万户曈曈日", "总把新桃换旧符"],
+                         lines: ["爆竹声中一岁除", "春风送暖入屠苏", "千门万户曈曈日", "总把新桃换旧符"],
+                         pinyinTitle: "yuán rì",
+                         pinyins: [
+                             "bào zhú shēng zhōng yī suì chú",
+                             "chūn fēng sòng nuǎn rù tú sū",
+                             "qiān mén wàn hù tóng tóng rì",
+                             "zǒng bǎ xīn táo huàn jiù fú"
+                         ],
                         description: "王安石的新年诗"
                     },
                     {
                         title: "江南春",
                         author: "杜牧",
                         lines: ["千里莺啼绿映红", "水村山郭酒旗风", "南朝四百八十寺", "多少楼台烟雨中"],
+                        pinyinTitle: "jiāng nán chūn",
+                        pinyins: [
+                            "qiān lǐ yīng tí lǜ yìng hóng",
+                            "shuǐ cūn shān guō jiǔ qí fēng",
+                            "nán cháo sì bǎi bā shí sì",
+                            "duō shǎo lóu tái yān yǔ zhōng"
+                        ],
                         description: "杜牧的江南诗"
                     }
                 ],
@@ -669,25 +990,53 @@
                     {
                         title: "题西林壁",
                         author: "苏轼",
-                        lines: ["横看成岭侧成峰", "远近高低各不同", "不识庐山真面目", "只缘身在此山中"],
+                            lines: ["横看成岭侧成峰", "远近高低各不同", "不识庐山真面目", "只缘身在此山中"],
+                            pinyinTitle: "tí xī lín bì",
+                            pinyins: [
+                                "héng kàn chéng lǐng cè chéng fēng",
+                                "yuǎn jìn gāo dī gè bù tóng",
+                                "bù shí lú shān zhēn miàn mù",
+                                "zhī yuán shēn zài cǐ shān zhōng"
+                            ],
                         description: "苏轼的哲理诗"
                     },
                     {
                         title: "惠崇春江晚景",
                         author: "苏轼",
-                        lines: ["竹外桃花三两枝", "春江水暖鸭先知", "蒌蒿满地芦芽短", "正是河豚欲上时"],
+                            lines: ["竹外桃花三两枝", "春江水暖鸭先知", "蒌蒿满地芦芽短", "正是河豚欲上时"],
+                            pinyinTitle: "huì chóng chūn jiāng wǎn jǐng",
+                            pinyins: [
+                                "zhú wài táo huā sān liǎng zhī",
+                                "chūn jiāng shuǐ nuǎn yā xiān zhī",
+                                "lóu hāo mǎn dì lú yá duǎn",
+                                "zhèng shì hé tún yù shàng shí"
+                            ],
                         description: "苏轼的春江诗"
                     },
                     {
                         title: "饮湖上初晴后雨",
                         author: "苏轼",
-                        lines: ["水光潋滟晴方好", "山色空蒙雨亦奇", "欲把西湖比西子", "淡妆浓抹总相宜"],
+                            lines: ["水光潋滟晴方好", "山色空蒙雨亦奇", "欲把西湖比西子", "淡妆浓抹总相宜"],
+                            pinyinTitle: "yǐn hú shàng chū qíng hòu yǔ",
+                            pinyins: [
+                                "shuǐ guāng liàn yàn qíng fāng hǎo",
+                                "shān sè kōng méng yǔ yì qí",
+                                "yù bǎ xī hú bǐ xī zǐ",
+                                "dàn zhuāng nóng mǒ zǒng xiāng yí"
+                            ],
                         description: "苏轼的西湖诗"
                     },
                     {
                         title: "宿新市徐公店",
                         author: "杨万里",
-                        lines: ["篱落疏疏一径深", "树头新绿未成阴", "儿童急走追黄蝶", "飞入菜花无处寻"],
+                            lines: ["篱落疏疏一径深", "树头新绿未成阴", "儿童急走追黄蝶", "飞入菜花无处寻"],
+                            pinyinTitle: "sù xīn shì xú gōng diàn",
+                            pinyins: [
+                                "lí luò shū shū yī jìng shēn",
+                                "shù tóu xīn lǜ wèi chéng yīn",
+                                "ér tóng jí zǒu zhuī huáng dié",
+                                "fēi rù cài huā wú chù xún"
+                            ],
                         description: "杨万里的田园诗"
                     }
                 ],
@@ -695,13 +1044,35 @@
                     {
                         title: "清平乐·村居",
                         author: "辛弃疾",
-                        lines: ["茅檐低小", "溪上青青草", "醉里吴音相媚好", "白发谁家翁媪", "大儿锄豆溪东", "中儿正织鸡笼", "最喜小儿亡赖", "溪头卧剥莲蓬"],
+                            lines: ["茅檐低小", "溪上青青草", "醉里吴音相媚好", "白发谁家翁媪", "大儿锄豆溪东", "中儿正织鸡笼", "最喜小儿亡赖", "溪头卧剥莲蓬"],
+                            pinyinTitle: "qīng píng yuè·cūn jū",
+                            pinyins: [
+                                "máo yán dī xiǎo",
+                                "xī shàng qīng qīng cǎo",
+                                "zuì lǐ wú yīn xiāng mèi hǎo",
+                                "bái fà shéi jiā wēng ǎo",
+                                "dà ér chú dòu xī dōng",
+                                "zhōng ér zhèng zhī jī lóng",
+                                "zuì xǐ xiǎo ér wáng lài",
+                                "xī tóu wò bō lián péng"
+                            ],
                         description: "辛弃疾的村居词"
                     },
                     {
                         title: "西江月·夜行黄沙道中",
                         author: "辛弃疾",
-                        lines: ["明月别枝惊鹊", "清风半夜鸣蝉", "稻花香里说丰年", "听取蛙声一片", "七八个星天外", "两三点雨山前", "旧时茅店社林边", "路转溪桥忽见"],
+                            lines: ["明月别枝惊鹊", "清风半夜鸣蝉", "稻花香里说丰年", "听取蛙声一片", "七八个星天外", "两三点雨山前", "旧时茅店社林边", "路转溪桥忽见"],
+                            pinyinTitle: "xī jiāng yuè·yè xíng huáng shā dào zhōng",
+                            pinyins: [
+                                "míng yuè bié zhī jīng què",
+                                "qīng fēng bàn yè míng chán",
+                                "dào huā xiāng lǐ shuō fēng nián",
+                                "tīng qǔ wā shēng yī piàn",
+                                "qī bā gè xīng tiān wài",
+                                "liǎng sān diǎn yǔ shān qián",
+                                "jiù shí máo diàn shè lín biān",
+                                "lù zhuǎn xī qiáo hū jiàn"
+                            ],
                         description: "辛弃疾的夜行词"
                     }
                 ]
@@ -712,12 +1083,26 @@
                         title: "画",
                         author: "无",
                         lines: ["远看山有色", "近听水无声", "春去花还在", "人来鸟不惊"],
+                        pinyinTitle: "huà",
+                        pinyins: [
+                            "yuǎn kàn shān yǒu sè",
+                            "jìn tīng shuǐ wú shēng",
+                            "chūn qù huā hái zài",
+                            "rén lái niǎo bù jīng"
+                        ],
                         description: "古代的画中诗"
                     },
                     {
                         title: "画鸡",
                         author: "唐寅",
                         lines: ["头上红冠不用裁", "满身雪白走将来", "平生不敢轻言语", "一叫千门万户开"],
+                        pinyinTitle: "huà jī",
+                        pinyins: [
+                            "tóu shàng hóng guān bù yòng cái",
+                            "mǎn shēn xuě bái zǒu jiāng lái",
+                            "píng shēng bù gǎn qīng yán yǔ",
+                            "yí jiào qiān mén wàn hù kāi"
+                        ],
                         description: "唐寅的咏鸡诗"
                     }
                 ],
@@ -726,12 +1111,28 @@
                         title: "乡愁",
                         author: "余光中",
                         lines: ["小时候", "乡愁是一枚小小的邮票", "我在这头", "母亲在那头"],
+                        pinyinTitle: "xiāng chóu",
+                        pinyins: [
+                            "xiǎo shí hòu",
+                            "xiāng chóu shì yī méi xiǎo xiǎo de yóu piào",
+                            "wǒ zài zhè tóu",
+                            "mǔ qīn zài nà tóu"
+                        ],
                         description: "余光中的现代诗"
                     },
                     {
                         title: "再别康桥",
                         author: "徐志摩",
                         lines: ["轻轻的我走了", "正如我轻轻的来", "我轻轻的招手", "作别西天的云彩", "那河畔的金柳", "是夕阳中的新娘"],
+                        pinyinTitle: "zài bié kāng qiáo",
+                        pinyins: [
+                            "qīng qīng de wǒ zǒu le",
+                            "zhèng rú wǒ qīng qīng de lái",
+                            "wǒ qīng qīng de zhāo shǒu",
+                            "zuò bié xī tiān de yún cǎi",
+                            "nà hé pàn de jīn liǔ",
+                            "shì xī yáng zhōng de xīn niáng"
+                        ],
                         description: "徐志摩的离别诗"
                     }
                 ],
@@ -740,12 +1141,34 @@
                         title: "七律·长征",
                         author: "毛泽东",
                         lines: ["红军不怕远征难", "万水千山只等闲", "五岭逶迤腾细浪", "乌蒙磅礴走泥丸", "金沙水拍云崖暖", "大渡桥横铁索寒", "更喜岷山千里雪", "三军过后尽开颜"],
+                        pinyinTitle: "qī lǜ·cháng zhēng",
+                        pinyins: [
+                            "hóng jūn bù pà yuǎn zhēng nán",
+                            "wàn shuǐ qiān shān zhǐ děng xián",
+                            "wǔ lǐng wēi yí téng xì làng",
+                            "wū méng páng bó zǒu ní wán",
+                            "jīn shā shuǐ pāi yún yá nuǎn",
+                            "dà dù qiáo héng tiě suǒ hán",
+                            "gèng xǐ mín shān qiān lǐ xuě",
+                            "sān jūn guò hòu jǐn kāi yán"
+                        ],
                         description: "毛泽东的长征诗"
                     },
                     {
                         title: "卜算子·咏梅",
                         author: "毛泽东",
                         lines: ["风雨送春归", "飞雪迎春到", "已是悬崖百丈冰", "犹有花枝俏", "俏也不争春", "只把春来报", "待到山花烂漫时", "她在丛中笑"],
+                        pinyinTitle: "bǔ suàn zǐ·yǒng méi",
+                        pinyins: [
+                            "fēng yǔ sòng chūn guī",
+                            "fēi xuě yíng chūn dào",
+                            "yǐ shì xuán yá bǎi zhàng bīng",
+                            "yóu yǒu huā zhī qiào",
+                            "qiào yě bù zhēng chūn",
+                            "zhǐ bǎ chūn lái bào",
+                            "dài dào shān huā làn màn shí",
+                            "tā zài cóng zhōng xiào"
+                        ],
                         description: "毛泽东的咏梅词"
                     }
                 ]
@@ -921,9 +1344,23 @@
             poemTitle.textContent = gameState.currentPoem.title;
             poemAuthor.textContent = gameState.currentPoem.author;
             poemHint.textContent = gameState.currentPoem.description;
+            // 标题拼音
+            const titlePyEl = document.getElementById('poem-title-pinyin');
+            const applyTitlePinyin = () => {
+                let py = getPinyin(gameState.currentPoem.title);
+                if(!py && gameState.currentPoem.pinyinTitle) py = gameState.currentPoem.pinyinTitle;
+                if(!py && poemPinyinDB[gameState.currentPoem.title]) py = poemPinyinDB[gameState.currentPoem.title].title;
+                titlePyEl.textContent = py || '';
+            };
+            applyTitlePinyin();
+            ensurePinyinReady(applyTitlePinyin);
             
-            // 生成拼图
+            // 生成拼图（确保拼音库就绪后也能再次渲染）
             generatePuzzle();
+            ensurePinyinReady(() => {
+                // 二次刷新：重新生成，填充拼音
+                generatePuzzle();
+            });
             
             // 开始计时
             startTimer();
@@ -945,7 +1382,18 @@
             shuffledLines.forEach((line, index) => {
                 const piece = document.createElement('div');
                 piece.className = 'puzzle-piece bg-white rounded-xl shadow-lg p-4 text-center cursor-grab border-2 border-gray-200 hover:border-primary hover:shadow-xl transform hover:scale-105';
+                let py = getPinyin(line) || '';
+                if(!py && Array.isArray(gameState.currentPoem.pinyins)){
+                    const idx = lines.indexOf(line);
+                    if(idx>-1) py = gameState.currentPoem.pinyins[idx] || '';
+                }
+                if(!py && poemPinyinDB[gameState.currentPoem.title]){
+                    const idx = lines.indexOf(line);
+                    if(idx>-1) py = poemPinyinDB[gameState.currentPoem.title].lines[idx] || '';
+                }
+                py = py || '&nbsp;';
                 piece.innerHTML = `
+                    <div class="pinyin-text">${py}</div>
                     <div class="font-poem text-lg text-poem font-medium">${line}</div>
                 `;
                 piece.dataset.line = line;
@@ -967,6 +1415,7 @@
             lines.forEach((line, index) => {
                 const zone = document.createElement('div');
                 zone.className = 'drop-zone bg-gray-100 rounded-xl p-6 text-center min-h-[80px] flex items-center justify-center border-2 border-dashed border-gray-300';
+                // 初始不显示拼音，防止提示答案
                 zone.innerHTML = `
                     <div class="text-gray-400 font-poem">第${index + 1}句</div>
                 `;
@@ -1109,8 +1558,16 @@
             }
             
             // 正确放置
+            let py = getPinyin(droppedLine);
+            if(!py && poemPinyinDB[gameState.currentPoem.title]){
+                const idx = gameState.currentPoem.lines.indexOf(droppedLine);
+                if(idx>-1) py = poemPinyinDB[gameState.currentPoem.title].lines[idx] || '';
+            }
             dropZone.innerHTML = `
-                <div class="font-poem text-lg text-poem font-medium">${droppedLine}</div>
+                <div class="text-center">
+                    <div class="pinyin-text">${py}</div>
+                    <div class="font-poem text-lg text-poem font-medium">${droppedLine}</div>
+                </div>
             `;
             dropZone.classList.remove('bg-gray-100', 'border-gray-300');
             dropZone.classList.add('correct', 'bg-green-50', 'border-green-300');
@@ -1226,7 +1683,19 @@
             // 生成完整诗词内容 - 更优雅的排版
             let poemHTML = '';
             gameState.currentPoem.lines.forEach((line, index) => {
-                poemHTML += `<div class="poem-line-appear" style="animation-delay: ${index * 0.4}s">${line}</div>`;
+                let py = getPinyin(line);
+                if(!py && Array.isArray(gameState.currentPoem.pinyins)){
+                    const idx = gameState.currentPoem.lines.indexOf(line);
+                    if(idx>-1) py = gameState.currentPoem.pinyins[idx] || '';
+                }
+                if(!py && poemPinyinDB[gameState.currentPoem.title]){
+                    const idx = gameState.currentPoem.lines.indexOf(line);
+                    if(idx>-1) py = poemPinyinDB[gameState.currentPoem.title].lines[idx] || '';
+                }
+                poemHTML += `<div class="poem-line-appear" style="animation-delay: ${index * 0.4}s">
+                    <div class="pinyin-text">${py}</div>
+                    <div>${line}</div>
+                </div>`;
             });
             
             poemContentEl.innerHTML = poemHTML;
@@ -1671,6 +2140,8 @@
                 }
             `;
             document.head.appendChild(style);
+            // 若拼音库已就绪，则一次性预计算缓存，后续离线可用
+            ensurePinyinReady(precomputeAllPoemPinyin);
         });
     </script>
 </body>
