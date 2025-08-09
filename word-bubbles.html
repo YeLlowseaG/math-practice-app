@@ -81,6 +81,23 @@
             height: 420px;
             overflow: hidden;
         }
+        /* 命中爆炸：彩色同心圆 */
+        .ring-burst {
+            position: absolute;
+            left: 0; top: 0;
+            width: 20px; height: 20px;
+            border-radius: 9999px;
+            border: 3px solid currentColor;
+            pointer-events: none;
+            opacity: 0.9;
+            transform-origin: center;
+            will-change: transform, opacity;
+            animation: ring-burst 700ms ease-out forwards;
+        }
+        @keyframes ring-burst {
+            0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0.95; }
+            100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
+        }
         /* 从左右两侧“飞出”的动画与方向类 */
         @keyframes fly-right {
             0% { left: -90px; opacity: 0.9; }
@@ -959,6 +976,19 @@
             const letter = this.dataset.letter;
             const target = gameState.targets.find(t => t.letter === letter);
             const isCorrect = !!target && target.got < target.need;
+            // 0) 点击瞬间：无论对错都立刻暂停并锁位，彻底停止移动
+            const bubbleEl = this;
+            try {
+                bubbleEl.classList.remove('from-left','from-right');
+                const r0 = bubbleEl.getBoundingClientRect();
+                const pr0 = bubblesContainer.getBoundingClientRect();
+                bubbleEl.style.left = (r0.left - pr0.left) + 'px';
+                bubbleEl.style.top = (r0.top - pr0.top) + 'px';
+                bubbleEl.style.animation = 'none';
+                bubbleEl.style.animationPlayState = 'paused';
+                bubbleEl.style.transition = 'none';
+                bubbleEl.style.transform = 'translate3d(0,0,0)';
+            } catch(_) {}
             if (isCorrect) {
                 target.got += 1;
                 this.classList.add('correct');
@@ -974,39 +1004,43 @@
                 gameState.score = Math.max(0, gameState.score - 20);
             }
             
-            // 点击后：命中→暂停并飞向目标；错中→原地爆裂
-            const bubbleEl = this;
+            // 点击后：命中→原地七彩爆裂；错中→原地红色爆裂
             if (isCorrect) {
                 try {
-                    // 1) 立刻去除左右飞行动画类并锁定像素位置
-                    bubbleEl.classList.remove('from-left','from-right');
                     const r = bubbleEl.getBoundingClientRect();
-                    const pr = bubblesContainer.getBoundingClientRect();
-                    bubbleEl.style.left = (r.left - pr.left) + 'px';
-                    bubbleEl.style.top = (r.top - pr.top) + 'px';
-                    bubbleEl.style.animation = 'none';
-                    bubbleEl.style.animationPlayState = 'paused';
-                    // 确保从当前位置开始（无初始 transform）
-                    bubbleEl.style.transition = 'none';
-                    bubbleEl.style.transform = 'translate3d(0,0,0)';
-                    // 2) 计算到目标卡片中心的位移（取内胶囊文字更精准）
-                    const targetEl = document.getElementById('targets-display');
-                    const targetAnchor = targetEl.querySelector('span') || targetEl;
-                    const tRect = targetAnchor.getBoundingClientRect();
-                    const bRect = bubbleEl.getBoundingClientRect();
-                    const dx = (tRect.left + tRect.width / 2) - (bRect.left + bRect.width / 2);
-                    const dy = (tRect.top + tRect.height / 2) - (bRect.top + bRect.height / 2);
-                    // 3) 执行动画
-                    requestAnimationFrame(() => {
-                        bubbleEl.style.willChange = 'transform, opacity';
-                        bubbleEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s';
-                        bubbleEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.5)`;
-                        bubbleEl.style.opacity = '0.2';
+                    const cx = r.left + r.width/2;
+                    const cy = r.top + r.height/2;
+                    const colors = ['#ef4444','#f59e0b','#fbbf24','#10b981','#3b82f6','#8b5cf6','#ec4899'];
+                    colors.forEach((c, i) => {
+                        const ring = document.createElement('div');
+                        ring.className = 'ring-burst';
+                        ring.style.position = 'fixed';
+                        ring.style.color = c;
+                        ring.style.left = cx + 'px';
+                        ring.style.top = cy + 'px';
+                        ring.style.animationDelay = (i * 40) + 'ms';
+                        document.body.appendChild(ring);
+                        setTimeout(() => ring.remove(), 900);
                     });
-                    setTimeout(() => bubbleEl.remove(), 820);
-                } catch(_) { setTimeout(() => bubbleEl.remove(), 100); }
+                } catch(_) {}
+                // 立刻移除泡泡
+                bubbleEl.remove();
             } else {
-                setTimeout(() => bubbleEl.remove(), 150);
+                // 错中：加一个红色环提示
+                try {
+                    const r = bubbleEl.getBoundingClientRect();
+                    const cx = r.left + r.width/2;
+                    const cy = r.top + r.height/2;
+                    const ring = document.createElement('div');
+                    ring.className = 'ring-burst';
+                    ring.style.position = 'fixed';
+                    ring.style.color = '#ef4444';
+                    ring.style.left = cx + 'px';
+                    ring.style.top = cy + 'px';
+                    document.body.appendChild(ring);
+                    setTimeout(() => ring.remove(), 700);
+                } catch(_) {}
+                setTimeout(() => bubbleEl.remove(), 120);
             }
             
             updateGameDisplay();
