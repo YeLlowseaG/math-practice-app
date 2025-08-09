@@ -991,23 +991,7 @@
             const letter = this.dataset.letter;
             const target = gameState.targets.find(t => t.letter === letter);
             const isCorrect = !!target && target.got < target.need;
-            // 0) 点击瞬间：无论对错都立刻暂停并锁位，彻底停止移动
             const bubbleEl = this;
-            try {
-                bubbleEl.classList.remove('from-left','from-right');
-                const r0 = bubbleEl.getBoundingClientRect();
-                const pr0 = bubblesContainer.getBoundingClientRect();
-                bubbleEl.style.position = 'absolute';
-                bubbleEl.style.left = (r0.left - pr0.left) + 'px';
-                bubbleEl.style.top = (r0.top - pr0.top) + 'px';
-                bubbleEl.style.right = 'auto';
-                bubbleEl.style.animation = 'none';
-                bubbleEl.style.animationPlayState = 'paused';
-                bubbleEl.style.transition = 'none';
-                bubbleEl.style.transform = 'none';
-                // 强制reflow，确保锁位立即生效
-                void bubbleEl.offsetWidth;
-            } catch(_) {}
             if (isCorrect) {
                 target.got += 1;
                 this.classList.add('correct');
@@ -1018,14 +1002,28 @@
                     levelComplete();
                 }
             } else {
-                this.classList.add('wrong');
                 gameState.combo = 0;
                 gameState.score = Math.max(0, gameState.score - 20);
             }
             
-            // 点击后：命中→原地消失；错中→不移除气泡，仅弹出提示
+            // 点击后：命中→原地消失（并锁位停表）；错中→不移除气泡，仅弹出提示（保持原轨迹）
             if (isCorrect) {
-                // 最简行为：命中即刻消失，不播放任何位移/特效
+                // 命中：先停表锁位，再移除
+                try {
+                    bubbleEl.classList.remove('from-left','from-right');
+                    const r0 = bubbleEl.getBoundingClientRect();
+                    const pr0 = bubblesContainer.getBoundingClientRect();
+                    bubbleEl.style.position = 'absolute';
+                    bubbleEl.style.left = (r0.left - pr0.left) + 'px';
+                    bubbleEl.style.top = (r0.top - pr0.top) + 'px';
+                    bubbleEl.style.right = 'auto';
+                    bubbleEl.style.animation = 'none';
+                    bubbleEl.style.animationPlayState = 'paused';
+                    bubbleEl.style.transition = 'none';
+                    bubbleEl.style.transform = 'none';
+                    void bubbleEl.offsetWidth;
+                } catch(_) {}
+                // 最简行为：命中即刻消失
                 bubbleEl.remove();
             } else {
                 // 错中：不移除气泡，顶部显示文案
