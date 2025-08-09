@@ -89,6 +89,7 @@
                 /* 固定方格尺寸，避免翻面后高度跳动 */
                 aspect-ratio: 1 / 1;
                 height: auto;
+                overflow: hidden; /* 防止内部内容撑高导致网格高度变化 */
                 transition: all 0.3s ease;
                 border: 3px solid transparent;
             }
@@ -315,6 +316,22 @@
     </div>
 
     <script>
+        // 调试开关与工具
+        const DEBUG = true; // 若要关闭日志，改为 false
+        const resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const el = entry.target;
+                logCardSize('resize', el);
+            }
+        });
+        function logCardSize(tag, el){
+            if (!DEBUG || !el) return;
+            const rect = el.getBoundingClientRect();
+            const cls = el.className;
+            console.log(`[word-memory][${tag}] index=${el.dataset.index} word=${el.dataset.word} ` +
+                `size=${Math.round(rect.width)}x${Math.round(rect.height)} classes="${cls}"`);
+        }
+
         // 游戏数据 - 300个单词库
         const wordData = {
             // 简单难度：100个基础单词（3-4个字母，日常物品）
@@ -564,7 +581,8 @@
             
             gameBoard.forEach((word, index) => {
                 const card = document.createElement('div');
-                card.className = 'word-card bg-gradient-to-br from-primary to-purple-600 text-white rounded-xl cursor-pointer flex flex-col items-center justify-center p-4 text-center scale-hover';
+                // 移除 scale-hover，避免 hover 时视觉缩放造成“尺寸变化”的观感
+                card.className = 'word-card bg-gradient-to-br from-primary to-purple-600 text-white rounded-xl cursor-pointer flex flex-col items-center justify-center p-4 text-center';
                 card.innerHTML = `
                     <div class="card-front flex flex-col items-center justify-center h-full">
                         <i class="fa fa-question text-3xl mb-2"></i>
@@ -582,6 +600,11 @@
                 card.dataset.index = index;
                 card.onclick = () => flipCard(index);
                 board.appendChild(card);
+
+                // 初始尺寸日志
+                if (DEBUG) logCardSize('init', card);
+                // 监听尺寸变化
+                if (DEBUG) resizeObserver.observe(card);
             });
         }
 
@@ -593,9 +616,11 @@
             if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
             
             // 翻开卡片
+            if (DEBUG) logCardSize('before-flip', card);
             card.classList.add('flipped');
             card.querySelector('.card-front').classList.add('hidden');
             card.querySelector('.card-back').classList.remove('hidden');
+            if (DEBUG) logCardSize('after-flip', card);
             flippedCards.push({ index, word: gameBoard[index], element: card });
             
             flipCount++;
@@ -617,6 +642,7 @@
                 // 配对成功
                 card1.element.classList.add('matched', 'correct-animation');
                 card2.element.classList.add('matched', 'correct-animation');
+                if (DEBUG) { logCardSize('matched-1', card1.element); logCardSize('matched-2', card2.element); }
                 
                 matchedPairs++;
                 score += Math.max(50 - flipCount, 10);
@@ -630,6 +656,7 @@
                         if (zh) {
                             t.textContent = zh;
                             t.classList.remove('hidden');
+                            if (DEBUG) logCardSize('show-translation', c.element);
                         }
                     }
                 });
@@ -645,6 +672,7 @@
                 
                 setTimeout(() => {
                     // 翻回去
+                    if (DEBUG) { logCardSize('before-unflip-1', card1.element); logCardSize('before-unflip-2', card2.element); }
                     card1.element.classList.remove('flipped', 'wrong-animation');
                     card1.element.querySelector('.card-front').classList.remove('hidden');
                     card1.element.querySelector('.card-back').classList.add('hidden');
@@ -652,6 +680,7 @@
                     card2.element.classList.remove('flipped', 'wrong-animation');
                     card2.element.querySelector('.card-front').classList.remove('hidden');
                     card2.element.querySelector('.card-back').classList.add('hidden');
+                    if (DEBUG) { logCardSize('after-unflip-1', card1.element); logCardSize('after-unflip-2', card2.element); }
                 }, 800);
             }
             
