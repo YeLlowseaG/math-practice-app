@@ -78,7 +78,7 @@
         .bubbles-container {
             position: relative;
             width: 100%;
-            height: 320px;
+            height: 420px;
             overflow: hidden;
         }
         /* 从左右两侧“飞出”的动画与方向类 */
@@ -100,7 +100,7 @@
                 font-size: 1.5rem;
             }
             .bubbles-container {
-                height: 280px;
+                height: 360px;
             }
         }
         
@@ -111,7 +111,7 @@
                 font-size: 1.25rem;
             }
             .bubbles-container {
-                height: 240px;
+                height: 300px;
             }
         }
     </style>
@@ -234,16 +234,13 @@
             
             <!-- 目标显示区域 -->
             <div id="word-display" class="mb-4 text-center">
-                <div id="current-word" class="text-xl font-bold text-gray-800 bg-gradient-to-r from-yellow-100 to-orange-100 px-6 py-3 rounded-2xl shadow-lg border-2 border-yellow-300">
-                    <span id="word-placeholder">点击开始</span>
-                </div>
-                <div id="targets-display" class="mt-3 text-sm text-gray-700"></div>
+                <div id="targets-display" class="text-base md:text-lg font-bold text-gray-800 bg-gradient-to-r from-yellow-100 to-orange-100 px-6 py-3 rounded-2xl shadow-lg border-2 border-yellow-300 inline-block"></div>
             </div>
             
             <!-- 提示区域 -->
             <div id="hint-area" class="mb-6 text-center">
-                <div class="bg-gradient-to-r from-blue-100 to-purple-100 px-6 py-4 rounded-2xl shadow-lg border-2 border-blue-300 inline-block">
-                    <p id="hint-text" class="text-blue-700 text-lg font-bold">🎯 目标：戳中指定字母达到数量</p>
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-4 py-2 rounded-xl shadow-sm border border-blue-100 inline-block">
+                    <p id="hint-text" class="text-blue-700 text-xs md:text-sm">🎯 目标：戳中指定字母达到数量</p>
                 </div>
             </div>
             
@@ -855,7 +852,7 @@
             gameState.score = 0;
             gameState.combo = 0;
             gameState.isGameActive = true;
-            gameState.timeLeft = 20;
+            gameState.timeLeft = 25;
             gameState.currentDifficulty = gameState.currentDifficulty || 'easy';
             clearInterval(gameState.timer); clearInterval(gameState.spawnTimer);
             startScreen.classList.add('hidden');
@@ -888,8 +885,8 @@
         function nextLevel() {
             if (!gameState.isGameActive) return;
             gameState.targets = generateTargets(gameState.currentDifficulty);
-            gameState.timeLeft = gameState.currentDifficulty === 'easy' ? 20 : (gameState.currentDifficulty === 'medium' ? 25 : 30);
-            gameState.spawnIntervalMs = gameState.currentDifficulty === 'easy' ? 700 : (gameState.currentDifficulty === 'medium' ? 600 : 500);
+            gameState.timeLeft = gameState.currentDifficulty === 'easy' ? 25 : (gameState.currentDifficulty === 'medium' ? 28 : 32);
+            gameState.spawnIntervalMs = gameState.currentDifficulty === 'easy' ? 850 : (gameState.currentDifficulty === 'medium' ? 750 : 680);
             clearInterval(gameState.timer); clearInterval(gameState.spawnTimer);
 
             // UI
@@ -998,14 +995,8 @@
 
         function levelComplete() {
             clearInterval(gameState.spawnTimer);
-            wordPlaceholder.textContent = '太棒了！已完成目标';
-            wordPlaceholder.style.color = '#10B981';
+            showEndDialog(true);
             try { if (window.achievements) window.achievements.unlockAchievement('wb_first_round'); } catch(_) {}
-            setTimeout(() => {
-                if (!gameState.isGameActive) return;
-                gameState.level += 1;
-                nextLevel();
-            }, 1200);
         }
 
         // 开始计时器
@@ -1029,13 +1020,33 @@
             clearInterval(gameState.timer);
             clearInterval(gameState.spawnTimer);
             gameState.combo = 0;
-            wordPlaceholder.textContent = '时间到～ 再试一关！';
-            wordPlaceholder.style.color = '#EF4444';
-            setTimeout(() => {
-                if (gameState.isGameActive) {
-                    nextLevel();
-                }
-            }, 1200);
+            showEndDialog(false);
+        }
+
+        // 结束弹窗
+        function showEndDialog(success){
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black/30 flex items-center justify-center z-50';
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-2xl shadow-2xl p-6 w-80 text-center';
+            card.innerHTML = `
+                <div class="text-4xl mb-2">${success ? '🎉' : '⏰'}</div>
+                <div class="text-lg font-bold mb-1">${success ? '完成目标！' : '时间到'}</div>
+                <div class="text-sm text-gray-600 mb-4">${success ? '准备好进入下一关了吗？' : '要再试一关还是返回首页？'}</div>
+                <div class="flex gap-3 justify-center">
+                    <button id="dlg-retry" class="px-4 py-2 rounded-lg bg-primary text-white">${success ? '下一关' : '再试一关'}</button>
+                    <button id="dlg-home" class="px-4 py-2 rounded-lg bg-gray-200">返回首页</button>
+                </div>
+            `;
+            overlay.appendChild(card);
+            document.body.appendChild(overlay);
+            document.getElementById('dlg-home').onclick = function(){ window.location.href = 'index.html'; };
+            document.getElementById('dlg-retry').onclick = function(){
+                overlay.remove();
+                if (!gameState.isGameActive) return;
+                if (success) { gameState.level += 1; }
+                nextLevel();
+            };
         }
 
         // 更新游戏显示
