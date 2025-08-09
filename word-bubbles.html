@@ -990,8 +990,9 @@
                 const t = targets[0];
                 const left = Math.max(0, t.need - t.got);
                 if (hintEl) hintEl.textContent = `🎯 目标：请戳中 ${left} 个 字母 ${t.letter}`;
-                el.className = 'text-2xl md:text-3xl font-extrabold text-gray-800 bg-gradient-to-r from-yellow-100 to-orange-100 px-6 py-3 rounded-2xl shadow-lg border-2 border-yellow-300 inline-block';
-                el.innerHTML = `<span>${t.letter} × ${left}</span>`;
+                // 放大外卡片与内胶囊
+                el.className = 'text-3xl md:text-4xl font-extrabold text-amber-800 bg-gradient-to-r from-yellow-100 to-orange-100 px-8 py-6 rounded-3xl shadow-xl border-4 border-yellow-300 inline-block';
+                el.innerHTML = `<span class="inline-flex items-center justify-center bg-white/95 px-8 py-4 rounded-2xl shadow">${t.letter} × ${left}</span>`;
                 return;
             }
             if (hintEl) hintEl.textContent = '🎯 目标：戳中指定字母达到数量';
