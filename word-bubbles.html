@@ -983,12 +983,25 @@
         }
 
         function updateTargetsDisplay() {
-            const html = gameState.targets.map(t => {
+            const el = document.getElementById('targets-display');
+            const targets = gameState.targets || [];
+            const hintEl = document.getElementById('hint-text');
+            if (targets.length === 1) {
+                const t = targets[0];
+                const left = Math.max(0, t.need - t.got);
+                if (hintEl) hintEl.textContent = `🎯 目标：请戳中 ${left} 个 字母 ${t.letter}`;
+                el.className = 'text-2xl md:text-3xl font-extrabold text-gray-800 bg-gradient-to-r from-yellow-100 to-orange-100 px-6 py-3 rounded-2xl shadow-lg border-2 border-yellow-300 inline-block';
+                el.innerHTML = `<span>${t.letter} × ${left}</span>`;
+                return;
+            }
+            if (hintEl) hintEl.textContent = '🎯 目标：戳中指定字母达到数量';
+            el.className = 'text-base md:text-lg font-bold text-gray-800 bg-gradient-to-r from-yellow-100 to-orange-100 px-6 py-3 rounded-2xl shadow-lg border-2 border-yellow-300 inline-block';
+            const html = targets.map(t => {
                 const left = Math.max(0, t.need - t.got);
                 const done = left === 0;
                 return `<span class="inline-flex items-center justify-center rounded-lg px-2 py-1 mr-2 mb-2 border ${done ? 'bg-green-100 border-green-300 text-green-700' : 'bg-white border-yellow-300 text-yellow-700'}">${t.letter} × ${left}</span>`;
             }).join('');
-            document.getElementById('targets-display').innerHTML = html;
+            el.innerHTML = html;
         }
 
         function levelComplete() {
