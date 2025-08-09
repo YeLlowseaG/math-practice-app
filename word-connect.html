@@ -603,22 +603,22 @@
         // 英文单词库（按主题分类，按难度分层）
         const validWords = {
             animals: {
-                easy: ['CAT', 'DOG', 'PIG', 'COW', 'BEE', 'BAT', 'RAT', 'ANT', 'FOX', 'OWL'],
-                medium: ['BIRD', 'FISH', 'LION', 'BEAR', 'DUCK', 'FROG', 'GOAT', 'DEER', 'WOLF', 'SEAL', 'CRAB', 'SWAN', 'HAWK', 'MOLE'],
-                hard: ['TIGER', 'HORSE', 'SHEEP', 'RABBIT', 'MONKEY', 'SNAKE', 'MOUSE', 'ZEBRA', 'PANDA', 'KOALA', 'WHALE', 'SHARK', 'EAGLE', 'RHINO', 'HIPPO'],
-                expert: ['ELEPHANT', 'GIRAFFE', 'LEOPARD', 'CHEETAH', 'GORILLA', 'OSTRICH', 'PENGUIN', 'DOLPHIN', 'OCTOPUS', 'PEACOCK', 'FLAMINGO', 'KANGAROO', 'CROCODILE', 'BUTTERFLY']
+                easy: ['CAT', 'DOG', 'PIG', 'COW', 'BEE', 'BAT', 'RAT', 'ANT', 'FOX', 'OWL', 'HEN', 'APE', 'YAK', 'BUG'],
+                medium: ['BIRD', 'FISH', 'LION', 'BEAR', 'DUCK', 'FROG', 'GOAT', 'DEER', 'WOLF', 'SEAL', 'CRAB', 'SWAN', 'HAWK', 'MOLE', 'MULE', 'MOTH', 'WASP', 'WORM'],
+                hard: ['TIGER', 'HORSE', 'SHEEP', 'RABBIT', 'MONKEY', 'SNAKE', 'MOUSE', 'ZEBRA', 'PANDA', 'KOALA', 'WHALE', 'SHARK', 'EAGLE', 'RHINO', 'HIPPO', 'CAMEL', 'SLOTH', 'HYENA', 'OTTER', 'GOOSE'],
+                expert: ['ELEPHANT', 'GIRAFFE', 'LEOPARD', 'CHEETAH', 'GORILLA', 'OSTRICH', 'PENGUIN', 'DOLPHIN', 'OCTOPUS', 'PEACOCK', 'FLAMINGO', 'KANGAROO', 'CROCODILE', 'BUTTERFLY', 'CHAMELEON', 'HEDGEHOG', 'RACCOON', 'TORTOISE', 'JELLYFISH']
             },
             colors: {
-                easy: ['RED', 'BLUE', 'PINK', 'GRAY', 'NAVY', 'TEAL'],
-                medium: ['GREEN', 'BLACK', 'WHITE', 'BROWN', 'CORAL', 'BEIGE', 'CREAM', 'IVORY', 'KHAKI', 'PEACH'],
-                hard: ['YELLOW', 'PURPLE', 'ORANGE', 'VIOLET', 'INDIGO', 'BRONZE', 'COPPER', 'SALMON', 'CRIMSON', 'EMERALD'],
-                expert: ['SILVER', 'GOLD', 'CYAN', 'LIME', 'MAGENTA', 'TURQUOISE', 'LAVENDER', 'BURGUNDY', 'MAROON', 'SCARLET', 'CHARTREUSE']
+                easy: ['RED', 'BLUE', 'PINK', 'GRAY', 'NAVY', 'TEAL', 'AQUA', 'MINT'],
+                medium: ['GREEN', 'BLACK', 'WHITE', 'BROWN', 'CORAL', 'BEIGE', 'CREAM', 'IVORY', 'KHAKI', 'PEACH', 'OLIVE', 'PEARL', 'LILAC', 'MAUVE'],
+                hard: ['YELLOW', 'PURPLE', 'ORANGE', 'VIOLET', 'INDIGO', 'BRONZE', 'COPPER', 'SALMON', 'CRIMSON', 'EMERALD', 'SIENNA', 'MAROON'],
+                expert: ['SILVER', 'GOLD', 'CYAN', 'LIME', 'MAGENTA', 'TURQUOISE', 'LAVENDER', 'BURGUNDY', 'MAROON', 'SCARLET', 'CHARTREUSE', 'AMETHYST', 'CERULEAN', 'FUCHSIA', 'AQUAMARINE', 'PERIWINKLE']
             },
             food: {
-                easy: ['EGG', 'PIE', 'NUT', 'HAM', 'JAM', 'TEA', 'ICE'],
-                medium: ['APPLE', 'BREAD', 'CAKE', 'RICE', 'MILK', 'FISH', 'MEAT', 'SOUP', 'CORN', 'BEAN', 'PLUM', 'PEAR'],
-                hard: ['PIZZA', 'JUICE', 'WATER', 'HONEY', 'GRAPE', 'LEMON', 'PEACH', 'BERRY', 'CREAM', 'SUGAR', 'FLOUR', 'ONION'],
-                expert: ['COOKIE', 'COFFEE', 'NOODLES', 'CHICKEN', 'SANDWICH', 'AVOCADO', 'BROCCOLI', 'CUCUMBER', 'MUSHROOM', 'PINEAPPLE', 'STRAWBERRY']
+                easy: ['EGG', 'PIE', 'NUT', 'HAM', 'JAM', 'TEA', 'ICE', 'YAM', 'OIL'],
+                medium: ['APPLE', 'BREAD', 'CAKE', 'RICE', 'MILK', 'FISH', 'MEAT', 'SOUP', 'CORN', 'BEAN', 'PLUM', 'PEAR', 'BACON', 'SALAD', 'SUSHI', 'CHILI'],
+                hard: ['PIZZA', 'JUICE', 'WATER', 'HONEY', 'GRAPE', 'LEMON', 'PEACH', 'BERRY', 'CREAM', 'SUGAR', 'FLOUR', 'ONION', 'GARLIC', 'PEPPER', 'TOMATO', 'BUTTER', 'COCOA'],
+                expert: ['COOKIE', 'COFFEE', 'NOODLES', 'CHICKEN', 'SANDWICH', 'AVOCADO', 'BROCCOLI', 'CUCUMBER', 'MUSHROOM', 'PINEAPPLE', 'STRAWBERRY', 'CHOCOLATE', 'BLUEBERRY', 'WATERMELON', 'SPAGHETTI']
             }
         };
         
@@ -645,20 +645,22 @@
             'SNAKE': '蛇', 'MOUSE': '老鼠', 'ZEBRA': '斑马', 'PANDA': '熊猫', 'KOALA': '考拉', 'WHALE': '鲸鱼', 'SHARK': '鲨鱼', 'EAGLE': '鹰', 'RHINO': '犀牛',
             'HIPPO': '河马', 'ELEPHANT': '大象', 'GIRAFFE': '长颈鹿', 'LEOPARD': '豹子', 'CHEETAH': '猎豹', 'GORILLA': '大猩猩', 'OSTRICH': '鸵鸟',
             'PENGUIN': '企鹅', 'DOLPHIN': '海豚', 'OCTOPUS': '章鱼', 'PEACOCK': '孔雀', 'FLAMINGO': '火烈鸟', 'KANGAROO': '袋鼠', 'CROCODILE': '鳄鱼', 'BUTTERFLY': '蝴蝶',
+            'CHAMELEON': '变色龙', 'HEDGEHOG': '刺猬', 'RACCOON': '浣熊', 'TORTOISE': '陆龟', 'JELLYFISH': '水母', 'HYENA': '鬣狗', 'OTTER': '水獭', 'GOOSE': '鹅', 'MULE': '骡', 'WASP': '黄蜂', 'WORM': '蠕虫',
             
             // 颜色类
             'RED': '红色', 'BLUE': '蓝色', 'PINK': '粉色', 'GRAY': '灰色', 'NAVY': '海军蓝', 'TEAL': '蓝绿色', 'GREEN': '绿色', 'BLACK': '黑色', 'WHITE': '白色',
             'BROWN': '棕色', 'CORAL': '珊瑚色', 'BEIGE': '米色', 'CREAM': '奶油色', 'IVORY': '象牙色', 'KHAKI': '卡其色', 'PEACH': '桃色', 'YELLOW': '黄色',
             'PURPLE': '紫色', 'ORANGE': '橙色', 'VIOLET': '紫罗兰色', 'INDIGO': '靛蓝色', 'BRONZE': '青铜色', 'COPPER': '铜色', 'SALMON': '鲑鱼色', 'CRIMSON': '深红色',
             'EMERALD': '翡翠色', 'SILVER': '银色', 'GOLD': '金色', 'CYAN': '青色', 'LIME': '酸橙色', 'MAGENTA': '洋红色', 'TURQUOISE': '绿松石色',
-            'LAVENDER': '薰衣草色', 'BURGUNDY': '酒红色', 'MAROON': '栗色', 'SCARLET': '猩红色', 'CHARTREUSE': '黄绿色',
+            'LAVENDER': '薰衣草色', 'BURGUNDY': '酒红色', 'MAROON': '栗色', 'SCARLET': '猩红色', 'CHARTREUSE': '黄绿色', 'AQUA': '水色', 'MINT': '薄荷绿', 'OLIVE': '橄榄绿', 'PEARL': '珠光白', 'LILAC': '丁香紫', 'MAUVE': '淡紫色', 'SIENNA': '赭色', 'AMETHYST': '紫水晶色', 'CERULEAN': '蔚蓝色', 'FUCHSIA': '紫红色', 'AQUAMARINE': '海蓝宝石色', 'PERIWINKLE': '长春花色',
             
             // 食物类
-            'EGG': '鸡蛋', 'PIE': '派', 'NUT': '坚果', 'HAM': '火腿', 'JAM': '果酱', 'TEA': '茶', 'ICE': '冰', 'APPLE': '苹果', 'BREAD': '面包', 'CAKE': '蛋糕',
+            'EGG': '鸡蛋', 'PIE': '派', 'NUT': '坚果', 'HAM': '火腿', 'JAM': '果酱', 'TEA': '茶', 'ICE': '冰', 'YAM': '山药', 'OIL': '油', 'APPLE': '苹果', 'BREAD': '面包', 'CAKE': '蛋糕',
             'RICE': '米饭', 'MILK': '牛奶', 'MEAT': '肉', 'SOUP': '汤', 'CORN': '玉米', 'BEAN': '豆子', 'PLUM': '李子', 'PEAR': '梨', 'PIZZA': '披萨',
             'JUICE': '果汁', 'WATER': '水', 'HONEY': '蜂蜜', 'GRAPE': '葡萄', 'LEMON': '柠檬', 'PEACH': '桃子', 'BERRY': '浆果', 'CREAM': '奶油',
-            'SUGAR': '糖', 'FLOUR': '面粉', 'ONION': '洋葱', 'COOKIE': '饼干', 'COFFEE': '咖啡', 'NOODLES': '面条', 'CHICKEN': '鸡肉', 'SANDWICH': '三明治',
-            'AVOCADO': '牛油果', 'BROCCOLI': '西兰花', 'CUCUMBER': '黄瓜', 'MUSHROOM': '蘑菇', 'PINEAPPLE': '菠萝', 'STRAWBERRY': '草莓',
+            'SUGAR': '糖', 'FLOUR': '面粉', 'ONION': '洋葱', 'GARLIC': '大蒜', 'PEPPER': '胡椒', 'TOMATO': '西红柿', 'BUTTER': '黄油', 'COCOA': '可可',
+            'COOKIE': '饼干', 'COFFEE': '咖啡', 'NOODLES': '面条', 'CHICKEN': '鸡肉', 'SANDWICH': '三明治',
+            'AVOCADO': '牛油果', 'BROCCOLI': '西兰花', 'CUCUMBER': '黄瓜', 'MUSHROOM': '蘑菇', 'PINEAPPLE': '菠萝', 'STRAWBERRY': '草莓', 'CHOCOLATE': '巧克力', 'BLUEBERRY': '蓝莓', 'WATERMELON': '西瓜', 'SPAGHETTI': '意大利面', 'BACON': '培根', 'SALAD': '沙拉', 'SUSHI': '寿司', 'CHILI': '辣椒',
             
             // 常用词汇扩展
             // 基础词汇
@@ -844,33 +846,30 @@
         function isValidEnglishWord(word) {
             const upperWord = word.toUpperCase();
             
-            // 检查单词长度
+            // 基本长度限制
             if (upperWord.length < 3) {
                 return false;
             }
             
-            // 检查是否在通用英语单词词典中
-            if (commonEnglishWords.includes(upperWord)) {
-                return true;
-            }
+            // 1) 词典匹配
+            if (commonEnglishWords.includes(upperWord)) return true;
             
-            // 检查是否在当前主题的词汇中
+            // 2) 主题词匹配（当前主题优先）
             if (currentTheme) {
                 const currentThemeWords = getAllThemeWords(currentTheme);
-                if (currentThemeWords.includes(upperWord)) {
-                    return true;
-                }
+                if (currentThemeWords.includes(upperWord)) return true;
             }
-            
-            // 检查是否在所有主题词汇中（允许跨主题单词）
             for (const theme in validWords) {
                 const themeWords = getAllThemeWords(theme);
-                if (themeWords.includes(upperWord)) {
-                    return true;
-                }
+                if (themeWords.includes(upperWord)) return true;
             }
             
-            return false;
+            // 3) 宽松校验：允许更多真实英语单词通过（离线环境）
+            // 必须包含元音且至少一个辅音，且只包含字母
+            if (!/^[A-Z]+$/.test(upperWord)) return false;
+            const hasVowel = /[AEIOU]/.test(upperWord);
+            const hasConsonant = /[BCDFGHJKLMNPQRSTVWXYZ]/.test(upperWord);
+            return hasVowel && hasConsonant;
         }
 
         // 游戏主题配置
@@ -909,6 +908,8 @@
         let hintsLeft = 3;
         let timerModeEnabled = true; // 倒计时模式开关
         let gameTimer = null;
+        // 关卡完成延迟跳转的定时器（用于避免跨关卡遗留触发）
+        let levelCompleteTimeout = null;
         
         // 单词使用历史记录（避免近期重复）
         let recentlyUsedWords = new Set();
@@ -927,6 +928,11 @@
             if (gameTimer) {
                 clearInterval(gameTimer);
                 gameTimer = null;
+            }
+            // 停止关卡完成的延迟触发，避免跨关卡误触
+            if (levelCompleteTimeout) {
+                clearTimeout(levelCompleteTimeout);
+                levelCompleteTimeout = null;
             }
             
             // 清除所有庆祝动画元素（立即清除，不等待超时）
@@ -1787,9 +1793,11 @@
                 const wordScore = baseScore * bonusMultiplier + unknownWordBonus;
                 score += wordScore;
                 
-                // 播放成功音效
+            // 播放成功音效与单词读音（确保语音已初始化）
+            setTimeout(() => {
                 gameManager.speak('Excellent!');
-                setTimeout(() => gameManager.speak(finalWord), 800);
+                setTimeout(() => gameManager.speak(finalWord), 400);
+            }, 0);
                 
                 // 清除当前选择状态，准备下一个单词
                 clearConnectionLines();
@@ -1911,7 +1919,17 @@
             const requiredWordsCount = settings.wordsPerLevel[currentLevel - 1] || settings.wordsPerLevel[settings.wordsPerLevel.length - 1];
             
             if (foundWords.length >= requiredWordsCount) {
-                setTimeout(gameComplete, 3000);
+                // 避免重复触发：先清除上一次的延迟
+                if (levelCompleteTimeout) {
+                    clearTimeout(levelCompleteTimeout);
+                }
+                levelCompleteTimeout = setTimeout(() => {
+                    // 若结果页已显示或状态已重置，不再触发
+                    const resultHidden = document.getElementById('result-screen').classList.contains('hidden');
+                    if (resultHidden) {
+                        gameComplete();
+                    }
+                }, 800); // 更短延迟，减少跨关卡遗留
             }
         }
 
