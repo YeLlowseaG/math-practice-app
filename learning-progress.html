@@ -642,57 +642,37 @@
                 }
             }
 
-            // 生成成就徽章
+            // 生成成就徽章（统一API：仅展示系统级/global）
             generateAchievements() {
-                const achievements = [
-                    { id: 'first_game', icon: '🎮', name: '初次体验', desc: '完成第一个学习游戏', condition: () => true },
-                    { id: 'chinese_starter', icon: '📝', name: '语文小能手', desc: '完成5次语文类练习', condition: () => {
-                        const chinese = this.data.subjects.chinese || {};
-                        return (chinese.pinyin?.attempts || 0) + (chinese.antonyms?.attempts || 0) >= 5;
-                    }},
-                    { id: 'math_genius', icon: '🧠', name: '数学天才', desc: '完成10次数学类练习', condition: () => {
-                        const math = this.data.subjects.math || {};
-                        return (math.addition?.attempts || 0) + (math.subtraction?.attempts || 0) >= 10;
-                    }},
-                    { id: 'english_explorer', icon: '🌍', name: '英语探索者', desc: '完成5次英语类练习', condition: () => {
-                        const english = this.data.subjects.english || {};
-                        return (english.letters?.attempts || 0) + (english.memory?.attempts || 0) + (english.wordConnect?.attempts || 0) >= 5;
-                    }},
-                    { id: 'persistent_learner', icon: '🔥', name: '坚持不懈', desc: '连续学习3天', condition: () => this.data.streakDays >= 3 },
-                    { id: 'week_warrior', icon: '🏆', name: '周战士', desc: '连续学习7天', condition: () => this.data.streakDays >= 7 },
-                    { id: 'accuracy_master', icon: '⭐', name: '精准射手', desc: '正确率达到85%以上', condition: () => this.calculateWeeklyAccuracy() >= 85 },
-                    { id: 'super_learner', icon: '🚀', name: '学习超人', desc: '三大类都有进展', condition: () => {
-                        const chinese = this.data.subjects.chinese || {};
-                        const math = this.data.subjects.math || {};
-                        const english = this.data.subjects.english || {};
-                        
-                        const chineseAttempts = (chinese.pinyin?.attempts || 0) + (chinese.antonyms?.attempts || 0);
-                        const mathAttempts = (math.addition?.attempts || 0) + (math.subtraction?.attempts || 0);
-                        const englishAttempts = (english.letters?.attempts || 0) + (english.memory?.attempts || 0) + (english.wordConnect?.attempts || 0);
-                        
-                        return chineseAttempts >= 3 && mathAttempts >= 3 && englishAttempts >= 3;
-                    }}
-                ];
-
-                const container = document.getElementById('achievements-container');
-                container.innerHTML = '';
-
-                achievements.forEach(achievement => {
-                    const earned = achievement.condition();
-                    const badge = document.createElement('div');
-                    badge.className = `flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${earned ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-300' : 'bg-gray-100 border-2 border-gray-200 opacity-60'}`;
-                    badge.innerHTML = `
-                        <div class="text-2xl mb-1">${achievement.icon}</div>
-                        <div class="text-xs font-bold text-center text-gray-700">${achievement.name}</div>
-                        <div class="text-xs text-gray-500 text-center mt-1" style="font-size: 10px;">${achievement.desc}</div>
-                    `;
-                    badge.title = `${achievement.name}: ${achievement.desc} ${earned ? '✅ 已获得' : '❌ 未获得'}`;
-                    container.appendChild(badge);
-                });
-
-                // 更新徽章总数
-                const earnedBadges = achievements.filter(a => a.condition()).length;
-                document.getElementById('total-badges').textContent = earnedBadges;
+                var self = this;
+                function render() {
+                    if (!window.achievements || !window.achievements.getAll) {
+                        setTimeout(render, 150);
+                        return;
+                    }
+                    const all = window.achievements.getAll();
+                    const globals = all.filter(function(a){ return a.scope === 'global'; });
+                    const container = document.getElementById('achievements-container');
+                    container.innerHTML = '';
+                    globals.forEach(function(a){
+                        const earned = !!a.earned;
+                        const badge = document.createElement('div');
+                        badge.className = `flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${earned ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-300' : 'bg-gray-100 border-2 border-gray-200 opacity-60'}`;
+                        badge.innerHTML = `
+                            <div class="text-2xl mb-1">${a.icon}</div>
+                            <div class="text-xs font-bold text-center text-gray-700">${a.name}</div>
+                            <div class="text-xs text-gray-500 text-center mt-1" style="font-size: 10px;">${a.desc}</div>
+                        `;
+                        badge.title = `${a.name}: ${a.desc} ${earned ? '✅ 已获得' : '❌ 未获得'}`;
+                        container.appendChild(badge);
+                    });
+                    var earnedCount = globals.filter(function(a){ return a.earned; }).length;
+                    document.getElementById('total-badges').textContent = earnedCount;
+                }
+                render();
+                try {
+                    document.addEventListener('achievement-unlocked', function(){ setTimeout(render, 50); });
+                } catch(_) {}
             }
 
             // 生成AI学习建议
