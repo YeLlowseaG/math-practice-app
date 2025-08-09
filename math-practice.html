@@ -1286,6 +1286,19 @@
                 
                 <div class="settings-option-card">
                     <div class="settings-option-header">
+                        <i class="fa fa-trash" style="color: #10B981; font-size: 1.5rem;"></i>
+                        <h3>答题记录管理</h3>
+                    </div>
+                    <p style="color: #6B7280; margin: 0.5rem 0 1rem 0;">
+                        管理您的答题记录，可以清空所有记录
+                    </p>
+                    <button id="clear-exercise-records-page-btn" class="settings-action-btn" style="background: #10B981;">
+                        清空答题记录
+                    </button>
+                </div>
+                
+                <div class="settings-option-card">
+                    <div class="settings-option-header">
                         <i class="fa fa-history" style="color: #10B981; font-size: 1.5rem;"></i>
                         <h3>答题记录查看</h3>
                     </div>
@@ -1591,6 +1604,7 @@
         const clearWrongQuestionsPageBtn = document.getElementById('clear-wrong-questions-page-btn');
         const viewWrongQuestionsPageBtn = document.getElementById('view-wrong-questions-page-btn');
         const viewExerciseRecordsPageBtn = document.getElementById('view-exercise-records-page-btn');
+        const clearExerciseRecordsPageBtn = document.getElementById('clear-exercise-records-page-btn');
         const backToSettingsBtn = document.getElementById('back-to-settings-btn');
         const backToHomeBtn = document.getElementById('back-to-home-btn');
         const backToSettingsFromRecordsBtn = document.getElementById('back-to-settings-from-records-btn');
@@ -1619,9 +1633,12 @@
             wrongQuestionsBtn.addEventListener('click', showWrongQuestions);
             
 
-            clearWrongQuestionsPageBtn.addEventListener('click', clearWrongQuestions);
+            clearWrongQuestionsPageBtn.addEventListener('click', confirmClearWrongQuestions);
             viewWrongQuestionsPageBtn.addEventListener('click', showWrongQuestions);
             viewExerciseRecordsPageBtn.addEventListener('click', showExerciseRecords);
+            if (clearExerciseRecordsPageBtn) {
+                clearExerciseRecordsPageBtn.addEventListener('click', confirmClearExerciseRecords);
+            }
             backToSettingsBtn.addEventListener('click', backToSettings);
             backToHomeBtn.addEventListener('click', backToHome);
             backToSettingsFromRecordsBtn.addEventListener('click', backToSettingsFromRecords);
@@ -1936,6 +1953,17 @@
             }
         }
 
+        // 清空答题记录（带确认提示）
+        function confirmClearExerciseRecords() {
+            if (confirm('确定要清空所有答题记录吗？')) {
+                clearExerciseRecords();
+                // 如果当前在答题记录界面，刷新列表
+                if (document.getElementById('exercise-records-area').style.display === 'block') {
+                    showExerciseRecords();
+                }
+            }
+        }
+
         // 追加数字到答案
         function appendNumber(num) {
             answer += num;
@@ -2170,8 +2198,8 @@
             wrongQuestionsArea.style.display = 'block';
         }
         
-        // 清空错题记录
-        function clearWrongQuestions() {
+        // 清空错题记录（带确认提示）
+        function confirmClearWrongQuestions() {
             if (confirm('确定要清空所有错题记录吗？')) {
                 clearWrongQuestions();
                 showWrongQuestions(); // 重新显示（此时会显示空状态）

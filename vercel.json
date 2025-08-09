@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/math-practice.html"
+      "source": "/",
+      "destination": "/index.html"
     }
   ],
   "headers": [
@@ -16,4 +16,4 @@
       ]
     }
   ]
-} 
+}

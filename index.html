@@ -4,8 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>儿童学习游戏 - 数学与语文练习</title>
+    <!-- 引入 Tailwind 与 Font Awesome，恢复样式与图标 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 完全本地化的样式，不依赖外部CDN -->
+    <style>
+        /* 基础重置 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        /* 主体样式 */
+        body { 
+            font-family: 'Comic Sans MS', 'Marker Felt', Arial, sans-serif; 
+            line-height: 1.6; 
+            color: #1F2937; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+        }
+        
+        /* 容器 */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        /* 卡片样式 */
+        .card { 
+            background: white; 
+            border-radius: 15px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); 
+            transition: transform 0.3s ease; 
+        }
+        .card:hover { transform: translateY(-5px); }
+        
+        /* 按钮样式 */
+        .btn { 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            text-decoration: none; 
+            display: inline-block; 
+            transition: all 0.3s ease; 
+            text-align: center; 
+            font-size: 1rem;
+        }
+        .btn-primary { background: #4F46E5; color: white; }
+        .btn-primary:hover { background: #3730A3; }
+        .btn-secondary { background: #10B981; color: white; }
+        .btn-secondary:hover { background: #047857; }
+        .btn-accent { background: #F59E0B; color: white; }
+        .btn-accent:hover { background: #D97706; }
+        .btn-math { background: #8B5CF6; color: white; }
+        .btn-math:hover { background: #7C3AED; }
+        .btn-chinese { background: #06B6D4; color: white; }
+        .btn-chinese:hover { background: #0891B2; }
+        
+        /* 网格布局 */
+        .grid { display: grid; gap: 20px; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        @media (max-width: 768px) { 
+            .grid-cols-2, .grid-cols-3 { grid-template-columns: 1fr; } 
+        }
+        
+        /* 文字样式 */
+        .text-center { text-align: center; }
+        .text-2xl { font-size: 1.5rem; font-weight: 700; }
+        .text-3xl { font-size: 1.875rem; font-weight: 700; }
+        .text-4xl { font-size: 2.25rem; font-weight: 700; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .text-white { color: white; }
+        .text-gray-600 { color: #4B5563; }
+        .text-gray-700 { color: #374151; }
+        
+        /* 间距 */
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mt-4 { margin-top: 1rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        
+        /* 显示控制 */
+        .hidden { display: none; }
+        .block { display: block; }
+        .inline-block { display: inline-block; }
+        
+        /* 布局 */
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        
+        /* 边框和阴影 */
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        
+        /* 背景 */
+        .bg-white { background-color: white; }
+        .bg-gradient-to-br { background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)); }
+        
+        /* 梯度背景类 */
+        .from-blue-400.to-purple-600 { background: linear-gradient(to bottom right, #60A5FA, #9333EA); }
+        .from-green-400.to-blue-500 { background: linear-gradient(to bottom right, #4ADE80, #3B82F6); }
+        .from-purple-400.to-pink-500 { background: linear-gradient(to bottom right, #A78BFA, #EC4899); }
+        .from-orange-400.to-red-500 { background: linear-gradient(to bottom right, #FB923C, #EF4444); }
+        .from-indigo-400.to-cyan-500 { background: linear-gradient(to bottom right, #818CF8, #06B6D4); }
+        .from-yellow-400.to-green-500 { background: linear-gradient(to bottom right, #FBBF24, #10B981); }
+        
+        /* 交互效果 */
+        .hover-scale:hover { transform: scale(1.05); }
+        .transition-all { 
+            transition-property: all; 
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); 
+            transition-duration: 300ms; 
+        }
+        .cursor-pointer { cursor: pointer; }
+        
+        /* 特效 */
+        .text-shadow { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); }
+        .float-animation { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 
+            0%, 100% { transform: translateY(0px); } 
+            50% { transform: translateY(-10px); } 
+        }
+        .bounce-light { animation: bounce-light 0.5s ease infinite alternate; }
+        @keyframes bounce-light { 
+            from { transform: translateY(0px); } 
+            to { transform: translateY(-5px); } 
+        }
+        .pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 
+            0%, 100% { opacity: 1; } 
+            50% { opacity: 0.5; } 
+        }
+        
+        /* 图标字体替代 */
+        .icon-chart::before { content: "📊"; }
+        .icon-star::before { content: "⭐"; }
+        .icon-clock::before { content: "⏰"; }
+        .icon-trophy::before { content: "🏆"; }
+        .icon-book::before { content: "📚"; }
+        .icon-calculator::before { content: "🔢"; }
+        .icon-language::before { content: "🌍"; }
+        .icon-puzzle::before { content: "🧩"; }
+        .icon-game::before { content: "🎮"; }
+        .icon-arrow::before { content: "→"; }
+    </style>
     
     <!-- 配置Tailwind自定义颜色和字体 -->
     <script>
