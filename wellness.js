@@ -145,5 +145,24 @@
     createToggle();
     startTick();
   }
+  // 允许页面内动态调整设置
+  document.addEventListener('eye-care-settings-updated', (e) => {
+    try {
+      const next = { ...settings, ...(e.detail || {}) };
+      settings = next;
+      saveSettings(settings);
+      activeSeconds = 0; // 重新计时
+    } catch (_) {}
+  });
+
+  // 跨标签页同步
+  window.addEventListener('storage', (ev) => {
+    if (ev.key === STORAGE_KEY && ev.newValue) {
+      try {
+        settings = { ...DEFAULTS, ...(JSON.parse(ev.newValue) || {}) };
+        activeSeconds = 0;
+      } catch (_) {}
+    }
+  });
 })();
 
