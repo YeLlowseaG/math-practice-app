@@ -974,9 +974,34 @@
                 gameState.score = Math.max(0, gameState.score - 20);
             }
             
-            // 移除泡泡：按你的要求，命中或错中都原地爆裂消失
+            // 点击后：命中→暂停并飞向目标；错中→原地爆裂
             const bubbleEl = this;
-            setTimeout(() => bubbleEl.remove(), 300);
+            if (isCorrect) {
+                try {
+                    // 1) 锁定当前位置并暂停动画（避免继续横向滑动）
+                    const cs = getComputedStyle(bubbleEl);
+                    bubbleEl.style.left = cs.left;
+                    bubbleEl.style.top = cs.top;
+                    bubbleEl.style.animationPlayState = 'paused';
+                    bubbleEl.style.animation = cs.animationName ? cs.animationName + ' 0s' : 'none';
+                    // 2) 计算到目标卡片中心的位移
+                    const targetEl = document.getElementById('targets-display');
+                    const tRect = targetEl.getBoundingClientRect();
+                    const bRect = bubbleEl.getBoundingClientRect();
+                    const dx = (tRect.left + tRect.width / 2) - (bRect.left + bRect.width / 2);
+                    const dy = (tRect.top + tRect.height / 2) - (bRect.top + bRect.height / 2);
+                    // 3) 执行动画
+                    bubbleEl.style.willChange = 'transform, opacity';
+                    bubbleEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s';
+                    requestAnimationFrame(() => {
+                        bubbleEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.5)`;
+                        bubbleEl.style.opacity = '0.2';
+                    });
+                    setTimeout(() => bubbleEl.remove(), 820);
+                } catch(_) { setTimeout(() => bubbleEl.remove(), 100); }
+            } else {
+                setTimeout(() => bubbleEl.remove(), 150);
+            }
             
             updateGameDisplay();
         }
