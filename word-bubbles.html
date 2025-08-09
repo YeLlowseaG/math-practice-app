@@ -982,12 +982,16 @@
                 bubbleEl.classList.remove('from-left','from-right');
                 const r0 = bubbleEl.getBoundingClientRect();
                 const pr0 = bubblesContainer.getBoundingClientRect();
+                bubbleEl.style.position = 'absolute';
                 bubbleEl.style.left = (r0.left - pr0.left) + 'px';
                 bubbleEl.style.top = (r0.top - pr0.top) + 'px';
+                bubbleEl.style.right = 'auto';
                 bubbleEl.style.animation = 'none';
                 bubbleEl.style.animationPlayState = 'paused';
                 bubbleEl.style.transition = 'none';
-                bubbleEl.style.transform = 'translate3d(0,0,0)';
+                bubbleEl.style.transform = 'none';
+                // 强制reflow，确保锁位立即生效
+                void bubbleEl.offsetWidth;
             } catch(_) {}
             if (isCorrect) {
                 target.got += 1;
