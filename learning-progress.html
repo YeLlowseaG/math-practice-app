@@ -336,7 +336,7 @@
                     <div class="font-bold">启用/关闭</div>
                     <label class="inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="eye-enabled" class="sr-only">
-                        <div class="w-10 h-5 bg-white/30 rounded-full relative">
+                        <div id="eye-enabled-track" class="w-10 h-5 bg-white/30 rounded-full relative">
                             <div id="eye-enabled-dot" class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform"></div>
                         </div>
                         <span class="ml-2 text-sm">启用</span>
@@ -977,6 +977,7 @@
             function updateUI(s){
                 const enabled = document.getElementById('eye-enabled');
                 const dot = document.getElementById('eye-enabled-dot');
+                const track = document.getElementById('eye-enabled-track');
                 const interval = document.getElementById('eye-interval');
                 const intervalVal = document.getElementById('eye-interval-val');
                 const brk = document.getElementById('eye-break');
@@ -984,7 +985,9 @@
                 const snooze = document.getElementById('eye-snooze');
                 const snoozeVal = document.getElementById('eye-snooze-val');
                 if(!enabled) return;
-                enabled.checked = !!s.enabled; dot.style.transform = enabled.checked ? 'translateX(20px)' : 'translateX(0)';
+                enabled.checked = !!s.enabled; 
+                dot.style.transform = enabled.checked ? 'translateX(20px)' : 'translateX(0)';
+                if (track) track.style.background = enabled.checked ? '#10B981' : 'rgba(255,255,255,.3)';
                 interval.value = s.intervalMin; intervalVal.textContent = `${s.intervalMin} 分钟`;
                 brk.value = s.breakMin; brkVal.textContent = `${s.breakMin} 分钟`;
                 snooze.value = s.snoozeMin; snoozeVal.textContent = `${s.snoozeMin} 分钟`;
@@ -998,7 +1001,8 @@
                 const snooze = document.getElementById('eye-snooze');
                 const reset = document.getElementById('eye-reset');
                 const dot = document.getElementById('eye-enabled-dot');
-                enabled.addEventListener('change', ()=>{ s.enabled = enabled.checked; dot.style.transform = enabled.checked ? 'translateX(20px)':'translateX(0)'; save(s); dispatch(s); });
+                const track = document.getElementById('eye-enabled-track');
+                enabled.addEventListener('change', ()=>{ s.enabled = enabled.checked; dot.style.transform = enabled.checked ? 'translateX(20px)':'translateX(0)'; if (track) track.style.background = enabled.checked ? '#10B981' : 'rgba(255,255,255,.3)'; save(s); updateUI(s); dispatch(s); });
                 interval.addEventListener('input', ()=>{ s.intervalMin = Number(interval.value); save(s); updateUI(s); dispatch(s); });
                 brk.addEventListener('input', ()=>{ s.breakMin = Number(brk.value); save(s); updateUI(s); dispatch(s); });
                 snooze.addEventListener('input', ()=>{ s.snoozeMin = Number(snooze.value); save(s); updateUI(s); dispatch(s); });
