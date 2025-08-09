@@ -149,57 +149,48 @@
         </button>
         
         <div class="text-center w-full max-w-lg mx-auto bg-white rounded-3xl shadow-2xl p-6 transform transition-all duration-500">
-            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent mb-3">单词记忆</h1>
-            <p class="text-base mb-4 text-gray-600">翻牌配对游戏<br>记住单词配对！</p>
+            <h1 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent mb-2">单词记忆</h1>
+            <p class="text-sm mb-3 text-gray-600">翻牌配对游戏<br>记住单词配对！</p>
             
-            <div class="flex justify-center mb-6">
-                <div class="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-3xl shadow-lg relative overflow-hidden float-animation">
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-2xl shadow-lg relative overflow-hidden float-animation">
                     <i class="fa fa-puzzle-piece"></i>
                     <div class="absolute inset-0 bg-white opacity-20 rounded-full animate-ping"></div>
                 </div>
             </div>
             
             <!-- 难度选择 -->
-            <div class="mb-5">
-                <h3 class="text-base font-bold mb-3">选择难度</h3>
-                <div class="grid grid-cols-1 gap-3">
+            <div class="mb-4">
+                <h3 class="text-sm font-bold mb-2">选择难度</h3>
+                <div class="flex justify-center gap-3">
                     <button onclick="selectDifficulty('easy')" 
-                            class="difficulty-btn bg-secondary/10 border-2 border-secondary/20 hover:border-secondary/40 p-3 rounded-2xl text-center scale-hover transition-all duration-300">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="text-2xl mr-3">🌟</div>
-                                <div>
-                                    <h4 class="font-bold text-secondary text-left">简单</h4>
-                                    <p class="text-xs text-gray-600 text-left">3×2 基础单词</p>
-                                </div>
+                            class="difficulty-btn bg-secondary/10 border-2 border-secondary/20 hover:border-secondary/40 p-2 rounded-2xl text-center scale-hover transition-all duration-300">
+                        <div class="flex items-center gap-2">
+                            <div class="text-xl">🌟</div>
+                            <div class="text-left">
+                                <h4 class="font-bold text-secondary leading-tight">简单</h4>
+                                <p class="text-[11px] text-gray-600">3×2 基础单词</p>
                             </div>
-                            <div class="text-sm text-secondary">6张</div>
                         </div>
                     </button>
                     <button onclick="selectDifficulty('medium')" 
-                            class="difficulty-btn bg-accent/10 border-2 border-accent/20 hover:border-accent/40 p-3 rounded-2xl text-center scale-hover transition-all duration-300">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="text-2xl mr-3">⭐⭐</div>
-                                <div>
-                                    <h4 class="font-bold text-accent text-left">中等</h4>
-                                    <p class="text-xs text-gray-600 text-left">4×3 常用单词</p>
-                                </div>
+                            class="difficulty-btn bg-accent/10 border-2 border-accent/20 hover:border-accent/40 p-2 rounded-2xl text-center scale-hover transition-all duration-300">
+                        <div class="flex items-center gap-2">
+                            <div class="text-xl">⭐⭐</div>
+                            <div class="text-left">
+                                <h4 class="font-bold text-accent leading-tight">中等</h4>
+                                <p class="text-[11px] text-gray-600">4×3 常用单词</p>
                             </div>
-                            <div class="text-sm text-accent">12张</div>
                         </div>
                     </button>
                     <button onclick="selectDifficulty('hard')" 
-                            class="difficulty-btn bg-danger/10 border-2 border-danger/20 hover:border-danger/40 p-3 rounded-2xl text-center scale-hover transition-all duration-300">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <div class="text-2xl mr-3">⭐⭐⭐</div>
-                                <div>
-                                    <h4 class="font-bold text-danger text-left">困难</h4>
-                                    <p class="text-xs text-gray-600 text-left">4×4 进阶单词</p>
-                                </div>
+                            class="difficulty-btn bg-danger/10 border-2 border-danger/20 hover:border-danger/40 p-2 rounded-2xl text-center scale-hover transition-all duration-300">
+                        <div class="flex items-center gap-2">
+                            <div class="text-xl">⭐⭐⭐</div>
+                            <div class="text-left">
+                                <h4 class="font-bold text-danger leading-tight">困难</h4>
+                                <p class="text-[11px] text-gray-600">4×4 进阶单词</p>
                             </div>
-                            <div class="text-sm text-danger">16张</div>
                         </div>
                     </button>
                 </div>
@@ -216,9 +207,9 @@
             </div>
             
             <!-- 倒计时开关 -->
-            <div class="mb-5 flex items-center justify-center gap-4 bg-gray-50 rounded-2xl p-3">
+            <div class="mb-4 flex items-center justify-center gap-3 bg-gray-50 rounded-2xl p-2">
                 <i class="fa fa-clock-o text-gray-600"></i>
-                <span class="text-gray-700 font-medium">倒计时模式</span>
+                <span class="text-gray-700 font-medium text-sm">倒计时模式</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="timer-toggle" class="sr-only peer">
                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
