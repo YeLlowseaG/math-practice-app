@@ -983,12 +983,18 @@
                         const targetEl = document.getElementById('targets-display');
                         const tRect = targetEl.getBoundingClientRect();
                         const bRect = bubbleEl.getBoundingClientRect();
+                        // 先“冻结”当前动画位置，避免 left 动画恢复起点导致方向错误
+                        const parentRect = bubblesContainer.getBoundingClientRect();
+                        bubbleEl.style.animation = 'none';
+                        bubbleEl.style.left = (bRect.left - parentRect.left) + 'px';
+                        bubbleEl.style.top = (bRect.top - parentRect.top) + 'px';
+                        bubbleEl.style.willChange = 'transform, opacity';
                         const dx = tRect.left + tRect.width/2 - (bRect.left + bRect.width/2);
                         const dy = tRect.top + tRect.height/2 - (bRect.top + bRect.height/2);
-                        bubbleEl.style.transition = 'transform 0.4s ease, opacity 0.4s';
-                        bubbleEl.style.transform = `translate(${dx}px, ${dy}px) scale(0.5)`;
+                        bubbleEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s';
+                        bubbleEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.5)`;
                         bubbleEl.style.opacity = '0.2';
-                        setTimeout(() => bubbleEl.remove(), 420);
+                        setTimeout(() => bubbleEl.remove(), 820);
                     } catch(_) { bubbleEl.remove(); }
                 } else {
                     bubbleEl.remove();
