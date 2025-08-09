@@ -1357,7 +1357,20 @@
                     gameState.achievements.push(achievement);
                     showAchievement(achievement);
                     // 持久化已获徽章
-                    try { saveAchievementUnlocked(achievement.id); } catch(_) {}
+                    try {
+                        saveAchievementUnlocked(achievement.id);
+                        // 统一API：系统化解锁
+                        var map = {
+                            'first_correct': 'ant_first_correct',
+                            'combo_5': 'ant_combo_5',
+                            'level_5': 'ant_level_5',
+                            'speed_demon': 'ant_speed',
+                            'perfect_level': 'ant_perfect'
+                        };
+                        if (window.achievements && map[achievement.id]) {
+                            window.achievements.unlockAchievement(map[achievement.id]);
+                        }
+                    } catch(_) {}
                 }
             });
         }

@@ -902,6 +902,18 @@
                         <div class="text-xs text-gray-600">${achievement.desc}</div>
                     `;
                     grid.appendChild(badge);
+                    // 统一API：根据标题名映射统一ID并解锁
+                    try {
+                        var map = {
+                            '高分达人': 'lr_level_reach',
+                            '连击王': 'lr_combo_5',
+                            '字母大师': 'lr_level_reach',
+                            '完美主义': 'lr_perfect'
+                        };
+                        if (window.achievements && map[achievement.title]) {
+                            window.achievements.unlockAchievement(map[achievement.title]);
+                        }
+                    } catch(_) {}
                 });
                 
                 achievements.appendChild(grid);
