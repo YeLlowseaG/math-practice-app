@@ -591,7 +591,7 @@
                     <div class="relative w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${base} shadow-sm flex flex-col items-center justify-center overflow-hidden" title="${a.name}：${a.desc}">
                         <div class="text-2xl mb-1">${a.icon}</div>
                         <div class="text-[10px] font-bold text-center leading-tight px-1">${a.name}</div>
-                        ${earned ? '<div class=\"absolute -right-1 -top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\">已获</div>' : ''}
+                        ${earned ? '<div class=\"absolute right-1 top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\">已获</div>' : '<div class=\"absolute right-1 top-1 bg-gray-400 text-white text-[10px] px-1 rounded-full shadow\">未获</div>'}
                     </div>
                 `;
             }).join('');

@@ -261,7 +261,7 @@
       function getEarnedIds(){
         try { return JSON.parse(localStorage.getItem('earnedAchievements_' + GAME_KEY) || '[]'); } catch(_) { return []; }
       }
-      function renderBadgePreview(){
+        function renderBadgePreview(){
         const grid = document.getElementById('badge-preview-grid');
         if(!grid) return;
         const owned = new Set(getEarnedIds());
@@ -269,7 +269,7 @@
           const earned = owned.has(a.id);
           const base = earned ? 'from-yellow-100 to-orange-100 border-yellow-300 text-amber-900' : 'from-gray-50 to-gray-100 border-gray-200 text-gray-400 opacity-80';
           return `
-            <div class=\"relative w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${base} shadow-sm flex flex-col items-center justify-center overflow-hidden\" title=\"${a.name}\">\n              <div class=\"text-2xl mb-1\">${a.icon}</div>\n              <div class=\"text-[10px] font-bold text-center leading-tight px-1\">${a.name}</div>\n              ${earned ? '<div class=\\"absolute -right-1 -top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\\">已获</div>' : ''}\n            </div>`;
+            <div class=\"relative w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${base} shadow-sm flex flex-col items-center justify-center overflow-hidden\" title=\"${a.name}\">\n              <div class=\"text-2xl mb-1\">${a.icon}</div>\n              <div class=\"text-[10px] font-bold text-center leading-tight px-1\">${a.name}</div>\n              ${earned ? '<div class=\\"absolute right-1 top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\\">已获</div>' : '<div class=\\"absolute right-1 top-1 bg-gray-400 text-white text-[10px] px-1 rounded-full shadow\\">未获</div>'}\n            </div>`;
         }).join('');
       }
       document.addEventListener('DOMContentLoaded', renderBadgePreview);
