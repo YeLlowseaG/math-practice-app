@@ -261,7 +261,7 @@
             timeLeft: 20,
             currentDifficulty: 'easy',
             targets: [], // [{letter:'A', need:3, got:0}]
-            spawnIntervalMs: 650,
+            spawnIntervalMs: 1000,
             maxBubbles: 14
         };
 
@@ -884,7 +884,7 @@
             if (!gameState.isGameActive) return;
             gameState.targets = generateTargets(gameState.currentDifficulty);
             gameState.timeLeft = gameState.currentDifficulty === 'easy' ? 25 : (gameState.currentDifficulty === 'medium' ? 28 : 32);
-            gameState.spawnIntervalMs = gameState.currentDifficulty === 'easy' ? 850 : (gameState.currentDifficulty === 'medium' ? 750 : 680);
+            gameState.spawnIntervalMs = gameState.currentDifficulty === 'easy' ? 1200 : (gameState.currentDifficulty === 'medium' ? 1000 : 900);
             clearInterval(gameState.timer); clearInterval(gameState.spawnTimer);
 
             // UI
@@ -915,7 +915,7 @@
                 // 随机方向
                 const fromLeft = Math.random() < 0.5;
                 bubble.classList.add(fromLeft ? 'from-left' : 'from-right');
-                const duration = 4 + Math.random() * 3; // 4-7s
+                const duration = 7 + Math.random() * 3; // 7-10s 更慢
                 bubble.style.animationDuration = duration + 's';
                 bubble.addEventListener('animationend', () => bubble.remove());
                 bubble.addEventListener('click', handleBubbleClick);
