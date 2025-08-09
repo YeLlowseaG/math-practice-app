@@ -669,8 +669,10 @@
                     } catch (_) {}
                     const all = window.achievements.getAll();
                     const globals = all.filter(function(a){ return a.scope === 'global'; });
+                    const nonGlobals = all.filter(function(a){ return a.scope !== 'global'; });
                     const container = document.getElementById('achievements-container');
                     container.innerHTML = '';
+                    // 系统级
                     globals.forEach(function(a){
                         const earned = !!a.earned;
                         const badge = document.createElement('div');
@@ -685,6 +687,29 @@
                     });
                     var earnedCount = globals.filter(function(a){ return a.earned; }).length;
                     document.getElementById('total-badges').textContent = earnedCount;
+
+                    // 各游戏成就（预览）
+                    var host = container.parentElement; // 当前网格外层
+                    var title = document.createElement('h3');
+                    title.className = 'text-xl font-bold text-gray-800 mt-8 mb-4';
+                    title.textContent = '🎮 各游戏成就（预览）';
+                    host.appendChild(title);
+                    var gameGrid = document.createElement('div');
+                    gameGrid.id = 'achievements-games';
+                    gameGrid.className = 'grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4';
+                    host.appendChild(gameGrid);
+                    nonGlobals.forEach(function(a){
+                        const earned = !!a.earned;
+                        const badge = document.createElement('div');
+                        badge.className = `flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${earned ? 'bg-gradient-to-br from-blue-100 to-cyan-100 border-2 border-blue-300' : 'bg-gray-100 border-2 border-gray-200 opacity-60'}`;
+                        badge.innerHTML = `
+                            <div class="text-2xl mb-1">${a.icon}</div>
+                            <div class="text-xs font-bold text-center text-gray-700">${a.name}</div>
+                            <div class="text-xs text-gray-500 text-center mt-1" style="font-size: 10px;">${a.desc}</div>
+                        `;
+                        badge.title = `${a.name}: ${a.desc} ${earned ? '✅ 已获得' : '❌ 未获得'}`;
+                        gameGrid.appendChild(badge);
+                    });
                 }
                 render();
                 try {
