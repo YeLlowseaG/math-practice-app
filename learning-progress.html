@@ -650,6 +650,23 @@
                         setTimeout(render, 150);
                         return;
                     }
+                    // 在展示前，根据当前学习数据同步解锁系统级成就
+                    try {
+                        var subjects = self.data.subjects || {};
+                        var chinese = subjects.chinese || {};
+                        var math = subjects.math || {};
+                        var english = subjects.english || {};
+                        var chineseAttempts = (chinese.pinyin?.attempts || 0) + (chinese.antonyms?.attempts || 0) + (chinese.poetry?.attempts || 0);
+                        var mathAttempts = (math.addition?.attempts || 0) + (math.subtraction?.attempts || 0) + (math.puzzle?.attempts || 0);
+                        var englishAttempts = (english.letters?.attempts || 0) + (english.memory?.attempts || 0) + (english.wordConnect?.attempts || 0);
+                        var totalAttempts = chineseAttempts + mathAttempts + englishAttempts;
+                        if (totalAttempts > 0) window.achievements.unlockAchievement('global_first_game');
+                        if (self.data.streakDays >= 3) window.achievements.unlockAchievement('global_streak_3');
+                        if (self.data.streakDays >= 7) window.achievements.unlockAchievement('global_streak_7');
+                        if (chineseAttempts > 0 && mathAttempts > 0 && englishAttempts > 0) {
+                            window.achievements.unlockAchievement('global_super_learner');
+                        }
+                    } catch (_) {}
                     const all = window.achievements.getAll();
                     const globals = all.filter(function(a){ return a.scope === 'global'; });
                     const container = document.getElementById('achievements-container');
