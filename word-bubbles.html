@@ -1012,24 +1012,7 @@
             
             // 点击后：命中→原地七彩爆裂；错中→原地红色爆裂
             if (isCorrect) {
-                try {
-                    const r = bubbleEl.getBoundingClientRect();
-                    const cx = r.left + r.width/2;
-                    const cy = r.top + r.height/2;
-                    const colors = ['#ef4444','#f59e0b','#fbbf24','#10b981','#3b82f6','#8b5cf6','#ec4899'];
-                    colors.forEach((c, i) => {
-                        const ring = document.createElement('div');
-                        ring.className = 'ring-burst';
-                        ring.style.position = 'fixed';
-                        ring.style.color = c;
-                        ring.style.left = cx + 'px';
-                        ring.style.top = cy + 'px';
-                        ring.style.animationDelay = (i * 40) + 'ms';
-                        document.body.appendChild(ring);
-                        setTimeout(() => ring.remove(), 900);
-                    });
-                } catch(_) {}
-                // 立刻移除泡泡
+                // 最简行为：命中即刻消失，不播放任何位移/特效
                 bubbleEl.remove();
             } else {
                 // 错中：加一个红色环提示
