@@ -122,12 +122,32 @@
             box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.15);
         }
 
-        /* 徽章方块样式（与其它游戏一致） */
+        /* 徽章区 - 视觉对齐本站面板风格（柔和玻璃卡片） */
+        .badge-section { 
+            background: rgba(255,255,255,0.65);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(229,231,235,0.9);
+            border-radius: 20px;
+            padding: 14px 16px;
+            box-shadow: 0 12px 24px -12px rgba(99,102,241,0.25);
+        }
+        .badge-title { display:flex; align-items:center; gap:8px; color:#1f2937; font-weight:800; font-size:20px; margin-bottom:8px; }
+        .badge-hint { color:#6b7280; font-size:12px; margin-top:6px; }
+
+        /* 徽章方块样式（对齐圆角、阴影与柔色） */
         .badge-grid { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-        .badge-card { width: 80px; height: 80px; border-radius: 16px; border: 2px solid #e5e7eb; background: linear-gradient(135deg,#fafafa,#f3f4f6); box-shadow: 0 1px 3px rgba(0,0,0,.06); display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; color:#9ca3af; }
+        .badge-card { 
+            width: 80px; height: 80px; border-radius: 16px; 
+            border: 2px solid #e5e7eb; 
+            background: linear-gradient(135deg, #F8FAFF 0%, #F4F6FF 100%);
+            box-shadow: 0 2px 6px rgba(0,0,0,.06);
+            display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; 
+            color:#6b7280; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        }
+        .badge-card:hover { transform: translateY(-2px); box-shadow: 0 8px 18px -8px rgba(99,102,241,.35); border-color:#c7d2fe; }
         .badge-card .icon { font-size: 1.25rem; margin-bottom: 2px; }
         .badge-card .name { font-size: 10px; font-weight: 700; text-align:center; line-height: 1.1; padding: 0 4px; }
-        .badge-card.earned { border-color:#facc15; color:#92400e; background: linear-gradient(135deg,#fef9c3,#ffedd5); }
+        .badge-card.earned { border-color:#facc15; color:#78350f; background: linear-gradient(135deg,#FFF7CC,#FFEAD5); box-shadow: 0 6px 16px -8px rgba(245,158,11,.35); }
         .badge-card .flag { position:absolute; right:-4px; top:-4px; background:#f59e0b; color:#fff; font-size:10px; padding:0 4px; border-radius:9999px; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
         
         /* 动画效果 */
@@ -1025,10 +1045,10 @@
     <!-- 主内容区 -->
     <main class="container">
         <!-- 我的徽章（数学） -->
-        <section id="math-badges" class="mb-4">
-            <h2 class="text-xl font-bold text-gray-800 mb-2">🏆 我的徽章</h2>
+        <section id="math-badges" class="mb-4 badge-section">
+            <div class="badge-title">🏆 我的徽章</div>
             <div id="math-badge-grid" class="badge-grid"></div>
-            <p class="text-sm text-gray-500 mt-2">本游戏徽章预览（已获高亮，未获灰显）</p>
+            <p class="badge-hint">本游戏徽章预览（已获高亮，未获灰显）</p>
         </section>
         <!-- 设置面板 -->
         <div id="settings-panel" class="settings-panel">
