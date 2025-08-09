@@ -80,6 +80,7 @@
             width: 100%;
             height: 420px;
             overflow: hidden;
+            touch-action: none; /* 提前捕获pointer，避免点击后浏览器延迟与位移 */
         }
         /* 命中爆炸：彩色同心圆 */
         .ring-burst {
@@ -935,7 +936,7 @@
                 const duration = 7 + Math.random() * 3; // 7-10s 更慢
                 bubble.style.animationDuration = duration + 's';
                 bubble.addEventListener('animationend', () => bubble.remove());
-                bubble.addEventListener('click', handleBubbleClick);
+                bubble.addEventListener('pointerdown', handleBubbleClick, { passive: false });
                 bubblesContainer.appendChild(bubble);
             }, gameState.spawnIntervalMs);
         }
@@ -970,7 +971,8 @@
         }
 
         // 处理泡泡点击
-        function handleBubbleClick() {
+        function handleBubbleClick(event) {
+            try { if (event) { event.preventDefault(); event.stopPropagation(); } } catch(_) {}
             if (!gameState.isGameActive) return;
             
             const letter = this.dataset.letter;
