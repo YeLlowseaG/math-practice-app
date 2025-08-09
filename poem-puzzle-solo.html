@@ -306,6 +306,13 @@
                 </label>
                 <span class="text-xs text-gray-500" id="timer-description">根据难度限时</span>
             </div>
+
+            <!-- 徽章预览 -->
+            <div id="badge-preview" class="mb-5">
+                <h3 class="text-base font-bold mb-2">我的徽章</h3>
+                <div id="badge-preview-grid" class="flex justify-center gap-2 flex-wrap"></div>
+                <div class="text-xs text-gray-400 mt-1">本游戏徽章预览（已获高亮，未获灰显）</div>
+            </div>
             
             <button id="start-btn" class="bg-accent hover:bg-yellow-400 text-white font-bold py-3 px-6 rounded-full text-lg shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
                 开始拼图 <i class="fa fa-play ml-2"></i>
@@ -1212,6 +1219,34 @@
             { id: 'poet_scholar', name: '诗词学者', desc: '完成10首诗', icon: '📚', unlocked: false },
             { id: 'perfect_round', name: '完美表现', desc: '一次性正确拼接', icon: '💎', unlocked: false }
         ];
+
+        // 徽章持久化与预览
+        const GAME_KEY = 'poetry';
+        function getEarnedAchievementIds() {
+            try { return JSON.parse(localStorage.getItem('earnedAchievements_' + GAME_KEY) || '[]'); } catch (_) { return []; }
+        }
+        function saveAchievementUnlocked(id) {
+            const ids = new Set(getEarnedAchievementIds());
+            if (!ids.has(id)) {
+                ids.add(id);
+                try { localStorage.setItem('earnedAchievements_' + GAME_KEY, JSON.stringify(Array.from(ids))); } catch (_) {}
+            }
+        }
+        function renderBadgePreview() {
+            const grid = document.getElementById('badge-preview-grid');
+            if (!grid) return;
+            const owned = new Set(getEarnedAchievementIds());
+            grid.innerHTML = achievements.map(a => {
+                const earned = owned.has(a.id);
+                const base = earned ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-yellow-300 text-amber-800' : 'bg-gray-100 border-gray-200 text-gray-400 opacity-70';
+                return `
+                    <div class="border-2 ${base} rounded-xl px-2 py-1 text-xs flex items-center gap-1" title="${a.name}：${a.desc}">
+                        <span>${a.icon}</span>
+                        <span>${a.name}</span>
+                    </div>
+                `;
+            }).join('');
+        }
         
         // DOM元素
         const startScreen = document.getElementById('start-screen');
@@ -1249,6 +1284,8 @@
                 btn.classList.add('active');
                 gameState.currentType = btn.dataset.type;
                 updateTimerDescription();
+                // 切换类型时也刷新徽章预览
+                try { renderBadgePreview(); } catch(_) {}
             });
         });
         
@@ -1259,6 +1296,8 @@
                 btn.classList.add('active');
                 gameState.currentDifficulty = btn.dataset.difficulty;
                 updateTimerDescription();
+                // 切换难度时刷新徽章预览（当前版本徽章与难度无关，仅保持一致体验）
+                try { renderBadgePreview(); } catch(_) {}
             });
         });
         
@@ -1313,6 +1352,9 @@
             
             // 开始第一首诗
             nextPoem();
+
+            // 渲染开始卡片徽章预览（返回首页再进时也能看到最新状态）
+            try { renderBadgePreview(); } catch(_) {}
         }
         
         // 生成下一首诗
@@ -1926,6 +1968,8 @@
                     achievement.unlocked = true;
                     gameState.achievements.push(achievement);
                     showAchievement(achievement);
+                    // 持久化已获徽章
+                    try { saveAchievementUnlocked(achievement.id); } catch(_) {}
                 }
             });
         }
