@@ -131,13 +131,14 @@
             padding: 10px 12px;
             box-shadow: 0 12px 24px -12px rgba(99,102,241,0.25);
         }
-        .badge-header { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:8px; }
+        .badge-header { display:none; }
+        .badge-inline { display:flex; align-items:center; gap:10px; }
         .badge-title { display:flex; align-items:center; gap:8px; color:#1f2937; font-weight:800; font-size:18px; }
         .badge-hint { color:#6b7280; font-size:12px; }
         @media (max-width: 640px){ .badge-header { flex-direction: column; align-items:flex-start; gap:4px; } }
 
         /* 徽章方块样式（对齐圆角、阴影与柔色） */
-        .badge-row { display:flex; gap:12px; align-items:center; overflow-x:auto; white-space:nowrap; padding-bottom:4px; }
+        .badge-row { display:flex; gap:12px; align-items:center; overflow-x:auto; white-space:nowrap; padding-bottom:4px; flex:1; }
         .badge-card { 
             width: 80px; height: 80px; border-radius: 16px; 
             border: 2px solid #e5e7eb; 
@@ -1048,15 +1049,14 @@
     <main class="container">
         <!-- 我的徽章（数学） -->
         <section id="math-badges" class="mb-4 badge-section">
-            <div class="badge-header">
+            <div class="badge-inline">
                 <div class="badge-title">🏆 我的徽章</div>
-                <div class="badge-hint">本游戏徽章预览（已获高亮，未获灰显）</div>
+                <div id="math-badge-grid" class="badge-row"></div>
+                <div class="badge-hint">（已获高亮，未获灰显）</div>
             </div>
-            <div id="math-badge-grid" class="badge-row"></div>
         </section>
         <!-- 设置面板 -->
         <div id="settings-panel" class="settings-panel">
-            <h2>🎯 练习设置</h2>
             <div class="settings-grid">
                 <!-- 运算次数 -->
                 <div class="setting-card">
