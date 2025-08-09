@@ -82,7 +82,7 @@
             overflow: hidden;
             touch-action: none; /* 提前捕获pointer，避免点击后浏览器延迟与位移 */
         }
-        /* 命中爆炸：彩色同心圆 */
+        /* 提示与特效 */
         .ring-burst {
             position: absolute;
             left: 0; top: 0;
@@ -99,6 +99,19 @@
             0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0.95; }
             100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; }
         }
+        .toast-tip {
+            position: fixed;
+            padding: 6px 10px;
+            background: rgba(239, 68, 68, 0.95);
+            color: #fff;
+            border-radius: 12px;
+            font-size: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            animation: tipfade 900ms ease-out forwards;
+        }
+        @keyframes tipfade { 0%{ opacity:1; transform: translate(-50%, -60%);} 100%{ opacity:0; transform: translate(-50%, -80%);} }
         /* 从左右两侧“飞出”的动画与方向类 */
         @keyframes fly-right {
             0% { left: -90px; opacity: 0.9; }
@@ -1010,26 +1023,22 @@
                 gameState.score = Math.max(0, gameState.score - 20);
             }
             
-            // 点击后：命中→原地七彩爆裂；错中→原地红色爆裂
+            // 点击后：命中→原地消失；错中→不移除气泡，仅弹出提示
             if (isCorrect) {
                 // 最简行为：命中即刻消失，不播放任何位移/特效
                 bubbleEl.remove();
             } else {
-                // 错中：加一个红色环提示
+                // 错中：不移除气泡，顶部显示文案
                 try {
                     const r = bubbleEl.getBoundingClientRect();
-                    const cx = r.left + r.width/2;
-                    const cy = r.top + r.height/2;
-                    const ring = document.createElement('div');
-                    ring.className = 'ring-burst';
-                    ring.style.position = 'fixed';
-                    ring.style.color = '#ef4444';
-                    ring.style.left = cx + 'px';
-                    ring.style.top = cy + 'px';
-                    document.body.appendChild(ring);
-                    setTimeout(() => ring.remove(), 700);
+                    const tip = document.createElement('div');
+                    tip.className = 'toast-tip';
+                    tip.textContent = '戳错啦，请找指定字母';
+                    tip.style.left = (r.left + r.width/2) + 'px';
+                    tip.style.top = (r.top - 24) + 'px';
+                    document.body.appendChild(tip);
+                    setTimeout(() => tip.remove(), 900);
                 } catch(_) {}
-                setTimeout(() => bubbleEl.remove(), 120);
             }
             
             updateGameDisplay();
