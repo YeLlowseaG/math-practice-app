@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>单词泡泡 - 英语单词游戏</title>
+    <title>字母泡泡 - 认识与熟悉英文字母</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script defer src="./assets/achievements.js"></script>
@@ -81,6 +81,17 @@
             height: 320px;
             overflow: hidden;
         }
+        /* 从左右两侧“飞出”的动画与方向类 */
+        @keyframes fly-right {
+            0% { left: -90px; opacity: 0.9; }
+            100% { left: calc(100% + 90px); opacity: 0.9; }
+        }
+        @keyframes fly-left {
+            0% { left: calc(100% + 90px); opacity: 0.9; }
+            100% { left: -90px; opacity: 0.9; }
+        }
+        .from-left { animation-name: fly-right; animation-timing-function: linear; }
+        .from-right { animation-name: fly-left; animation-timing-function: linear; }
         
         @media (max-width: 768px) {
             .bubble {
@@ -113,8 +124,8 @@
         </button>
         
         <div class="text-center max-w-lg mx-auto bg-white rounded-3xl shadow-2xl p-8">
-            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-3">单词泡泡</h1>
-            <p class="text-base mb-4">看到图片后，在15秒内<br>点破字母泡泡拼出单词！</p>
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-3">字母泡泡</h1>
+            <p class="text-base mb-4">在倒计时内，戳中要求的字母泡泡，达标即过关！<br>从认识单个字母→多个字母→到单词包含的字母。</p>
             
             <div class="flex justify-center mb-4">
                 <div class="w-16 h-16 bg-gradient-to-br from-bubble to-blue-600 rounded-full flex items-center justify-center text-white text-2xl shadow-lg">
@@ -221,17 +232,18 @@
                 </div>
             </div>
             
-            <!-- 单词显示区域 -->
+            <!-- 目标显示区域 -->
             <div id="word-display" class="mb-4 text-center">
-                <div id="current-word" class="text-3xl font-bold text-gray-800 bg-gradient-to-r from-yellow-100 to-orange-100 px-6 py-3 rounded-2xl shadow-lg border-2 border-yellow-300">
+                <div id="current-word" class="text-xl font-bold text-gray-800 bg-gradient-to-r from-yellow-100 to-orange-100 px-6 py-3 rounded-2xl shadow-lg border-2 border-yellow-300">
                     <span id="word-placeholder">点击开始</span>
                 </div>
+                <div id="targets-display" class="mt-3 text-sm text-gray-700"></div>
             </div>
             
             <!-- 提示区域 -->
             <div id="hint-area" class="mb-6 text-center">
                 <div class="bg-gradient-to-r from-blue-100 to-purple-100 px-6 py-4 rounded-2xl shadow-lg border-2 border-blue-300 inline-block">
-                    <p id="hint-text" class="text-blue-700 text-lg font-bold">🎯 点击字母泡泡拼出单词</p>
+                    <p id="hint-text" class="text-blue-700 text-lg font-bold">🎯 目标：戳中指定字母达到数量</p>
                 </div>
             </div>
             
@@ -243,19 +255,19 @@
     </div>
 
     <script>
-        // 游戏状态
+        // 游戏状态（字母目标玩法）
         let gameState = {
             level: 1,
             score: 0,
             combo: 0,
-            correctWords: 0,
-            totalWords: 0,
             isGameActive: false,
-            currentWord: '',
-            selectedLetters: [],
             timer: null,
-            timeLeft: 15,
-            currentDifficulty: 'easy'
+            spawnTimer: null,
+            timeLeft: 20,
+            currentDifficulty: 'easy',
+            targets: [], // [{letter:'A', need:3, got:0}]
+            spawnIntervalMs: 650,
+            maxBubbles: 14
         };
 
         // 单词数据库 - 扩充版
@@ -839,108 +851,93 @@
 
         // 开始游戏
         function startGame() {
-            gameState = {
-                level: 1,
-                score: 0,
-                combo: 0,
-                correctWords: 0,
-                totalWords: 0,
-                isGameActive: true,
-                currentWord: '',
-                selectedLetters: [],
-                timer: null,
-                timeLeft: 15,
-                currentDifficulty: gameState.currentDifficulty || 'easy'
-            };
-
+            gameState.level = 1;
+            gameState.score = 0;
+            gameState.combo = 0;
+            gameState.isGameActive = true;
+            gameState.timeLeft = 20;
+            gameState.currentDifficulty = gameState.currentDifficulty || 'easy';
+            clearInterval(gameState.timer); clearInterval(gameState.spawnTimer);
             startScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
-            
-            nextWord();
+            nextLevel();
         }
 
-        // 下一个单词
-        function nextWord() {
-            if (!gameState.isGameActive) return;
+        // 生成关卡目标
+        function generateTargets(difficulty) {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            const pick = (n) => shuffleArray(alphabet).slice(0, n);
+            if (difficulty === 'easy') {
+                const count = gameState.level <= 3 ? 1 : 2; // 前几关1个，再到2个
+                const letters = pick(count);
+                return letters.map(l => ({ letter: l, need: 3, got: 0 }));
+            }
+            if (difficulty === 'medium') {
+                const count = gameState.level <= 3 ? 3 : 4;
+                const letters = pick(count);
+                return letters.map(l => ({ letter: l, need: 3, got: 0 }));
+            }
+            // hard：从单词挑字母集合
+            const words = wordDatabase.easy; // 用易词库，长度适中
+            const randomWord = words[Math.floor(Math.random() * words.length)].word.replace(/\s+/g,'');
+            const set = Array.from(new Set(randomWord.split('')));
+            return set.slice(0, 5).map(l => ({ letter: l.toUpperCase(), need: 2, got: 0 }));
+        }
 
-            const words = wordDatabase[gameState.currentDifficulty];
-            const randomWord = words[Math.floor(Math.random() * words.length)];
-            
-            gameState.currentWord = randomWord.word;
-            gameState.selectedLetters = [];
-            gameState.timeLeft = 15;
-            
-            // 显示图片和提示
-            const icon = getIconForWord(randomWord.word);
-            imagePlaceholder.innerHTML = icon;
-            wordPlaceholder.textContent = '🎯 点击字母泡泡拼出单词';
-            hintText.textContent = `💡 提示：${randomWord.hint}`;
-            
-            // 生成泡泡
-            generateBubbles();
-            
-            // 开始计时
+        // 进入下一关
+        function nextLevel() {
+            if (!gameState.isGameActive) return;
+            gameState.targets = generateTargets(gameState.currentDifficulty);
+            gameState.timeLeft = gameState.currentDifficulty === 'easy' ? 20 : (gameState.currentDifficulty === 'medium' ? 25 : 30);
+            gameState.spawnIntervalMs = gameState.currentDifficulty === 'easy' ? 700 : (gameState.currentDifficulty === 'medium' ? 600 : 500);
+            clearInterval(gameState.timer); clearInterval(gameState.spawnTimer);
+
+            // UI
+            const desc = gameState.currentDifficulty === 'hard' ? '🎯 目标：戳中该单词所含的字母' : '🎯 目标：戳中指定字母达到数量';
+            hintText.textContent = desc;
+            imagePlaceholder.innerHTML = '<i class="fa fa-font"></i>';
+            updateTargetsDisplay();
             startTimer();
-            
-            // 更新显示
+            startSpawning();
             updateGameDisplay();
         }
 
-        // 生成泡泡
-        function generateBubbles() {
+        // 连续生成泡泡（从左右飞入）
+        function startSpawning() {
             bubblesContainer.innerHTML = '';
-            
-            const word = gameState.currentWord;
-            const letters = word.split('');
-            const extraLetters = generateExtraLetters(word);
-            const allLetters = [...letters, ...extraLetters];
-            
-            // 打乱字母顺序
-            const shuffledLetters = shuffleArray(allLetters);
-            
-            // 创建泡泡
-            shuffledLetters.forEach((letter, index) => {
+            gameState.spawnTimer = setInterval(() => {
+                if (!gameState.isGameActive) return;
+                if (bubblesContainer.childElementCount >= gameState.maxBubbles) return;
                 const bubble = document.createElement('div');
                 bubble.className = 'bubble';
+                const letter = pickLetterForSpawn();
                 bubble.textContent = letter;
                 bubble.dataset.letter = letter;
-                bubble.dataset.isCorrect = letters.includes(letter) ? 'true' : 'false';
-                
-                // 更匀称的分布算法
-                const containerWidth = bubblesContainer.offsetWidth;
-                const containerHeight = bubblesContainer.offsetHeight;
-                const bubbleSize = 70;
-                const padding = 30;
-                
-                // 计算网格布局
-                const cols = Math.ceil(Math.sqrt(shuffledLetters.length));
-                const rows = Math.ceil(shuffledLetters.length / cols);
-                const cellWidth = (containerWidth - padding * 2) / cols;
-                const cellHeight = (containerHeight - padding * 2) / rows;
-                
-                // 计算当前泡泡在网格中的位置
-                const col = index % cols;
-                const row = Math.floor(index / cols);
-                
-                // 在网格单元内随机偏移
-                const baseX = padding + col * cellWidth + cellWidth / 2;
-                const baseY = padding + row * cellHeight + cellHeight / 2;
-                
-                // 添加随机偏移，但保持在合理范围内
-                const offsetX = (Math.random() - 0.5) * (cellWidth * 0.6);
-                const offsetY = (Math.random() - 0.5) * (cellHeight * 0.6);
-                
-                const x = baseX + offsetX - bubbleSize / 2;
-                const y = baseY + offsetY - bubbleSize / 2;
-                
-                bubble.style.left = x + 'px';
-                bubble.style.top = y + 'px';
-                
-                // 点击事件
+                // 随机顶部位置
+                const h = bubblesContainer.clientHeight;
+                const top = Math.random() * (h - 80) + 10;
+                bubble.style.top = top + 'px';
+                // 随机方向
+                const fromLeft = Math.random() < 0.5;
+                bubble.classList.add(fromLeft ? 'from-left' : 'from-right');
+                const duration = 4 + Math.random() * 3; // 4-7s
+                bubble.style.animationDuration = duration + 's';
+                bubble.addEventListener('animationend', () => bubble.remove());
                 bubble.addEventListener('click', handleBubbleClick);
-                
                 bubblesContainer.appendChild(bubble);
-            });
+            }, gameState.spawnIntervalMs);
+        }
+
+        function pickLetterForSpawn() {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            // 65% 概率生成目标字母，保证可完成
+            if (Math.random() < 0.65 && gameState.targets.length > 0) {
+                // 在仍未达标的目标里挑
+                const remain = gameState.targets.filter(t => t.got < t.need);
+                if (remain.length > 0) return remain[Math.floor(Math.random() * remain.length)].letter;
+                return gameState.targets[Math.floor(Math.random() * gameState.targets.length)].letter;
+            }
+            return alphabet[Math.floor(Math.random() * alphabet.length)];
         }
 
         // 生成额外字母
@@ -965,32 +962,21 @@
             if (!gameState.isGameActive) return;
             
             const letter = this.dataset.letter;
-            const isCorrect = this.dataset.isCorrect === 'true';
-            
-            if (isCorrect && !gameState.selectedLetters.includes(letter)) {
-                // 正确字母
-                gameState.selectedLetters.push(letter);
+            const target = gameState.targets.find(t => t.letter === letter);
+            const isCorrect = !!target && target.got < target.need;
+            if (isCorrect) {
+                target.got += 1;
                 this.classList.add('correct');
-                
-                // 更新单词显示
-                updateWordDisplay();
-                
-                // 检查是否完成
-                if (gameState.selectedLetters.length === gameState.currentWord.length) {
-                    wordComplete();
-                }
-                
-                // 增加连击和分数
                 gameState.combo++;
-                const timeBonus = Math.floor(gameState.timeLeft * 10);
-                const comboBonus = gameState.combo * 50;
-                gameState.score += 100 + timeBonus + comboBonus;
-                
-            } else if (!isCorrect) {
-                // 错误字母
+                gameState.score += 50 + gameState.combo * 10;
+                updateTargetsDisplay();
+                if (gameState.targets.every(t => t.got >= t.need)) {
+                    levelComplete();
+                }
+            } else {
                 this.classList.add('wrong');
                 gameState.combo = 0;
-                gameState.score = Math.max(0, gameState.score - 50);
+                gameState.score = Math.max(0, gameState.score - 20);
             }
             
             // 移除泡泡
@@ -1001,37 +987,25 @@
             updateGameDisplay();
         }
 
-        // 更新单词显示
-        function updateWordDisplay() {
-            const word = gameState.currentWord;
-            let displayWord = '';
-            
-            for (let i = 0; i < word.length; i++) {
-                if (gameState.selectedLetters.includes(word[i])) {
-                    displayWord += word[i];
-                } else {
-                    displayWord += '_';
-                }
-            }
-            
-            wordPlaceholder.textContent = displayWord;
+        function updateTargetsDisplay() {
+            const html = gameState.targets.map(t => {
+                const left = Math.max(0, t.need - t.got);
+                const done = left === 0;
+                return `<span class="inline-flex items-center justify-center rounded-lg px-2 py-1 mr-2 mb-2 border ${done ? 'bg-green-100 border-green-300 text-green-700' : 'bg-white border-yellow-300 text-yellow-700'}">${t.letter} × ${left}</span>`;
+            }).join('');
+            document.getElementById('targets-display').innerHTML = html;
         }
 
-        // 单词完成
-        function wordComplete() {
-            gameState.correctWords++;
-            gameState.totalWords++;
-            
-            // 显示完成动画
-            wordPlaceholder.textContent = gameState.currentWord;
+        function levelComplete() {
+            clearInterval(gameState.spawnTimer);
+            wordPlaceholder.textContent = '太棒了！已完成目标';
             wordPlaceholder.style.color = '#10B981';
-            
-            // 延迟进入下一关
+            try { if (window.achievements) window.achievements.unlockAchievement('wb_first_round'); } catch(_) {}
             setTimeout(() => {
-                if (gameState.isGameActive) {
-                    nextWord();
-                }
-            }, 2000);
+                if (!gameState.isGameActive) return;
+                gameState.level += 1;
+                nextLevel();
+            }, 1200);
         }
 
         // 开始计时器
@@ -1053,18 +1027,15 @@
         // 时间到
         function timeUp() {
             clearInterval(gameState.timer);
+            clearInterval(gameState.spawnTimer);
             gameState.combo = 0;
-            gameState.totalWords++;
-            
-            // 显示正确答案
-            wordPlaceholder.textContent = gameState.currentWord;
+            wordPlaceholder.textContent = '时间到～ 再试一关！';
             wordPlaceholder.style.color = '#EF4444';
-            
             setTimeout(() => {
                 if (gameState.isGameActive) {
-                    nextWord();
+                    nextLevel();
                 }
-            }, 2000);
+            }, 1200);
         }
 
         // 更新游戏显示
