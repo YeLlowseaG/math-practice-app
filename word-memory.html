@@ -86,7 +86,9 @@
             }
             
             .word-card {
-                min-height: 120px;
+                /* 固定方格尺寸，避免翻面后高度跳动 */
+                aspect-ratio: 1 / 1;
+                height: auto;
                 transition: all 0.3s ease;
                 border: 3px solid transparent;
             }
@@ -110,7 +112,6 @@
             /* 移动端优化 */
             @media (max-width: 768px) {
                 .word-card {
-                    min-height: 100px;
                     font-size: 1rem;
                     padding: 12px 8px;
                 }
@@ -121,7 +122,6 @@
             
             @media (max-width: 480px) {
                 .word-card {
-                    min-height: 90px;
                     font-size: 0.9rem;
                     padding: 10px 6px;
                 }
@@ -417,12 +417,36 @@
             }
 
             // 播放英文发音  
-            speak(text, rate = 0.8) {
-                setTimeout(() => {
-                    const utterance = new SpeechSynthesisUtterance(text);
+            speak(text, rate = 0.85) {
+                if (!('speechSynthesis' in window)) return;
+                // 尽量使用已加载的英语语音
+                const speakNow = () => {
+                    const utterance = new SpeechSynthesisUtterance(text.toLowerCase());
+                    utterance.voice = this.englishVoice || null;
                     utterance.lang = 'en-US';
+                    utterance.rate = rate;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.95;
+                    speechSynthesis.cancel();
                     speechSynthesis.speak(utterance);
-                }, 100);
+                };
+                if (!this.englishVoice) {
+                    // 等待voices加载再播，避免静音
+                    const tryOnce = () => {
+                        this.voices = speechSynthesis.getVoices();
+                        this.englishVoice = this.voices.find(v => v.lang.includes('en') && (v.name.includes('English') || v.lang === 'en-US')) || this.voices[0];
+                        speakNow();
+                    };
+                    if (speechSynthesis.getVoices().length === 0) {
+                        speechSynthesis.onvoiceschanged = tryOnce;
+                        // 超时兜底
+                        setTimeout(speakNow, 300);
+                    } else {
+                        tryOnce();
+                    }
+                } else {
+                    speakNow();
+                }
             }
 
             // 记录学习进度
