@@ -464,6 +464,15 @@
         }
 
         const gameManager = new WordMemoryGame();
+        // 简易翻译表（常见基础词）
+        const translations = {
+            cat:'猫', dog:'狗', pig:'猪', cow:'牛', fox:'狐狸', rat:'老鼠', bat:'蝙蝠', bee:'蜜蜂', ant:'蚂蚁', bug:'虫子',
+            owl:'猫头鹰', hen:'母鸡', yak:'牦牛', ape:'猿', fish:'鱼', bird:'鸟', horse:'马', sheep:'羊', goat:'山羊', duck:'鸭',
+            egg:'鸡蛋', pie:'派', jam:'果酱', tea:'茶', ice:'冰', ham:'火腿', nut:'坚果', rice:'米饭', soup:'汤', bread:'面包',
+            water:'水', juice:'果汁', milk:'牛奶', cookie:'饼干', pizza:'披萨', burger:'汉堡', salad:'沙拉', rice:'米饭', pasta:'意大利面', chicken:'鸡肉',
+            car:'汽车', bus:'公交', train:'火车', plane:'飞机', boat:'船', bike:'自行车', truck:'卡车', taxi:'出租车',
+            sun:'太阳', sky:'天空', sea:'海', red:'红色', blue:'蓝色', green:'绿色', apple:'苹果', orange:'橙子', grape:'葡萄'
+        };
         
         // 倒计时开关逻辑
         document.getElementById('timer-toggle').addEventListener('change', function() {
@@ -563,6 +572,7 @@
                     </div>
                     <div class="card-back hidden flex-col items-center justify-center h-full">
                         <p class="text-xl font-bold mb-2">${word}</p>
+                        <p class="translation hidden text-white/90 text-sm mb-1"></p>
                         <button onclick="event.stopPropagation(); gameManager.speak('${word}')" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-1 text-sm" aria-label="播放读音">
                             <i class="fa fa-volume-up"></i>
                         </button>
@@ -612,6 +622,17 @@
                 score += Math.max(50 - flipCount, 10);
                 
                 // 不自动播放成功音效
+                // 显示中文翻译
+                [card1, card2].forEach(c => {
+                    const t = c.element.querySelector('.translation');
+                    if (t) {
+                        const zh = translations[c.word.toLowerCase()] || '';
+                        if (zh) {
+                            t.textContent = zh;
+                            t.classList.remove('hidden');
+                        }
+                    }
+                });
                 
                 // 检查游戏结束
                 if (matchedPairs === totalPairs) {
