@@ -6,6 +6,7 @@
     <title>字母认知游戏 - 英文字母学习</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script defer src="./assets/achievements.js"></script>
     <style>
         body {
             background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
@@ -288,6 +289,9 @@
                 // 调用进度记录系统
                 if (window.recordLearningProgress) {
                     window.recordLearningProgress('english', 'alphabet', points, 30);
+                }
+                if (correct) {
+                    try { if (window.achievements) window.achievements.unlockAchievement('ab_first_points'); } catch(_) {}
                 }
             }
         }

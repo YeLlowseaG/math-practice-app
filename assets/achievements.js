@@ -27,6 +27,27 @@
     { id: 'ant_level_5', name: '闯关高手', icon: '🏆', scope: 'game:antonyms_solo', desc: '到达第5关' },
     { id: 'ant_speed', name: '闪电侠', icon: '⚡', scope: 'game:antonyms_solo', desc: '3秒内答对' },
     { id: 'ant_perfect', name: '完美关卡', icon: '💎', scope: 'game:antonyms_solo', desc: '一关内全部答对' }
+    ,
+    // Word Memory
+    { id: 'wm_first_clear', name: '首次记忆完成', icon: '📘', scope: 'game:word_memory', desc: '完成一次记忆配对' },
+    // Word Connect
+    { id: 'wc_first_clear', name: '首次连线完成', icon: '🧩', scope: 'game:word_connect', desc: '完成一次连线关卡' },
+    // Poem Puzzle Solo
+    { id: 'pp_first_clear', name: '诗词初体验', icon: '📜', scope: 'game:poem_puzzle', desc: '完成一次诗词拼图' },
+    // Antonyms VS
+    { id: 'antv_first_match', name: '对战初胜', icon: '⚔️', scope: 'game:antonyms_vs', desc: '完成一场对战' },
+    // Alphabet Game
+    { id: 'ab_first_points', name: '首获积分', icon: '🔤', scope: 'game:alphabet', desc: '在字母认知中获得积分' },
+    // English Chain
+    { id: 'ec_first_game', name: '接龙初体验', icon: '🔗', scope: 'game:english_chain', desc: '完成一次英语接龙' },
+    // Letter Jump
+    { id: 'lj_first_complete', name: '青蛙到岸', icon: '🐸', scope: 'game:letter_jump', desc: '完成一次跳跳乐' },
+    // Word Bubbles
+    { id: 'wb_first_round', name: '泡泡初体验', icon: '🫧', scope: 'game:word_bubbles', desc: '完成一轮泡泡' },
+    // Pinyin Game
+    { id: 'py_first_finish', name: '拼音初体验', icon: '🗣️', scope: 'game:pinyin', desc: '完成一次拼音练习' },
+    // Math Practice
+    { id: 'math_first_finish', name: '数学初上手', icon: '➕', scope: 'game:math', desc: '完成一次数学练习' }
   ];
 
   function load() {

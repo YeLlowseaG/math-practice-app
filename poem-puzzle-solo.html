@@ -6,6 +6,7 @@
     <title>诗词拼图 - 单人闯关</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script defer src="./assets/achievements.js"></script>
     <script defer src="./wellness.js"></script>
     <!-- 拼音库（浏览器端） -->
     <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@2.9.0/dist/index.min.js"></script>
@@ -2109,6 +2110,7 @@
                     const score = Math.min(100, gameState.score || accuracy);
                     window.recordLearningProgress('chinese', 'poetry', score, totalTime);
                 }
+                try { if (window.achievements) window.achievements.unlockAchievement('pp_first_clear'); } catch(_) {}
             } catch (_) {}
         }
         

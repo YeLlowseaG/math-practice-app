@@ -6,6 +6,7 @@
     <title>单词记忆游戏 - 英文单词学习</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script defer src="./assets/achievements.js"></script>
     
     <!-- 配置Tailwind自定义颜色和字体 -->
     <script>
@@ -531,6 +532,7 @@
                 if (completed) {
                     const points = Math.max(100 - flipCount * 2, 20); // 翻牌越少得分越高
                     score += points;
+                    try { if (window.achievements) window.achievements.unlockAchievement('wm_first_clear'); } catch(_) {}
                 }
 
                 // 调用进度记录系统

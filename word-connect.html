@@ -6,6 +6,7 @@
     <title>单词连线消消乐 - 字母搜索游戏</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script defer src="./assets/achievements.js"></script>
     <script defer src="./wellness.js"></script>
     
     <!-- 配置Tailwind自定义颜色和字体 -->
@@ -1339,6 +1340,7 @@
                 if (window.recordLearningProgress) {
                     window.recordLearningProgress('english', 'wordConnect', points, 120);
                 }
+                try { if (window.achievements) window.achievements.unlockAchievement('wc_first_clear'); } catch(_) {}
             }
         }
 

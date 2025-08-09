@@ -6,6 +6,7 @@
     <title>英语接龙 - 连线游戏</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script defer src="./assets/achievements.js"></script>
     
     <!-- 配置Tailwind自定义颜色和字体 -->
     <script>
@@ -1028,6 +1029,7 @@
             document.getElementById('final-score').textContent = score;
             document.getElementById('final-chain').textContent = `链长: ${currentChain.length}`;
             document.getElementById('longest-chain').textContent = longestChain.join(' → ');
+            try { if (window.achievements) window.achievements.unlockAchievement('ec_first_game'); } catch(_) {}
             
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('complete-screen').classList.remove('hidden');
