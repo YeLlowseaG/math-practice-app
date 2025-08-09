@@ -1385,6 +1385,18 @@
                 winnerMessageEl.textContent = "平局！你们都很棒！";
                 winnerMessageEl.className = "text-xl font-bold mb-8 p-4 rounded-xl bg-accent/20 text-text";
             }
+
+            // 记录到学习中心（语文-反义词，对战模式按双方平均分记录）
+            try {
+                if (window.recordLearningProgress) {
+                    const totalQuestions = (rounds || 0) * (pairsPerRound || 0);
+                    const acc1 = Math.round((correct1 || 0) / Math.max(1, totalQuestions) * 100);
+                    const acc2 = Math.round((correct2 || 0) / Math.max(1, totalQuestions) * 100);
+                    const avgAcc = Math.round((acc1 + acc2) / 2);
+                    const totalTime = totalQuestions * 10; // 每题约10秒
+                    window.recordLearningProgress('chinese', 'antonyms', avgAcc, totalTime);
+                }
+            } catch (_) {}
         }
         
         // 打乱数组顺序的工具函数

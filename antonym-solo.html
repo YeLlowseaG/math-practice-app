@@ -1381,6 +1381,15 @@
             
             // 显示成就
             displayAchievements();
+
+            // 记录到学习中心（语文-反义词）
+            try {
+                if (window.recordLearningProgress) {
+                    // 分数用正确率，时间用总用时（秒）
+                    const totalTime = (gameState.totalQuestions || 0) * (gameState.timeLimit || 0);
+                    window.recordLearningProgress('chinese', 'antonyms', accuracy, totalTime);
+                }
+            } catch (_) {}
         }
         
         // 显示游戏统计详情

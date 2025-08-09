@@ -1583,6 +1583,15 @@
             
             // 显示成就
             displayAchievements();
+
+            // 记录到学习中心（语文-诗词拼图）
+            try {
+                if (window.recordLearningProgress) {
+                    const totalTime = gameState.elapsedTime || 0; // 若无精确计时，则可用关卡时间估算
+                    const score = Math.min(100, gameState.score || accuracy);
+                    window.recordLearningProgress('chinese', 'poetry', score, totalTime);
+                }
+            } catch (_) {}
         }
         
         // 显示成就
