@@ -152,6 +152,7 @@
         .badge-card .name { font-size: 10px; font-weight: 700; text-align:center; line-height: 1.1; padding: 0 4px; }
         .badge-card.earned { border-color:#facc15; color:#78350f; background: linear-gradient(135deg,#FFF7CC,#FFEAD5); box-shadow: 0 6px 16px -8px rgba(245,158,11,.35); }
         .badge-card .flag { position:absolute; right:-4px; top:-4px; background:#f59e0b; color:#fff; font-size:10px; padding:0 4px; border-radius:9999px; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+        .badge-card .flag.flag-muted { background:#9ca3af; color:#fff; }
         
         /* 动画效果 */
         @keyframes bounce-light {
@@ -2370,7 +2371,7 @@
         <div class="badge-card ${earned ? 'earned' : ''}" title="${a.name}">
           <div class="icon">${a.icon}</div>
           <div class="name">${a.name}</div>
-          ${earned ? '<div class=\"flag\">已获</div>' : ''}
+          ${earned ? '<div class=\"flag\">已获</div>' : '<div class=\"flag flag-muted\">未获</div>'}
         </div>`;
     }).join('');
   }
