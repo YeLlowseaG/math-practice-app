@@ -143,41 +143,51 @@
 
         <!-- 学科进度详情 -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            <!-- 拼音学习进度 -->
+            <!-- 语文类学习进度 -->
             <div class="card p-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">📝 拼音学习进度</h3>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">📝 语文类学习进度</h3>
                 
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="font-semibold">声母掌握</span>
-                        <span id="consonant-mastery">0/23</span>
+                        <span class="font-semibold">拼音学习</span>
+                        <span id="pinyin-score">平均分: 0</span>
                     </div>
                     <div class="skill-bar">
-                        <div id="consonant-progress" class="skill-progress" style="width: 0%;">0%</div>
+                        <div id="pinyin-progress" class="skill-progress" style="width: 0%;">0%</div>
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="font-semibold">韵母掌握</span>
-                        <span id="vowel-mastery">0/24</span>
+                        <span class="font-semibold">反义词挑战</span>
+                        <span id="antonyms-score">平均分: 0</span>
                     </div>
                     <div class="skill-bar">
-                        <div id="vowel-progress" class="skill-progress" style="width: 0%;">0%</div>
+                        <div id="antonyms-progress" class="skill-progress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">诗词拼图</span>
+                        <span id="poetry-score">平均分: 0</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div id="poetry-progress" class="skill-progress" style="width: 0%;">0%</div>
                     </div>
                 </div>
 
                 <div class="bg-blue-50 p-4 rounded-lg">
                     <p class="text-sm text-blue-800">
-                        <i class="fa fa-lightbulb mr-2"></i>
-                        <span id="pinyin-tip">继续练习，掌握更多拼音知识！</span>
+                        <i class="fa fa-book mr-2"></i>
+                        <span id="chinese-tip">语文学习要多读多练，日积月累！</span>
                     </p>
                 </div>
             </div>
 
-            <!-- 数学练习进度 -->
+            <!-- 数理思维类学习进度 -->
             <div class="card p-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">🔢 数学练习进度</h3>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">🧠 数理思维类学习进度</h3>
                 
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
@@ -199,17 +209,27 @@
                     </div>
                 </div>
 
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold">逻辑思维</span>
+                        <span id="puzzle-score">平均分: 0</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div id="puzzle-progress" class="skill-progress" style="width: 0%;">0%</div>
+                    </div>
+                </div>
+
                 <div class="bg-green-50 p-4 rounded-lg">
                     <p class="text-sm text-green-800">
-                        <i class="fa fa-calculator mr-2"></i>
-                        <span id="math-tip">数学基础很重要，坚持练习会有进步！</span>
+                        <i class="fa fa-cogs mr-2"></i>
+                        <span id="math-tip">数理思维需要循序渐进，多思考多实践！</span>
                     </p>
                 </div>
             </div>
             
-            <!-- 英语学习进度 -->
+            <!-- 英语类学习进度 -->
             <div class="card p-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">🔤 英语学习进度</h3>
+                <h3 class="text-xl font-bold text-gray-800 mb-4">🌍 英语类学习进度</h3>
             
                 <div class="mb-4">
                     <div class="flex justify-between items-center mb-2">
@@ -241,9 +261,9 @@
                     </div>
                 </div>
 
-                <div class="bg-blue-50 p-4 rounded-lg">
-                    <p class="text-sm text-blue-800">
-                        <i class="fa fa-language mr-2"></i>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <p class="text-sm text-purple-800">
+                        <i class="fa fa-globe mr-2"></i>
                         <span id="english-tip">英语学习要多听多练，循序渐进！</span>
                     </p>
                 </div>
@@ -253,7 +273,7 @@
         <!-- 成就徽章展示 -->
         <div class="card p-6 mb-6">
             <h3 class="text-xl font-bold text-gray-800 mb-4">🏆 成就徽章</h3>
-            <div class="flex flex-wrap" id="achievements-container">
+            <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4" id="achievements-container">
                 <!-- 徽章将通过JavaScript动态生成 -->
             </div>
         </div>
@@ -275,18 +295,6 @@
                     <p class="font-bold">数学练习</p>
                     <p class="text-sm opacity-90">加减法计算训练</p>
                 </button>
-                <button onclick="window.location.href='letter-recognition.html'" 
-                        class="bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-lg transition-colors">
-                    <i class="fa fa-font text-2xl mb-2"></i>
-                    <p class="font-bold">字母认知</p>
-                    <p class="text-sm opacity-90">学习26个英文字母</p>
-                </button>
-                <button onclick="window.location.href='word-memory.html'" 
-                        class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition-colors">
-                    <i class="fa fa-puzzle-piece text-2xl mb-2"></i>
-                    <p class="font-bold">单词记忆</p>
-                    <p class="text-sm opacity-90">翻牌配对记忆单词</p>
-                </button>
                 <button onclick="window.location.href='word-connect.html'" 
                         class="bg-teal-500 hover:bg-teal-600 text-white p-4 rounded-lg transition-colors">
                     <i class="fa fa-link text-2xl mb-2"></i>
@@ -298,6 +306,18 @@
                     <i class="fa fa-user text-2xl mb-2"></i>
                     <p class="font-bold">反义词挑战</p>
                     <p class="text-sm opacity-90">单人闯关模式</p>
+                </button>
+                <button onclick="window.location.href='poem-puzzle-solo.html'" 
+                        class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-lg transition-colors">
+                    <i class="fa fa-puzzle-piece text-2xl mb-2"></i>
+                    <p class="font-bold">诗词拼图</p>
+                    <p class="text-sm opacity-90">拖拽拼图学古诗</p>
+                </button>
+                <button onclick="window.location.href='antonym-game.html'" 
+                        class="bg-red-500 hover:bg-red-600 text-white p-4 rounded-lg transition-colors">
+                    <i class="fa fa-users text-2xl mb-2"></i>
+                    <p class="font-bold">反义词对战</p>
+                    <p class="text-sm opacity-90">双人竞技模式</p>
                 </button>
             </div>
         </div>
@@ -357,7 +377,6 @@
                 this.updateSubjectProgress();
                 this.generateAchievements();
                 this.generateAISuggestions();
-                this.createLearningChart();
             }
 
             // 更新今日学习时间
@@ -377,33 +396,86 @@
             // 计算总体进度
             calculateOverallProgress() {
                 let totalProgress = 0;
-                let subjects = 0;
+                let categories = 0;
 
-                // 拼音进度
-                const consonantProgress = (this.data.subjects.pinyin.consonants.completed.length / 23) * 100;
-                const vowelProgress = (this.data.subjects.pinyin.vowels.completed.length / 24) * 100;
-                const pinyinProgress = (consonantProgress + vowelProgress) / 2;
-                totalProgress += pinyinProgress;
-                subjects++;
+                const subjects = this.data.subjects;
 
-                // 数学进度 (基于正确率)
-                const mathSubjects = this.data.subjects.math;
-                let mathProgress = 0;
-                let mathCount = 0;
-                
-                Object.values(mathSubjects).forEach(subject => {
-                    if (subject.attempts > 0) {
-                        mathProgress += (subject.totalScore / subject.attempts);
-                        mathCount++;
+                // 语文类进度
+                const chinese = subjects.chinese || {};
+                if (chinese.pinyin?.attempts > 0 || chinese.antonyms?.attempts > 0 || chinese.poetry?.attempts > 0) {
+                    let chineseProgress = 0;
+                    let chineseCount = 0;
+                    
+                    if (chinese.pinyin?.attempts > 0) {
+                        chineseProgress += chinese.pinyin.totalScore / chinese.pinyin.attempts;
+                        chineseCount++;
                     }
-                });
-                
-                if (mathCount > 0) {
-                    totalProgress += (mathProgress / mathCount);
-                    subjects++;
+                    if (chinese.antonyms?.attempts > 0) {
+                        chineseProgress += chinese.antonyms.totalScore / chinese.antonyms.attempts;
+                        chineseCount++;
+                    }
+                    if (chinese.poetry?.attempts > 0) {
+                        chineseProgress += chinese.poetry.totalScore / chinese.poetry.attempts;
+                        chineseCount++;
+                    }
+                    
+                    if (chineseCount > 0) {
+                        totalProgress += (chineseProgress / chineseCount);
+                        categories++;
+                    }
                 }
 
-                const overallProgress = subjects > 0 ? (totalProgress / subjects) : 0;
+                // 数理思维类进度
+                const math = subjects.math || {};
+                if (math.addition?.attempts > 0 || math.subtraction?.attempts > 0 || math.puzzle?.attempts > 0) {
+                    let mathProgress = 0;
+                    let mathCount = 0;
+                    
+                    if (math.addition?.attempts > 0) {
+                        mathProgress += math.addition.totalScore / math.addition.attempts;
+                        mathCount++;
+                    }
+                    if (math.subtraction?.attempts > 0) {
+                        mathProgress += math.subtraction.totalScore / math.subtraction.attempts;
+                        mathCount++;
+                    }
+                    if (math.puzzle?.attempts > 0) {
+                        mathProgress += math.puzzle.totalScore / math.puzzle.attempts;
+                        mathCount++;
+                    }
+                    
+                    if (mathCount > 0) {
+                        totalProgress += (mathProgress / mathCount);
+                        categories++;
+                    }
+                }
+
+                // 英语类进度
+                const english = subjects.english || {};
+                if (english.letters?.attempts > 0 || english.memory?.attempts > 0 || english.wordConnect?.attempts > 0) {
+                    let englishProgress = 0;
+                    let englishCount = 0;
+                    
+                    if (english.letters?.attempts > 0) {
+                        englishProgress += english.letters.totalScore / english.letters.attempts;
+                        englishCount++;
+                    }
+                    if (english.memory?.attempts > 0) {
+                        englishProgress += english.memory.totalScore / english.memory.attempts;
+                        englishCount++;
+                    }
+                    if (english.wordConnect?.attempts > 0) {
+                        englishProgress += english.wordConnect.totalScore / english.wordConnect.attempts;
+                        englishCount++;
+                    }
+                    
+                    if (englishCount > 0) {
+                        totalProgress += (englishProgress / englishCount);
+                        categories++;
+                    }
+                }
+
+                const overallProgress = categories > 0 ? (totalProgress / categories) : 0;
                 
                 // 更新环形进度条
                 this.updateCircularProgress('overall-progress-circle', overallProgress);
@@ -453,59 +525,104 @@
 
             // 更新学科进度
             updateSubjectProgress() {
-                // 拼音进度
-                const consonants = this.data.subjects.pinyin.consonants;
-                const vowels = this.data.subjects.pinyin.vowels;
+                // 语文类进度
+                const chinese = this.data.subjects.chinese || {};
                 
-                const consonantPercent = (consonants.completed.length / 23) * 100;
-                const vowelPercent = (vowels.completed.length / 24) * 100;
+                // 拼音学习
+                const pinyinData = chinese.pinyin || {};
+                const pinyinAvgScore = pinyinData.attempts > 0 ? (pinyinData.totalScore / pinyinData.attempts) : 0;
+                this.updateProgressBar('pinyin', pinyinAvgScore, `平均分: ${Math.round(pinyinAvgScore)}`);
                 
-                document.getElementById('consonant-mastery').textContent = 
-                    `${consonants.completed.length}/23`;
-                document.getElementById('consonant-progress').style.width = consonantPercent + '%';
-                document.getElementById('consonant-progress').textContent = 
-                    Math.round(consonantPercent) + '%';
+                // 反义词挑战
+                const antonymsData = chinese.antonyms || {};
+                const antonymsAvgScore = antonymsData.attempts > 0 ? (antonymsData.totalScore / antonymsData.attempts) : 0;
+                this.updateProgressBar('antonyms', antonymsAvgScore, `平均分: ${Math.round(antonymsAvgScore)}`);
                 
-                document.getElementById('vowel-mastery').textContent = 
-                    `${vowels.completed.length}/24`;
-                document.getElementById('vowel-progress').style.width = vowelPercent + '%';
-                document.getElementById('vowel-progress').textContent = 
-                    Math.round(vowelPercent) + '%';
+                // 诗词拼图
+                const poetryData = chinese.poetry || {};
+                const poetryAvgScore = poetryData.attempts > 0 ? (poetryData.totalScore / poetryData.attempts) : 0;
+                this.updateProgressBar('poetry', poetryAvgScore, `平均分: ${Math.round(poetryAvgScore)}`);
 
-                // 数学进度
-                const math = this.data.subjects.math;
+                // 数理思维类进度
+                const math = this.data.subjects.math || {};
                 
-                Object.keys(math).forEach(subject => {
-                    const data = math[subject];
-                    const avgScore = data.attempts > 0 ? (data.totalScore / data.attempts) : 0;
-                    const percentage = Math.min(avgScore, 100);
-                    
-                    document.getElementById(`${subject}-score`).textContent = 
-                        `平均分: ${Math.round(avgScore)}`;
-                    document.getElementById(`${subject}-progress`).style.width = percentage + '%';
-                    document.getElementById(`${subject}-progress`).textContent = 
-                        Math.round(percentage) + '%';
-                });
+                // 加法练习
+                const additionData = math.addition || {};
+                const additionAvgScore = additionData.attempts > 0 ? (additionData.totalScore / additionData.attempts) : 0;
+                this.updateProgressBar('addition', additionAvgScore, `平均分: ${Math.round(additionAvgScore)}`);
+                
+                // 减法练习
+                const subtractionData = math.subtraction || {};
+                const subtractionAvgScore = subtractionData.attempts > 0 ? (subtractionData.totalScore / subtractionData.attempts) : 0;
+                this.updateProgressBar('subtraction', subtractionAvgScore, `平均分: ${Math.round(subtractionAvgScore)}`);
+                
+                // 逻辑思维
+                const puzzleData = math.puzzle || {};
+                const puzzleAvgScore = puzzleData.attempts > 0 ? (puzzleData.totalScore / puzzleData.attempts) : 0;
+                this.updateProgressBar('puzzle', puzzleAvgScore, `平均分: ${Math.round(puzzleAvgScore)}`);
+
+                // 英语类进度
+                const english = this.data.subjects.english || {};
+                
+                // 字母认知
+                const lettersData = english.letters || {};
+                const lettersAvgScore = lettersData.attempts > 0 ? (lettersData.totalScore / lettersData.attempts) : 0;
+                this.updateProgressBar('letters', lettersAvgScore, `平均分: ${Math.round(lettersAvgScore)}`);
+                
+                // 单词记忆
+                const memoryData = english.memory || {};
+                const memoryAvgScore = memoryData.attempts > 0 ? (memoryData.totalScore / memoryData.attempts) : 0;
+                this.updateProgressBar('memory', memoryAvgScore, `平均分: ${Math.round(memoryAvgScore)}`);
+                
+                // 单词连线
+                const wordConnectData = english.wordConnect || {};
+                const wordConnectAvgScore = wordConnectData.attempts > 0 ? (wordConnectData.totalScore / wordConnectData.attempts) : 0;
+                this.updateProgressBar('wordconnect', wordConnectAvgScore, `平均分: ${Math.round(wordConnectAvgScore)}`);
+            }
+
+            // 更新进度条的辅助方法
+            updateProgressBar(id, avgScore, scoreText) {
+                const percentage = Math.min(avgScore, 100);
+                const scoreElement = document.getElementById(`${id}-score`);
+                const progressElement = document.getElementById(`${id}-progress`);
+                
+                if (scoreElement) scoreElement.textContent = scoreText;
+                if (progressElement) {
+                    progressElement.style.width = percentage + '%';
+                    progressElement.textContent = Math.round(percentage) + '%';
+                }
             }
 
             // 生成成就徽章
             generateAchievements() {
                 const achievements = [
-                    { id: 'first_game', icon: '🎮', name: '初次体验', condition: () => true },
-                    { id: 'pinyin_beginner', icon: '📝', name: '拼音入门', 
-                      condition: () => this.data.subjects.pinyin.consonants.completed.length >= 5 },
-                    { id: 'math_star', icon: '⭐', name: '数学之星', 
-                      condition: () => this.data.subjects.math.addition.attempts >= 10 },
-                    { id: 'english_starter', icon: '🔤', name: '英语初学者', 
-                      condition: () => this.data.subjects.english.letters.attempts >= 5 },
-                    { id: 'word_master', icon: '🧠', name: '单词大师', 
-                      condition: () => this.data.subjects.english.memory.attempts >= 10 },
-                    { id: 'consistent_learner', icon: '🔥', name: '坚持学习', 
-                      condition: () => this.data.streakDays >= 3 },
-                    { id: 'speed_master', icon: '⚡', name: '速度大师', 
-                      condition: () => this.data.subjects.math.addition.bestStreak >= 5 },
-                    { id: 'multilingual', icon: '🌍', name: '多语者', 
-                      condition: () => this.data.subjects.english.letters.attempts >= 3 && this.data.subjects.pinyin.consonants.completed.length >= 3 }
+                    { id: 'first_game', icon: '🎮', name: '初次体验', desc: '完成第一个学习游戏', condition: () => true },
+                    { id: 'chinese_starter', icon: '📝', name: '语文小能手', desc: '完成5次语文类练习', condition: () => {
+                        const chinese = this.data.subjects.chinese || {};
+                        return (chinese.pinyin?.attempts || 0) + (chinese.antonyms?.attempts || 0) >= 5;
+                    }},
+                    { id: 'math_genius', icon: '🧠', name: '数学天才', desc: '完成10次数学类练习', condition: () => {
+                        const math = this.data.subjects.math || {};
+                        return (math.addition?.attempts || 0) + (math.subtraction?.attempts || 0) >= 10;
+                    }},
+                    { id: 'english_explorer', icon: '🌍', name: '英语探索者', desc: '完成5次英语类练习', condition: () => {
+                        const english = this.data.subjects.english || {};
+                        return (english.letters?.attempts || 0) + (english.memory?.attempts || 0) + (english.wordConnect?.attempts || 0) >= 5;
+                    }},
+                    { id: 'persistent_learner', icon: '🔥', name: '坚持不懈', desc: '连续学习3天', condition: () => this.data.streakDays >= 3 },
+                    { id: 'week_warrior', icon: '🏆', name: '周战士', desc: '连续学习7天', condition: () => this.data.streakDays >= 7 },
+                    { id: 'accuracy_master', icon: '⭐', name: '精准射手', desc: '正确率达到85%以上', condition: () => this.calculateWeeklyAccuracy() >= 85 },
+                    { id: 'super_learner', icon: '🚀', name: '学习超人', desc: '三大类都有进展', condition: () => {
+                        const chinese = this.data.subjects.chinese || {};
+                        const math = this.data.subjects.math || {};
+                        const english = this.data.subjects.english || {};
+                        
+                        const chineseAttempts = (chinese.pinyin?.attempts || 0) + (chinese.antonyms?.attempts || 0);
+                        const mathAttempts = (math.addition?.attempts || 0) + (math.subtraction?.attempts || 0);
+                        const englishAttempts = (english.letters?.attempts || 0) + (english.memory?.attempts || 0) + (english.wordConnect?.attempts || 0);
+                        
+                        return chineseAttempts >= 3 && mathAttempts >= 3 && englishAttempts >= 3;
+                    }}
                 ];
 
                 const container = document.getElementById('achievements-container');
@@ -514,9 +631,13 @@
                 achievements.forEach(achievement => {
                     const earned = achievement.condition();
                     const badge = document.createElement('div');
-                    badge.className = `achievement-badge ${earned ? '' : 'opacity-30'}`;
-                    badge.innerHTML = `${achievement.icon}`;
-                    badge.title = achievement.name;
+                    badge.className = `flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${earned ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-300' : 'bg-gray-100 border-2 border-gray-200 opacity-60'}`;
+                    badge.innerHTML = `
+                        <div class="text-2xl mb-1">${achievement.icon}</div>
+                        <div class="text-xs font-bold text-center text-gray-700">${achievement.name}</div>
+                        <div class="text-xs text-gray-500 text-center mt-1" style="font-size: 10px;">${achievement.desc}</div>
+                    `;
+                    badge.title = `${achievement.name}: ${achievement.desc} ${earned ? '✅ 已获得' : '❌ 未获得'}`;
                     container.appendChild(badge);
                 });
 
@@ -528,41 +649,127 @@
             // 生成AI学习建议
             generateAISuggestions() {
                 const suggestions = [];
+                const subjects = this.data.subjects;
                 
-                // 基于拼音进度的建议
-                const consonantProgress = this.data.subjects.pinyin.consonants.completed.length;
-                const vowelProgress = this.data.subjects.pinyin.vowels.completed.length;
+                // 语文类建议
+                const chinese = subjects.chinese || {};
+                let chineseTotal = 0;
+                let chineseCount = 0;
                 
-                if (consonantProgress < 10) {
-                    suggestions.push("🎯 建议重点练习声母，目前掌握度较低。可以每天练习5个声母。");
+                if (chinese.pinyin?.attempts > 0) {
+                    const pinyinAvg = chinese.pinyin.totalScore / chinese.pinyin.attempts;
+                    chineseTotal += pinyinAvg;
+                    chineseCount++;
+                    if (pinyinAvg < 70) {
+                        suggestions.push("📝 拼音学习需要加强，建议多练习声母韵母的组合。");
+                    }
                 }
                 
-                if (vowelProgress < 12) {
-                    suggestions.push("📚 韵母学习需要加强，建议结合实际汉字练习。");
+                if (chinese.antonyms?.attempts > 0) {
+                    const antonymsAvg = chinese.antonyms.totalScore / chinese.antonyms.attempts;
+                    chineseTotal += antonymsAvg;
+                    chineseCount++;
+                    if (antonymsAvg < 70) {
+                        suggestions.push("🔄 反义词练习还需努力，建议多读课外书积累词汇。");
+                    }
                 }
-
-                // 基于数学成绩的建议
-                const mathData = this.data.subjects.math;
-                if (mathData.addition.attempts > 0) {
-                    const additionAvg = mathData.addition.totalScore / mathData.addition.attempts;
-                    if (additionAvg < 70) {
-                        suggestions.push("🔢 加法练习需要更多时间，建议从小数字开始练习。");
+                
+                if (chinese.poetry?.attempts > 0) {
+                    const poetryAvg = chinese.poetry.totalScore / chinese.poetry.attempts;
+                    chineseTotal += poetryAvg;
+                    chineseCount++;
+                    if (poetryAvg < 70) {
+                        suggestions.push("🎭 诗词拼图需要多练，建议背诵一些简单的古诗。");
                     }
                 }
 
+                // 数理思维类建议
+                const math = subjects.math || {};
+                let mathTotal = 0;
+                let mathCount = 0;
+                
+                if (math.addition?.attempts > 0) {
+                    const additionAvg = math.addition.totalScore / math.addition.attempts;
+                    mathTotal += additionAvg;
+                    mathCount++;
+                    if (additionAvg < 70) {
+                        suggestions.push("➕ 加法练习需要更多时间，建议从小数字开始练习。");
+                    }
+                }
+                
+                if (math.subtraction?.attempts > 0) {
+                    const subtractionAvg = math.subtraction.totalScore / math.subtraction.attempts;
+                    mathTotal += subtractionAvg;
+                    mathCount++;
+                    if (subtractionAvg < 70) {
+                        suggestions.push("➖ 减法练习需要加强，可以用实物帮助理解。");
+                    }
+                }
+                
+                if (math.puzzle?.attempts > 0) {
+                    const puzzleAvg = math.puzzle.totalScore / math.puzzle.attempts;
+                    mathTotal += puzzleAvg;
+                    mathCount++;
+                    if (puzzleAvg < 70) {
+                        suggestions.push("🧩 逻辑思维训练需要坚持，多做益智游戏有帮助。");
+                    }
+                }
+
+                // 英语类建议
+                const english = subjects.english || {};
+                let englishTotal = 0;
+                let englishCount = 0;
+                
+                if (english.letters?.attempts > 0) {
+                    const lettersAvg = english.letters.totalScore / english.letters.attempts;
+                    englishTotal += lettersAvg;
+                    englishCount++;
+                    if (lettersAvg < 70) {
+                        suggestions.push("🔤 字母认知需要巩固，建议每天练习字母书写。");
+                    }
+                }
+                
+                if (english.memory?.attempts > 0) {
+                    const memoryAvg = english.memory.totalScore / english.memory.attempts;
+                    englishTotal += memoryAvg;
+                    englishCount++;
+                    if (memoryAvg < 70) {
+                        suggestions.push("🧠 单词记忆需要方法，可以尝试联想记忆法。");
+                    }
+                }
+                
+                if (english.wordConnect?.attempts > 0) {
+                    const wordConnectAvg = english.wordConnect.totalScore / english.wordConnect.attempts;
+                    englishTotal += wordConnectAvg;
+                    englishCount++;
+                    if (wordConnectAvg < 70) {
+                        suggestions.push("🔗 单词连线练习需要加强，多玩英语小游戏。");
+                    }
+                }
+
+                // 综合建议
+                const chineseAvg = chineseCount > 0 ? chineseTotal / chineseCount : 0;
+                const mathAvg = mathCount > 0 ? mathTotal / mathCount : 0;
+                const englishAvg = englishCount > 0 ? englishTotal / englishCount : 0;
+                
                 // 基于学习频率的建议
                 if (this.data.streakDays < 2) {
                     suggestions.push("📅 建议建立每日学习习惯，每天15-20分钟效果最佳。");
                 }
 
-                // 个性化推荐
-                if (consonantProgress > vowelProgress) {
-                    suggestions.push("✨ 你在声母学习上表现很好！可以尝试更有挑战的拼音组合练习。");
+                // 个性化鼓励
+                if (chineseAvg > mathAvg && chineseAvg > englishAvg && chineseAvg > 80) {
+                    suggestions.push("✨ 你的语文表现很棒！可以尝试更有挑战性的语文游戏。");
+                } else if (mathAvg > chineseAvg && mathAvg > englishAvg && mathAvg > 80) {
+                    suggestions.push("🎯 数理思维很强！建议尝试更复杂的数学题目。");
+                } else if (englishAvg > chineseAvg && englishAvg > mathAvg && englishAvg > 80) {
+                    suggestions.push("🌟 英语学习进步明显！可以尝试听英语歌曲。");
                 }
 
                 // 默认建议
                 if (suggestions.length === 0) {
                     suggestions.push("🌟 学习进度良好！建议保持当前的学习节奏，继续加油！");
+                    suggestions.push("📚 可以尝试三大类学习内容的均衡发展，全面提升！");
                 }
 
                 const container = document.getElementById('ai-suggestions');
@@ -601,21 +808,39 @@
             recordActivity(subject, activity, score, timeSpent = 0) {
                 console.log(`Recording activity: ${subject}.${activity}, score: ${score}, time: ${timeSpent}`);
                 
-                const subjectData = this.data.subjects[subject];
-                if (subjectData && subjectData[activity]) {
-                    subjectData[activity].totalScore += score;
-                    subjectData[activity].attempts += 1;
-                    
-                    // 特殊处理：记录学到的内容
-                    if (activity === 'letters' && subjectData[activity].lettersLearned) {
-                        // 可以在这里记录学到的字母
-                    } else if (activity === 'memory' && subjectData[activity].wordsRemembered) {
-                        // 可以在这里记录记住的单词
-                    } else if (activity === 'wordConnect' && subjectData[activity].wordsFound) {
-                        // 可以在这里记录找到的单词
-                    }
-                } else {
-                    console.warn(`Subject ${subject} or activity ${activity} not found in data structure`);
+                // 确保主体数据结构存在
+                if (!this.data.subjects[subject]) {
+                    this.data.subjects[subject] = {};
+                }
+                
+                // 确保活动数据结构存在
+                if (!this.data.subjects[subject][activity]) {
+                    this.data.subjects[subject][activity] = {
+                        totalScore: 0,
+                        attempts: 0
+                    };
+                }
+                
+                const activityData = this.data.subjects[subject][activity];
+                activityData.totalScore += score;
+                activityData.attempts += 1;
+                
+                // 特殊处理：记录学到的内容
+                if (activity === 'letters' && !activityData.lettersLearned) {
+                    activityData.lettersLearned = [];
+                } else if (activity === 'memory' && !activityData.wordsRemembered) {
+                    activityData.wordsRemembered = [];
+                } else if (activity === 'wordConnect' && !activityData.wordsFound) {
+                    activityData.wordsFound = [];
+                } else if (activity === 'antonyms' && !activityData.wordsLearned) {
+                    activityData.wordsLearned = [];
+                } else if (activity === 'poetry' && !activityData.poemsCompleted) {
+                    activityData.poemsCompleted = [];
+                } else if (activity === 'pinyin' && !activityData.consonantsLearned) {
+                    activityData.consonantsLearned = [];
+                    activityData.vowelsLearned = [];
+                } else if (activity === 'puzzle' && !activityData.levelsCompleted) {
+                    activityData.levelsCompleted = [];
                 }
                 
                 // 更新学习时间
@@ -667,16 +892,25 @@
             progressManager = new LearningProgressManager();
             
             // 模拟一些学习数据（仅用于演示）
-            if (progressManager.data.subjects.pinyin.consonants.completed.length === 0) {
+            if (!progressManager.data.subjects.chinese) {
                 // 添加一些示例数据
-                progressManager.data.subjects.pinyin.consonants.completed = ['b', 'p', 'm', 'f', 'd'];
-                progressManager.data.subjects.pinyin.vowels.completed = ['a', 'o', 'e', 'i'];
-                progressManager.data.subjects.math.addition.totalScore = 850;
-                progressManager.data.subjects.math.addition.attempts = 12;
-                progressManager.data.subjects.english.letters.totalScore = 160;
-                progressManager.data.subjects.english.letters.attempts = 2;
-                progressManager.data.subjects.english.memory.totalScore = 240;
-                progressManager.data.subjects.english.memory.attempts = 3;
+                progressManager.data.subjects = {
+                    chinese: {
+                        pinyin: { totalScore: 320, attempts: 4, consonantsLearned: ['b', 'p', 'm', 'f'], vowelsLearned: ['a', 'o', 'e'] },
+                        antonyms: { totalScore: 450, attempts: 6, wordsLearned: [] },
+                        poetry: { totalScore: 180, attempts: 2, poemsCompleted: [] }
+                    },
+                    math: {
+                        addition: { totalScore: 850, attempts: 12, bestStreak: 5 },
+                        subtraction: { totalScore: 420, attempts: 6, bestStreak: 3 },
+                        puzzle: { totalScore: 200, attempts: 3, levelsCompleted: [] }
+                    },
+                    english: {
+                        letters: { totalScore: 160, attempts: 2, lettersLearned: [] },
+                        memory: { totalScore: 240, attempts: 3, wordsRemembered: [] },
+                        wordConnect: { totalScore: 180, attempts: 2, wordsFound: [] }
+                    }
+                };
                 progressManager.data.streakDays = 3;
                 progressManager.data.todayStudyTime = 900; // 15分钟
                 progressManager.saveData();
