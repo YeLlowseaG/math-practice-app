@@ -109,7 +109,7 @@
             box-shadow: 0 6px 18px rgba(0,0,0,0.2);
             z-index: 9999;
             transform: translate(-50%, -50%);
-            animation: tipfade 900ms ease-out forwards;
+            animation: tipfade 1200ms ease-out forwards;
         }
         @keyframes tipfade { 0%{ opacity:1; transform: translate(-50%, -60%);} 100%{ opacity:0; transform: translate(-50%, -80%);} }
         /* 从左右两侧“飞出”的动画与方向类 */
@@ -1035,7 +1035,7 @@
                     tip.style.left = (r.left + r.width/2) + 'px';
                     tip.style.top = (r.top - 24) + 'px';
                     document.body.appendChild(tip);
-                    setTimeout(() => tip.remove(), 900);
+                    setTimeout(() => tip.remove(), 1200);
                 } catch(_) {}
             }
             
