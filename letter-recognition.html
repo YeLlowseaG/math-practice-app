@@ -144,29 +144,44 @@
             <!-- 难度选择 -->
             <div class="mb-4">
                 <h3 class="text-sm font-bold mb-2">选择难度</h3>
-                <div class="flex gap-3 justify-center overflow-x-auto whitespace-nowrap">
+                <div class="flex justify-center gap-3">
                     <button onclick="selectDifficulty('easy')" 
-                            class="difficulty-btn bg-secondary/10 border-2 border-secondary/20 hover:border-secondary/40 px-3 py-2 rounded-2xl text-center transition-all duration-300 inline-flex items-center gap-2">
-                        <div class="text-xl">🌟</div>
-                        <div class="text-left">
-                            <h4 class="font-bold text-secondary leading-tight">简单</h4>
-                            <p class="text-[11px] text-gray-600">A-H 字母</p>
+                            class="difficulty-btn bg-secondary/10 border-2 border-secondary/20 hover:border-secondary/40 p-2 rounded-2xl text-center transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="text-xl mr-2">🌟</div>
+                                <div>
+                                    <h4 class="font-bold text-secondary text-left leading-tight">简单</h4>
+                                    <p class="text-[11px] text-gray-600 text-left">A-H 字母</p>
+                                </div>
+                            </div>
+                            <div class="text-xs text-secondary ml-3">8个</div>
                         </div>
                     </button>
                     <button onclick="selectDifficulty('medium')" 
-                            class="difficulty-btn bg-accent/10 border-2 border-accent/20 hover:border-accent/40 px-3 py-2 rounded-2xl text-center transition-all duration-300 inline-flex items-center gap-2">
-                        <div class="text-xl">⭐⭐</div>
-                        <div class="text-left">
-                            <h4 class="font-bold text-accent leading-tight">中等</h4>
-                            <p class="text-[11px] text-gray-600">A-P 字母</p>
+                            class="difficulty-btn bg-accent/10 border-2 border-accent/20 hover:border-accent/40 p-2 rounded-2xl text-center transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="text-xl mr-2">⭐⭐</div>
+                                <div>
+                                    <h4 class="font-bold text-accent text-left leading-tight">中等</h4>
+                                    <p class="text-[11px] text-gray-600 text-left">A-P 字母</p>
+                                </div>
+                            </div>
+                            <div class="text-xs text-accent ml-3">16个</div>
                         </div>
                     </button>
                     <button onclick="selectDifficulty('hard')" 
-                            class="difficulty-btn bg-danger/10 border-2 border-danger/20 hover:border-danger/40 px-3 py-2 rounded-2xl text-center transition-all duration-300 inline-flex items-center gap-2">
-                        <div class="text-xl">⭐⭐⭐</div>
-                        <div class="text-left">
-                            <h4 class="font-bold text-danger leading-tight">困难</h4>
-                            <p class="text-[11px] text-gray-600">A-Z 全部</p>
+                            class="difficulty-btn bg-danger/10 border-2 border-danger/20 hover:border-danger/40 p-2 rounded-2xl text-center transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="text-xl mr-2">⭐⭐⭐</div>
+                                <div>
+                                    <h4 class="font-bold text-danger text-left leading-tight">困难</h4>
+                                    <p class="text-[11px] text-gray-600 text-left">A-Z 全部</p>
+                                </div>
+                            </div>
+                            <div class="text-xs text-danger ml-3">26个</div>
                         </div>
                     </button>
                 </div>
@@ -506,13 +521,16 @@
         function selectDifficulty(difficulty) {
             currentDifficulty = difficulty;
             
-            // 重置所有按钮样式
+            // 重置所有按钮样式（对齐单词记忆的选中态：ring-4 + ring-primary）
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
-                btn.classList.remove('ring-4', 'ring-primary');
+                btn.classList.remove('ring-4', 'ring-primary', 'scale-105', 'shadow-lg', 'border-4', 'border-primary');
+                btn.classList.add('opacity-80');
             });
             
             // 高亮选中的按钮
-            event.target.closest('.difficulty-btn').classList.add('ring-4', 'ring-primary');
+            const active = event.target.closest('.difficulty-btn');
+            active.classList.add('ring-4', 'ring-primary');
+            active.classList.remove('opacity-80');
             
             // 启用开始按钮
             const startBtn = document.getElementById('start-game-btn');
