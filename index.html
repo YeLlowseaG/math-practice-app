@@ -284,19 +284,19 @@
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="text-center p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
-                        <div class="text-2xl font-bold text-blue-600">0天</div>
+                        <div id="home-streak-days" class="text-2xl font-bold text-blue-600">0天</div>
                         <div class="text-xs text-gray-600">连续学习</div>
                     </div>
                     <div class="text-center p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-                        <div class="text-2xl font-bold text-green-600">0%</div>
+                        <div id="home-overall-progress" class="text-2xl font-bold text-green-600">0%</div>
                         <div class="text-xs text-gray-600">总体进度</div>
                     </div>
                     <div class="text-center p-3 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl">
-                        <div class="text-2xl font-bold text-orange-600">0</div>
+                        <div id="home-badges" class="text-2xl font-bold text-orange-600">0</div>
                         <div class="text-xs text-gray-600">获得徽章</div>
                     </div>
                     <div class="text-center p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
-                        <div class="text-2xl font-bold text-purple-600">0分钟</div>
+                        <div id="home-today-time" class="text-2xl font-bold text-purple-600">0分钟</div>
                         <div class="text-xs text-gray-600">今日学习</div>
                     </div>
                 </div>
@@ -490,7 +490,7 @@
 
 
                 <!-- 字母认知 -->
-                <!--<div class="game-card bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-primary/20 hover:border-primary/40">
+                <div class="game-card bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-primary/20 hover:border-primary/40">
                     <div class="text-center mb-6">
                         <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-4xl shadow-lg mx-auto mb-4 float-animation" style="animation-delay: 1.0s">
                             <i class="fa fa-font"></i>
@@ -518,11 +518,11 @@
                         开始学习 <i class="fa fa-arrow-right ml-2"></i>
                     </button>
                 </div>
-                -->
+                
 
                 
                 <!-- 单词记忆 -->
-                <!--<div class="game-card bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-secondary/20 hover:border-secondary/40">
+                <div class="game-card bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-3xl border-4 border-secondary/20 hover:border-secondary/40">
                     <div class="text-center mb-6">
                         <div class="w-24 h-24 bg-gradient-to-br from-secondary to-primary rounded-full flex items-center justify-center text-white text-4xl shadow-lg mx-auto mb-4 float-animation" style="animation-delay: 1.2s">
                             <i class="fa fa-puzzle-piece"></i>
@@ -550,7 +550,7 @@
                         开始游戏 <i class="fa fa-arrow-right ml-2"></i>
                     </button>
                 </div>
-                -->
+                
 
 
 
@@ -579,8 +579,87 @@
     </div>
 
     <script>
+        // 轻量读取学习中心数据并刷新首页卡片
+        function loadLearningSummary() {
+            try {
+                const stored = localStorage.getItem('learningProgress');
+                if (!stored) return;
+                const data = JSON.parse(stored);
+
+                // 连续学习天数
+                const streakDays = data.streakDays || 0;
+                const streakEl = document.getElementById('home-streak-days');
+                if (streakEl) streakEl.textContent = `${streakDays}天`;
+
+                // 今日学习时间（秒 -> 分钟）
+                const todayMin = Math.round((data.todayStudyTime || 0) / 60);
+                const todayEl = document.getElementById('home-today-time');
+                if (todayEl) todayEl.textContent = `${todayMin}分钟`;
+
+                // 徽章数（与学习中心一致的判定）
+                let badges = 0;
+                try {
+                    // 复用学习中心的简单判定逻辑（同步更新时不依赖函数定义）
+                    const subjects = data.subjects || {};
+                    const chinese = subjects.chinese || {};
+                    const math = subjects.math || {};
+                    const english = subjects.english || {};
+                    const chineseAttempts = (chinese.pinyin?.attempts || 0) + (chinese.antonyms?.attempts || 0);
+                    const mathAttempts = (math.addition?.attempts || 0) + (math.subtraction?.attempts || 0);
+                    const englishAttempts = (english.letters?.attempts || 0) + (english.memory?.attempts || 0) + (english.wordConnect?.attempts || 0);
+                    const weeklyAccuracy = (function calcAcc(){
+                        let totalScore = 0, totalMax = 0;
+                        Object.values(subjects).forEach(s => {
+                            Object.values(s).forEach(a => {
+                                if (a && typeof a.totalScore === 'number' && typeof a.attempts === 'number' && a.attempts > 0) {
+                                    totalScore += a.totalScore;
+                                    totalMax += a.attempts * 100;
+                                }
+                            });
+                        });
+                        return totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
+                    })();
+                    if (true) badges += 1; // first_game
+                    if (chineseAttempts >= 5) badges += 1; // chinese_starter
+                    if (mathAttempts >= 10) badges += 1; // math_genius
+                    if (englishAttempts >= 5) badges += 1; // english_explorer
+                    if ((data.streakDays || 0) >= 3) badges += 1; // persistent_learner
+                    if ((data.streakDays || 0) >= 7) badges += 1; // week_warrior
+                    if (weeklyAccuracy >= 85) badges += 1; // accuracy_master
+                    if (chineseAttempts >= 3 && mathAttempts >= 3 && englishAttempts >= 3) badges += 1; // super_learner
+                } catch (_) {}
+                const badgesEl = document.getElementById('home-badges');
+                if (badgesEl) badgesEl.textContent = badges;
+
+                // 总体进度（三个大类平均分的平均）
+                const subjects = (JSON.parse(stored).subjects) || {};
+                function avg(arr){
+                    const v = arr.filter(x => x !== null);
+                    if (!v.length) return null;
+                    return v.reduce((a,b)=>a+b,0)/v.length;
+                }
+                function scoreOf(obj){
+                    if (!obj) return null;
+                    const list = Object.values(obj).filter(x=>x && typeof x.totalScore==='number' && typeof x.attempts==='number' && x.attempts>0);
+                    if (!list.length) return null;
+                    const s = list.reduce((a,b)=>a + (b.totalScore / b.attempts), 0) / list.length;
+                    return Math.min(100, Math.max(0, s));
+                }
+                const chineseScore = scoreOf(subjects.chinese);
+                const mathScore = scoreOf(subjects.math);
+                const englishScore = scoreOf(subjects.english);
+                const overallArr = [chineseScore, mathScore, englishScore];
+                const overall = avg(overallArr) ?? 0;
+                const overallEl = document.getElementById('home-overall-progress');
+                if (overallEl) overallEl.textContent = `${Math.round(overall)}%`;
+            } catch (e) {
+                console.warn('首页学习进度读取失败:', e);
+            }
+        }
+
         // 添加页面加载动画
         document.addEventListener('DOMContentLoaded', function() {
+            loadLearningSummary();
             const gameCards = document.querySelectorAll('.game-card');
             gameCards.forEach((card, index) => {
                 card.style.opacity = '0';
