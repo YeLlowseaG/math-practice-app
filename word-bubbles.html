@@ -978,22 +978,28 @@
             const bubbleEl = this;
             if (isCorrect) {
                 try {
-                    // 1) 锁定当前位置并暂停动画（避免继续横向滑动）
-                    const cs = getComputedStyle(bubbleEl);
-                    bubbleEl.style.left = cs.left;
-                    bubbleEl.style.top = cs.top;
+                    // 1) 立刻去除左右飞行动画类并锁定像素位置
+                    bubbleEl.classList.remove('from-left','from-right');
+                    const r = bubbleEl.getBoundingClientRect();
+                    const pr = bubblesContainer.getBoundingClientRect();
+                    bubbleEl.style.left = (r.left - pr.left) + 'px';
+                    bubbleEl.style.top = (r.top - pr.top) + 'px';
+                    bubbleEl.style.animation = 'none';
                     bubbleEl.style.animationPlayState = 'paused';
-                    bubbleEl.style.animation = cs.animationName ? cs.animationName + ' 0s' : 'none';
-                    // 2) 计算到目标卡片中心的位移
+                    // 确保从当前位置开始（无初始 transform）
+                    bubbleEl.style.transition = 'none';
+                    bubbleEl.style.transform = 'translate3d(0,0,0)';
+                    // 2) 计算到目标卡片中心的位移（取内胶囊文字更精准）
                     const targetEl = document.getElementById('targets-display');
-                    const tRect = targetEl.getBoundingClientRect();
+                    const targetAnchor = targetEl.querySelector('span') || targetEl;
+                    const tRect = targetAnchor.getBoundingClientRect();
                     const bRect = bubbleEl.getBoundingClientRect();
                     const dx = (tRect.left + tRect.width / 2) - (bRect.left + bRect.width / 2);
                     const dy = (tRect.top + tRect.height / 2) - (bRect.top + bRect.height / 2);
                     // 3) 执行动画
-                    bubbleEl.style.willChange = 'transform, opacity';
-                    bubbleEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s';
                     requestAnimationFrame(() => {
+                        bubbleEl.style.willChange = 'transform, opacity';
+                        bubbleEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s';
                         bubbleEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.5)`;
                         bubbleEl.style.opacity = '0.2';
                     });
