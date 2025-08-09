@@ -367,6 +367,12 @@
     </div>
 
     <script>
+        // T0: unified achievements API
+        (function(){
+          var s=document.createElement('script');
+          s.src='assets/achievements.js?_='+Date.now();
+          document.head.appendChild(s);
+        })();
         // 学习数据管理类
         class LearningProgressManager {
             constructor() {
