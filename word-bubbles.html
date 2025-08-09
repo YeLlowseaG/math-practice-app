@@ -983,18 +983,24 @@
                         const targetEl = document.getElementById('targets-display');
                         const tRect = targetEl.getBoundingClientRect();
                         const bRect = bubbleEl.getBoundingClientRect();
-                        // 先“冻结”当前动画位置，避免 left 动画恢复起点导致方向错误
-                        const parentRect = bubblesContainer.getBoundingClientRect();
-                        bubbleEl.style.animation = 'none';
-                        bubbleEl.style.left = (bRect.left - parentRect.left) + 'px';
-                        bubbleEl.style.top = (bRect.top - parentRect.top) + 'px';
-                        bubbleEl.style.willChange = 'transform, opacity';
-                        const dx = tRect.left + tRect.width/2 - (bRect.left + bRect.width/2);
-                        const dy = tRect.top + tRect.height/2 - (bRect.top + bRect.height/2);
-                        bubbleEl.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s';
-                        bubbleEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.5)`;
-                        bubbleEl.style.opacity = '0.2';
-                        setTimeout(() => bubbleEl.remove(), 820);
+                        // 使用“幽灵泡泡”在视口坐标系动画，避免容器布局干扰
+                        const ghost = bubbleEl.cloneNode(true);
+                        ghost.style.position = 'fixed';
+                        ghost.style.left = (bRect.left) + 'px';
+                        ghost.style.top = (bRect.top) + 'px';
+                        ghost.style.margin = '0';
+                        ghost.style.zIndex = '9999';
+                        ghost.style.animation = 'none';
+                        document.body.appendChild(ghost);
+                        bubbleEl.remove();
+                        const dx = (tRect.left + tRect.width/2) - (bRect.left + bRect.width/2);
+                        const dy = (tRect.top + tRect.height/2) - (bRect.top + bRect.height/2);
+                        requestAnimationFrame(() => {
+                            ghost.style.transition = 'transform 0.8s ease-in-out, opacity 0.8s';
+                            ghost.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(0.5)`;
+                            ghost.style.opacity = '0.2';
+                        });
+                        setTimeout(() => ghost.remove(), 820);
                     } catch(_) { bubbleEl.remove(); }
                 } else {
                     bubbleEl.remove();
