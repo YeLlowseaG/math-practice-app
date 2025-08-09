@@ -148,7 +148,7 @@
             <i class="fa fa-home mr-2"></i>首页
         </button>
         
-        <div class="text-center w-full max-w-sm mx-auto bg-white rounded-3xl shadow-2xl p-6 transform transition-all duration-500">
+        <div class="text-center w-full max-w-lg mx-auto bg-white rounded-3xl shadow-2xl p-6 transform transition-all duration-500">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent mb-3">单词记忆</h1>
             <p class="text-base mb-4 text-gray-600">翻牌配对游戏<br>记住单词配对！</p>
             
@@ -226,6 +226,13 @@
                 <span class="text-xs text-gray-500" id="timer-description">不限时游戏</span>
             </div>
             
+            <!-- 徽章预览 -->
+            <div id="badge-preview" class="mb-5">
+                <h3 class="text-sm font-bold mb-2">我的徽章</h3>
+                <div id="badge-preview-grid" class="flex justify-center gap-3 flex-wrap"></div>
+                <div class="text-xs text-gray-400 mt-1">本游戏徽章预览（已获高亮，未获灰显）</div>
+            </div>
+            
             <!-- 游戏说明 -->
             <div class="mb-5">
                 <div class="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-4 text-sm">
@@ -257,6 +264,38 @@
             </button>
         </div>
     </div>
+
+    <script>
+    (function(){
+      const GAME_KEY = 'memory';
+      const badgeDefs = [
+        { id: 'first_match', name: '首配成功', icon: '🎯' },
+        { id: 'combo_5', name: '连击达人', icon: '🔥' },
+        { id: 'speed_clear', name: '极速通关', icon: '⚡' },
+        { id: 'level_master', name: '关卡高手', icon: '🏆' },
+        { id: 'perfect_board', name: '完美局', icon: '💎' }
+      ];
+      function getEarnedIds(){
+        try { return JSON.parse(localStorage.getItem('earnedAchievements_' + GAME_KEY) || '[]'); } catch(_) { return []; }
+      }
+      function renderBadgePreview(){
+        const grid = document.getElementById('badge-preview-grid');
+        if(!grid) return;
+        const owned = new Set(getEarnedIds());
+        grid.innerHTML = badgeDefs.map(a => {
+          const earned = owned.has(a.id);
+          const base = earned ? 'from-yellow-100 to-orange-100 border-yellow-300 text-amber-900' : 'from-gray-50 to-gray-100 border-gray-200 text-gray-400 opacity-80';
+          return `
+            <div class="relative w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${base} shadow-sm flex flex-col items-center justify-center overflow-hidden" title="${a.name}">
+              <div class="text-2xl mb-1">${a.icon}</div>
+              <div class="text-[10px] font-bold text-center leading-tight px-1">${a.name}</div>
+              ${earned ? '<div class=\"absolute -right-1 -top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\">已获</div>' : ''}
+            </div>`;
+        }).join('');
+      }
+      document.addEventListener('DOMContentLoaded', renderBadgePreview);
+    })();
+    </script>
     
     <!-- 游戏界面 -->
     <div id="game-screen" class="hidden flex flex-col min-h-screen p-4">

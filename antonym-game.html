@@ -87,7 +87,7 @@
         <button onclick="window.location.href='index.html'" class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 text-sm font-bold text-gray-600 hover:text-gray-800 z-40">
             <i class="fa fa-home mr-2"></i>首页
         </button>
-        <div class="text-center max-w-md mx-auto bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-500">
+        <div class="text-center max-w-lg mx-auto bg-white rounded-3xl shadow-2xl p-8 transform transition-all duration-500">
             <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-player1 to-player2 mb-4">反义词大挑战</h1>
             <p class="text-lg mb-6">两个人，一人一边<br>找出正确的反义词，看谁更快！</p>
             
@@ -112,10 +112,16 @@
                 <span class="text-xs text-gray-500" id="timer-description">每题10秒限时</span>
             </div>
             
+            <div id="badge-preview" class="mt-6">
+                <h3 class="text-sm font-bold mb-2">我的徽章</h3>
+                <div id="badge-preview-grid" class="flex justify-center gap-3 flex-wrap"></div>
+                <div class="text-xs text-gray-400 mt-1">本游戏徽章预览（已获高亮，未获灰显）</div>
+            </div>
+
             <button id="start-btn" class="bg-accent hover:bg-yellow-400 text-text font-bold py-3 px-8 rounded-full text-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95">
                 开始游戏 <i class="fa fa-play ml-2"></i>
             </button>
-            
+
             <div class="mt-6 text-sm text-gray-500">
                 <p>适合年龄：6-9岁</p>
             </div>
@@ -130,6 +136,37 @@
         </div>
     </div>
 
+    <script>
+    (function(){
+      const GAME_KEY = 'antonyms_duo';
+      const badgeDefs = [
+        { id: 'first_win', name: '首胜达成', icon: '🎯' },
+        { id: 'combo_duo', name: '连击达人', icon: '🔥' },
+        { id: 'speed_duel', name: '极速对决', icon: '⚡' },
+        { id: 'round_master', name: '回合大师', icon: '🏆' },
+        { id: 'perfect_round', name: '完美回合', icon: '💎' }
+      ];
+      function getEarnedIds(){
+        try { return JSON.parse(localStorage.getItem('earnedAchievements_' + GAME_KEY) || '[]'); } catch(_) { return []; }
+      }
+      function renderBadgePreview(){
+        const grid = document.getElementById('badge-preview-grid');
+        if(!grid) return;
+        const owned = new Set(getEarnedIds());
+        grid.innerHTML = badgeDefs.map(a => {
+          const earned = owned.has(a.id);
+          const base = earned ? 'from-yellow-100 to-orange-100 border-yellow-300 text-amber-900' : 'from-gray-50 to-gray-100 border-gray-200 text-gray-400 opacity-80';
+          return `
+            <div class="relative w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${base} shadow-sm flex flex-col items-center justify-center overflow-hidden" title="${a.name}">
+              <div class="text-2xl mb-1">${a.icon}</div>
+              <div class="text-[10px] font-bold text-center leading-tight px-1">${a.name}</div>
+              ${earned ? '<div class=\"absolute -right-1 -top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\">已获</div>' : ''}
+            </div>`;
+        }).join('');
+      }
+      document.addEventListener('DOMContentLoaded', renderBadgePreview);
+    })();
+    </script>
     <!-- 游戏界面 -->
     <div id="game-screen" class="hidden h-screen flex flex-col">
         <!-- 顶部信息栏 -->

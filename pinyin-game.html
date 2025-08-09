@@ -144,7 +144,7 @@
         <button onclick="window.location.href='index.html'" class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 text-sm font-bold text-gray-600 hover:text-gray-800 z-40">
             <i class="fa fa-home mr-2"></i>首页
         </button>
-        <div class="text-center max-w-md mx-auto bg-white rounded-2xl shadow-xl p-6 transform transition-all duration-500">
+        <div class="text-center max-w-lg mx-auto bg-white rounded-2xl shadow-xl p-6 transform transition-all duration-500">
             <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-3">拼音小达人</h1>
             <p class="text-sm mb-4 text-gray-600">听读音选拼音<br>快乐学拼音，轻松识汉字！</p>
             
@@ -211,6 +211,13 @@
                 开始学习 <i class="fa fa-play ml-1"></i>
             </button>
             
+            <!-- 徽章预览 -->
+            <div id="badge-preview" class="mt-5">
+                <h3 class="text-sm font-bold mb-2">我的徽章</h3>
+                <div id="badge-preview-grid" class="flex justify-center gap-3 flex-wrap"></div>
+                <div class="text-xs text-gray-400 mt-1">本游戏徽章预览（已获高亮，未获灰显）</div>
+            </div>
+            
             <div class="mt-4 text-xs text-gray-500">
                 <p>适合年龄：5-8岁</p>
                 <p>目标：通过听力训练掌握拼音！</p>
@@ -225,6 +232,38 @@
             <i class="fa fa-headphones bounce-light" style="animation-delay: 0.3s"></i>
         </div>
     </div>
+
+    <script>
+    (function(){
+      const GAME_KEY = 'pinyin';
+      const badgeDefs = [
+        { id: 'first_right', name: '首题正确', icon: '🎯' },
+        { id: 'combo_5', name: '连击达人', icon: '🔥' },
+        { id: 'speed_round', name: '极速答题', icon: '⚡' },
+        { id: 'level_reach', name: '闯关能手', icon: '🏆' },
+        { id: 'perfect_round', name: '完美回合', icon: '💎' }
+      ];
+      function getEarnedIds(){
+        try { return JSON.parse(localStorage.getItem('earnedAchievements_' + GAME_KEY) || '[]'); } catch(_) { return []; }
+      }
+      function renderBadgePreview(){
+        const grid = document.getElementById('badge-preview-grid');
+        if(!grid) return;
+        const owned = new Set(getEarnedIds());
+        grid.innerHTML = badgeDefs.map(a => {
+          const earned = owned.has(a.id);
+          const base = earned ? 'from-yellow-100 to-orange-100 border-yellow-300 text-amber-900' : 'from-gray-50 to-gray-100 border-gray-200 text-gray-400 opacity-80';
+          return `
+            <div class="relative w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${base} shadow-sm flex flex-col items-center justify-center overflow-hidden" title="${a.name}">
+              <div class="text-2xl mb-1">${a.icon}</div>
+              <div class="text-[10px] font-bold text-center leading-tight px-1">${a.name}</div>
+              ${earned ? '<div class=\"absolute -right-1 -top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow\">已获</div>' : ''}
+            </div>`;
+        }).join('');
+      }
+      document.addEventListener('DOMContentLoaded', renderBadgePreview);
+    })();
+    </script>
 
     <!-- 游戏界面 -->
     <div id="game-screen" class="hidden h-screen flex flex-col">
