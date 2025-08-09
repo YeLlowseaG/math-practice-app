@@ -93,9 +93,13 @@
 
         <!-- 成就徽章展示（移到顶部） -->
         <div class="card p-6 mb-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">🏆 成就徽章</h3>
-            <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4" id="achievements-container">
-                <!-- 徽章将通过JavaScript动态生成 -->
+            <h3 class="text-xl font-bold text-gray-800 mb-4">🏆 成就徽章 <span id="achievements-count" class="ml-2 text-sm font-normal text-gray-500"></span></h3>
+            <div class="relative">
+                <div class="flex gap-4 overflow-x-auto snap-x snap-proximity pb-2 pr-8" id="achievements-container" style="scrollbar-width: thin;">
+                    <!-- 徽章将通过JavaScript动态生成 -->
+                </div>
+                <div id="achv-fade-left" class="pointer-events-none hidden md:block absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white to-transparent"></div>
+                <div id="achv-fade-right" class="pointer-events-none hidden md:block absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-white to-transparent"></div>
             </div>
         </div>
 
@@ -672,11 +676,16 @@
                     const nonGlobals = all.filter(function(a){ return a.scope !== 'global'; });
                     const container = document.getElementById('achievements-container');
                     container.innerHTML = '';
-                    // 系统级
+                    // 统计并显示数量（已获/总数）
+                    var totalCount = all.length;
+                    var earnedTotal = all.filter(function(a){ return a.earned; }).length;
+                    var countEl = document.getElementById('achievements-count');
+                    if (countEl) countEl.textContent = `（已获 ${earnedTotal} / 总数 ${totalCount}）`;
+                    // 系统级（横向滚动项）
                     globals.forEach(function(a){
                         const earned = !!a.earned;
                         const badge = document.createElement('div');
-                        badge.className = `flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${earned ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-300' : 'bg-gray-100 border-2 border-gray-200 opacity-60'}`;
+                        badge.className = `flex-shrink-0 w-36 snap-start flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${earned ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-300' : 'bg-gray-100 border-2 border-gray-200 opacity-60'}`;
                         badge.innerHTML = `
                             <div class="text-2xl mb-1">${a.icon}</div>
                             <div class="text-xs font-bold text-center text-gray-700">${a.name}</div>
@@ -689,31 +698,49 @@
                     document.getElementById('total-badges').textContent = earnedCount;
 
                     // 各游戏成就（预览）
-                    var host = container.parentElement; // 当前网格外层
-                    var title = document.createElement('h3');
-                    title.className = 'text-xl font-bold text-gray-800 mt-8 mb-4';
-                    title.textContent = '🎮 各游戏成就（预览）';
-                    host.appendChild(title);
-                    var gameGrid = document.createElement('div');
-                    gameGrid.id = 'achievements-games';
-                    gameGrid.className = 'grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4';
-                    host.appendChild(gameGrid);
+                    // 各游戏成就（与系统级同一行继续横排，可横向滚动查看更多）
                     nonGlobals.forEach(function(a){
                         const earned = !!a.earned;
                         const badge = document.createElement('div');
-                        badge.className = `flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${earned ? 'bg-gradient-to-br from-blue-100 to-cyan-100 border-2 border-blue-300' : 'bg-gray-100 border-2 border-gray-200 opacity-60'}`;
+                        badge.className = `flex-shrink-0 w-36 snap-start flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${earned ? 'bg-gradient-to-br from-blue-100 to-cyan-100 border-2 border-blue-300' : 'bg-gray-100 border-2 border-gray-200 opacity-60'}`;
                         badge.innerHTML = `
                             <div class="text-2xl mb-1">${a.icon}</div>
                             <div class="text-xs font-bold text-center text-gray-700">${a.name}</div>
                             <div class="text-xs text-gray-500 text-center mt-1" style="font-size: 10px;">${a.desc}</div>
                         `;
                         badge.title = `${a.name}: ${a.desc} ${earned ? '✅ 已获得' : '❌ 未获得'}`;
-                        gameGrid.appendChild(badge);
+                        container.appendChild(badge);
                     });
                 }
                 render();
                 try {
                     document.addEventListener('achievement-unlocked', function(){ setTimeout(render, 50); });
+                    // 滑动引导：根据滚动位置显示左右渐隐遮罩；通过最后一个徽章半显提示可滑动
+                    var scroller = document.getElementById('achievements-container');
+                    function updateFades(){
+                        var leftFade = document.getElementById('achv-fade-left');
+                        var rightFade = document.getElementById('achv-fade-right');
+                        if (!scroller || !leftFade || !rightFade) return;
+                        var atStart = scroller.scrollLeft <= 0;
+                        var atEnd = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1;
+                        leftFade.style.display = atStart ? 'none' : 'block';
+                        rightFade.style.display = atEnd ? 'none' : 'block';
+                    }
+                    scroller.addEventListener('scroll', updateFades, { passive: true });
+                    window.addEventListener('resize', updateFades);
+                    setTimeout(updateFades, 100);
+                    // 让可视范围内最后一个徽章露出半个宽度
+                    setTimeout(function(){
+                        try {
+                            var cards = scroller.querySelectorAll('div.flex-shrink-0.w-36');
+                            if (cards.length > 0) {
+                                var cardWidth = cards[0].getBoundingClientRect().width + 16; // 含gap
+                                // 将容器的内边距右侧保持一段空间，让最后一张半显
+                                scroller.style.paddingRight = '72px';
+                            }
+                            updateFades();
+                        } catch(_) {}
+                    }, 120);
                 } catch(_) {}
             }
 
