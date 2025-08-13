@@ -47,7 +47,11 @@
     // Pinyin Game
     { id: 'py_first_finish', name: '拼音初体验', icon: '🗣️', scope: 'game:pinyin', desc: '完成一次拼音练习' },
     // Math Practice
-    { id: 'math_first_finish', name: '数学初上手', icon: '➕', scope: 'game:math', desc: '完成一次数学练习' }
+    { id: 'math_first_finish', name: '数学初上手', icon: '➕', scope: 'game:math', desc: '完成一次数学练习' },
+    // Idiom Fill
+    { id: 'idm_first_finish', name: '成语初体验', icon: '📚', scope: 'game:idiom_fill', desc: '完成一次成语填空' },
+    { id: 'idm_high_score', name: '成语高手', icon: '⭐', scope: 'game:idiom_fill', desc: '获得高分成就' },
+    { id: 'idm_combo_master', name: '连击大师', icon: '🔥', scope: 'game:idiom_fill', desc: '连续答对多题' }
   ];
 
   function load() {

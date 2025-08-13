@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>成语填空 - 语文学习</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script defer src="./assets/achievements.js"></script>
+    <script defer src="./wellness.js"></script>
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        danger: '#EF4444',
+                        neutral: '#F7FFF7',
+                        text: '#1F2937'
+                    },
+                    fontFamily: {
+                        kids: ['"Comic Sans MS"', '"Marker Felt"', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .bounce-light {
+                animation: bounce-light 0.5s ease infinite alternate;
+            }
+            .pulse-slow {
+                animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            .scale-hover {
+                transition: transform 0.2s;
+            }
+            .scale-hover:hover {
+                transform: scale(1.05);
+            }
+            .correct-animation {
+                animation: correct 0.6s ease-in-out;
+            }
+            .wrong-animation {
+                animation: wrong 0.6s ease-in-out;
+            }
+            .level-complete {
+                animation: levelComplete 1s ease-in-out;
+            }
+            @keyframes bounce-light {
+                from { transform: translateY(0); }
+                to { transform: translateY(-5px); }
+            }
+            @keyframes correct {
+                0% { transform: scale(1); background-color: #10B981; }
+                50% { transform: scale(1.1); background-color: #34D399; }
+                100% { transform: scale(1); background-color: #10B981; }
+            }
+            @keyframes wrong {
+                0% { transform: translateX(0); background-color: #EF4444; }
+                25% { transform: translateX(-5px); background-color: #F87171; }
+                75% { transform: translateX(5px); background-color: #F87171; }
+                100% { transform: translateX(0); background-color: #EF4444; }
+            }
+            @keyframes levelComplete {
+                0% { transform: scale(1) rotate(0deg); }
+                25% { transform: scale(1.2) rotate(5deg); }
+                75% { transform: scale(1.2) rotate(-5deg); }
+                100% { transform: scale(1) rotate(0deg); }
+            }
+            @keyframes button-press {
+                0% { transform: scale(1); }
+                50% { transform: scale(0.95); }
+                100% { transform: scale(1); }
+            }
+            
+            .button-press {
+                animation: button-press 0.2s ease-in-out;
+            }
+            
+            /* 移动端优化 */
+            @media (max-width: 768px) {
+                .option-btn {
+                    min-height: 64px;
+                    font-size: 1.1rem;
+                    padding: 16px 12px;
+                }
+                .float-animation {
+                    animation: none;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                .option-btn {
+                    min-height: 72px;
+                    font-size: 1rem;
+                    padding: 20px 12px;
+                }
+                #question-text {
+                    font-size: 1.5rem;
+                }
+            }
+            
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(59, 130, 246, 0.3);
+                transform: scale(0);
+                animation: ripple-animation 0.6s linear;
+                pointer-events: none;
+            }
+            
+            @keyframes ripple-animation {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-kids text-text overflow-hidden">
+    <!-- 开始界面 -->
+    <div id="startPage" class="flex flex-col items-center justify-center h-screen p-6 py-6 relative">
+        <!-- 返回首页按钮 -->
+        <button onclick="window.location.href='index.html'" class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 text-sm font-bold text-gray-600 hover:text-gray-800 z-40">
+            <i class="fa fa-home mr-2"></i>首页
+        </button>
+        <div class="text-center max-w-2xl mx-auto bg-white rounded-3xl shadow-2xl p-4 transform transition-all duration-500">
+            <h1 class="text-[clamp(1.5rem,4vw,2.2rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-3">成语填空</h1>
+            <p class="text-sm mb-3 text-gray-600">填补成语中的空缺<br>学习中华文化精髓！</p>
+            
+            <div class="flex justify-center mb-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-2xl shadow-lg relative overflow-hidden">
+                    <i class="fa fa-book"></i>
+                    <div class="absolute inset-0 bg-white opacity-20 rounded-full animate-ping"></div>
+                </div>
+            </div>
+            
+            <!-- 难度选择 -->
+            <div class="mb-2">
+                <h3 class="text-sm font-bold mb-2">选择难度</h3>
+                <div class="flex justify-center gap-2">
+                    <button class="difficulty-btn active" data-difficulty="easy">
+                        <span class="text-sm">🌱 简单</span>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="medium">
+                        <span class="text-sm">🌿 中等</span>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="hard">
+                        <span class="text-sm">🌳 困难</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 主题选择 -->
+            <div class="mb-2">
+                <h3 class="text-sm font-bold mb-2">选择主题</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="theme-btn active" data-theme="nature">
+                        <span class="text-sm">🌲 自然</span>
+                    </button>
+                    <button class="theme-btn" data-theme="wisdom">
+                        <span class="text-sm">🧠 智慧</span>
+                    </button>
+                    <button class="theme-btn" data-theme="story">
+                        <span class="text-sm">📚 故事</span>
+                    </button>
+                    <button class="theme-btn" data-theme="mixed">
+                        <span class="text-sm">🎲 混合</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 倒计时开关 -->
+            <div class="mb-2 flex items-center justify-center gap-2 bg-gray-50 rounded-xl p-2">
+                <i class="fa fa-clock-o text-gray-600"></i>
+                <span class="text-gray-700 font-medium text-xs">倒计时模式</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="timer-toggle" class="sr-only peer" checked>
+                    <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+                <span class="text-xs text-gray-500" id="timer-description">根据难度限时</span>
+            </div>
+
+            <!-- 徽章预览 -->
+            <div id="badge-preview" class="mb-2">
+                <h3 class="text-xs font-bold mb-1">我的徽章</h3>
+                <div id="badgePreview" class="flex justify-center gap-2 flex-wrap"></div>
+                <div class="text-xs text-gray-400 mt-1">本游戏徽章预览（已获高亮，未获灰显）</div>
+            </div>
+            
+            <button id="startBtn" class="bg-accent hover:bg-yellow-400 text-white font-bold py-2 px-6 rounded-full text-base shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95 opacity-50 cursor-not-allowed" disabled>
+                开始挑战 <i class="fa fa-play ml-2"></i>
+            </button>
+            
+            <div class="mt-3 text-xs text-gray-500">
+                <p>适合年龄：6-12岁</p>
+                <p>目标：填补成语空缺获得高分！</p>
+            </div>
+        </div>
+        
+        <!-- 装饰元素 -->
+        <div class="absolute top-10 left-10 text-5xl text-primary/30">
+            <i class="fa fa-star bounce-light"></i>
+        </div>
+        <div class="absolute bottom-10 right-10 text-5xl text-secondary/30">
+            <i class="fa fa-heart bounce-light" style="animation-delay: 0.3s"></i>
+        </div>
+        <div class="absolute top-1/4 right-20 text-4xl text-accent/30">
+            <i class="fa fa-trophy bounce-light" style="animation-delay: 0.6s"></i>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="gamePage" class="hidden h-screen flex flex-col">
+        <!-- 顶部信息栏 -->
+        <div class="flex justify-between items-center p-3 bg-white/80 backdrop-blur-sm shadow-md">
+            <!-- 左侧信息 -->
+            <div class="flex items-center gap-3">
+                <!-- 返回首页按钮 -->
+                <button onclick="window.location.href='index.html'" class="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full shadow-md transition-all duration-300 hover:scale-105 active:scale-95 text-sm font-bold text-gray-600 hover:text-gray-800">
+                    <i class="fa fa-home mr-1"></i><span class="hidden sm:inline">首页</span>
+                </button>
+                <div class="bg-primary px-4 py-2 rounded-full text-white font-bold shadow-md">
+                    <span>关卡 </span><span id="currentLevel">1</span><span>/20</span>
+                </div>
+                <div class="bg-secondary px-4 py-2 rounded-full text-white font-bold shadow-md">
+                    <span>连击 </span><span id="combo">0</span>
+                </div>
+                <div class="bg-accent px-4 py-2 rounded-full text-white font-bold shadow-md">
+                    <span>本关进度 </span><span id="progressDisplay">1/3</span>
+                </div>
+            </div>
+            
+            <!-- 中间计时器 -->
+            <div id="timer" class="bg-accent text-white px-6 py-3 rounded-full shadow-md">
+                <i class="fa fa-clock-o mr-2"></i>
+                <span id="countdown" class="text-xl font-bold">倒计时 30.0</span>
+            </div>
+            
+            <!-- 右侧分数 -->
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 rounded-full text-white font-bold shadow-md">
+                <i class="fa fa-star mr-2"></i>
+                <span id="currentScore">0</span>
+            </div>
+        </div>
+        
+        <!-- 关卡进度条 -->
+        <div class="bg-gray-100 border-b border-gray-200">
+            <div class="px-4 py-2">
+
+                <div class="bg-gray-200 h-3 rounded-full overflow-hidden">
+                    <div id="progressBar" class="bg-gradient-to-r from-primary to-secondary h-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主要游戏区域 -->
+        <div class="flex-1 flex flex-col items-center p-6">
+            <!-- 反馈信息 - 移到顶部 -->
+            <div id="feedback" class="mb-4 text-center text-lg font-medium min-h-[2rem] flex items-center justify-center px-4">
+                <!-- 反馈信息显示区域 -->
+            </div>
+            
+            <!-- 成语题目显示 -->
+            <div class="bg-white rounded-3xl shadow-2xl p-8 text-center mb-6 transform transition-all duration-500">
+                <p class="text-gray-500 text-lg mb-2">请填补成语中的空缺</p>
+                <div id="idiomQuestion" class="text-[clamp(2.5rem,6vw,4rem)] font-bold text-text mb-2 tracking-wider">
+                    <!-- 成语题目将通过JavaScript动态生成 -->
+                </div>
+                <div id="idiomPinyin" class="text-lg text-gray-600 mb-4">
+                    <!-- 成语拼音将通过JavaScript动态生成 -->
+                </div>
+                <p class="text-gray-400 text-lg" id="questionHint">选择一个字填入空缺处</p>
+            </div>
+            
+            <!-- 选项区域 -->
+            <div id="optionsContainer" class="grid grid-cols-2 gap-4 max-w-xl w-full mt-auto mb-4">
+                <!-- 选项会动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果界面 -->
+    <div id="resultPage" class="hidden flex flex-col items-center justify-center h-screen p-6 bg-white/90 backdrop-blur-md">
+        <div class="text-center max-w-lg mx-auto">
+            <div id="result-icon" class="text-8xl mb-6">🎉</div>
+            <h2 id="result-title" class="text-[clamp(2rem,5vw,3rem)] font-bold mb-6">太棒了！</h2>
+            
+            <div class="bg-neutral rounded-2xl shadow-lg p-8 mb-8">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="text-center">
+                        <div class="text-primary text-3xl font-bold" id="finalScore">0</div>
+                        <div class="text-gray-600">总分数</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-secondary text-3xl font-bold" id="final-level">5</div>
+                        <div class="text-gray-600">完成题目</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-accent text-3xl font-bold" id="final-accuracy">0%</div>
+                        <div class="text-gray-600">准确率</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-purple-500 text-3xl font-bold" id="maxCombo">0</div>
+                        <div class="text-gray-600">最高连击</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 justify-center">
+                <button id="nextLevel" class="bg-secondary hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:scale-105">
+                    下一关 <i class="fa fa-arrow-right ml-2"></i>
+                </button>
+                <button id="playAgain" class="bg-accent hover:bg-yellow-400 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:scale-105">
+                    再玩一次 <i class="fa fa-refresh ml-2"></i>
+                </button>
+                <button id="backToHome" class="bg-primary hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:scale-105">
+                    返回首页 <i class="fa fa-home ml-2"></i>
+                </button>
+            </div>
+            
+            <!-- 成就展示区域 -->
+            <div id="achievements" class="mt-8">
+                <!-- 成就会动态生成 -->
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm text-gray-800 px-6 py-3 rounded-full shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50">
+        <!-- Toast 内容将通过JavaScript动态生成 -->
+    </div>
+
+    <script>
+        // 成语数据库（含拼音）
+        const idiomDatabase = {
+            easy: {
+                nature: [
+                    { idiom: "守株待兔", pinyin: "shǒu zhū dài tù", missing: "株", missingPinyin: "zhū", options: ["株", "树", "木", "草"], optionPinyins: ["zhū", "shù", "mù", "cǎo"], hint: "比喻死守狭隘经验，不知变通" },
+                    { idiom: "画蛇添足", pinyin: "huà shé tiān zú", missing: "足", missingPinyin: "zú", options: ["足", "脚", "腿", "手"], optionPinyins: ["zú", "jiǎo", "tuǐ", "shǒu"], hint: "比喻做了多余的事，反而有害无益" },
+                    { idiom: "对牛弹琴", pinyin: "duì niú tán qín", missing: "琴", missingPinyin: "qín", options: ["琴", "筝", "笛", "箫"], optionPinyins: ["qín", "zhēng", "dí", "xiāo"], hint: "比喻对不懂的人说深奥的道理" },
+                    { idiom: "亡羊补牢", pinyin: "wáng yáng bǔ láo", missing: "牢", missingPinyin: "láo", options: ["牢", "圈", "栏", "门"], optionPinyins: ["láo", "quān", "lán", "mén"], hint: "比喻出了问题及时补救" },
+                    { idiom: "井底之蛙", pinyin: "jǐng dǐ zhī wā", missing: "蛙", missingPinyin: "wā", options: ["蛙", "鱼", "虾", "蟹"], optionPinyins: ["wā", "yú", "xiā", "xiè"], hint: "比喻见识短浅的人" }
+                ],
+                wisdom: [
+                    { idiom: "学而不厌", pinyin: "xué ér bù yàn", missing: "厌", missingPinyin: "yàn", options: ["厌", "烦", "累", "倦"], optionPinyins: ["yàn", "fán", "lèi", "juàn"], hint: "学习总感到不满足" },
+                    { idiom: "诲人不倦", pinyin: "huì rén bù juàn", missing: "倦", missingPinyin: "juàn", options: ["倦", "累", "厌", "烦"], optionPinyins: ["juàn", "lèi", "yàn", "fán"], hint: "教导别人不知疲倦" },
+                    { idiom: "温故知新", pinyin: "wēn gù zhī xīn", missing: "新", missingPinyin: "xīn", options: ["新", "旧", "老", "古"], optionPinyins: ["xīn", "jiù", "lǎo", "gǔ"], hint: "温习旧知识，得到新的理解和体会" },
+                    { idiom: "举一反三", pinyin: "jǔ yī fǎn sān", missing: "三", missingPinyin: "sān", options: ["三", "二", "四", "五"], optionPinyins: ["sān", "èr", "sì", "wǔ"], hint: "从一件事情类推而知道许多事情" },
+                    { idiom: "不耻下问", pinyin: "bù chǐ xià wèn", missing: "问", missingPinyin: "wèn", options: ["问", "学", "求", "教"], optionPinyins: ["wèn", "xué", "qiú", "jiào"], hint: "不以向地位低的人请教为耻" }
+                ],
+                story: [
+                    { idiom: "刻舟求剑", pinyin: "kè zhōu qiú jiàn", missing: "剑", missingPinyin: "jiàn", options: ["剑", "刀", "枪", "矛"], optionPinyins: ["jiàn", "dāo", "qiāng", "máo"], hint: "比喻死守教条，不知变通" },
+                    { idiom: "掩耳盗铃", pinyin: "yǎn ěr dào líng", missing: "铃", missingPinyin: "líng", options: ["铃", "钟", "鼓", "锣"], optionPinyins: ["líng", "zhōng", "gǔ", "luó"], hint: "比喻自己欺骗自己" },
+                    { idiom: "拔苗助长", pinyin: "bá miáo zhù zhǎng", missing: "长", missingPinyin: "zhǎng", options: ["长", "高", "大", "快"], optionPinyins: ["zhǎng", "gāo", "dà", "kuài"], hint: "比喻违反事物发展规律" },
+                    { idiom: "狐假虎威", pinyin: "hú jiǎ hǔ wēi", missing: "威", missingPinyin: "wēi", options: ["威", "势", "力", "权"], optionPinyins: ["wēi", "shì", "lì", "quán"], hint: "比喻倚仗别人的权势来欺压人" },
+                    { idiom: "南辕北辙", pinyin: "nán yuán běi zhé", missing: "字", missingPinyin: "zhé", options: ["辙", "路", "道", "径"], optionPinyins: ["zhé", "lù", "dào", "jìng"], hint: "比喻行动和目的相反" }
+                ],
+                mixed: [
+                    { idiom: "一箭双雕", pinyin: "yī jiàn shuāng diāo", missing: "雕", missingPinyin: "diāo", options: ["雕", "鸟", "鹰", "雁"], optionPinyins: ["diāo", "niǎo", "yīng", "yàn"], hint: "比喻一举两得" },
+                    { idiom: "四面楚歌", pinyin: "sì miàn chǔ gē", missing: "歌", missingPinyin: "gē", options: ["歌", "声", "音", "曲"], optionPinyins: ["gē", "shēng", "yīn", "qǔ"], hint: "比喻四面受敌，孤立无援" },
+                    { idiom: "望梅止渴", pinyin: "wàng méi zhǐ kě", missing: "梅", missingPinyin: "méi", options: ["梅", "桃", "李", "杏"], optionPinyins: ["méi", "táo", "lǐ", "xìng"], hint: "比喻用空想来安慰自己" },
+                    { idiom: "杯弓蛇影", pinyin: "bēi gōng shé yǐng", missing: "影", missingPinyin: "yǐng", options: ["影", "像", "形", "状"], optionPinyins: ["yǐng", "xiàng", "xíng", "zhuàng"], hint: "比喻疑神疑鬼，自相惊扰" },
+                    { idiom: "草木皆兵", pinyin: "cǎo mù jiē bīng", missing: "兵", missingPinyin: "bīng", options: ["兵", "将", "士", "卒"], optionPinyins: ["bīng", "jiàng", "shì", "zú"], hint: "形容惊慌时疑神疑鬼" }
+                ]
+            },
+            medium: {
+                nature: [
+                    { idiom: "春暖花开", pinyin: "chūn nuǎn huā kāi", missing: "花", missingPinyin: "huā", options: ["花", "草", "树", "叶"], optionPinyins: ["huā", "cǎo", "shù", "yè"], hint: "形容春天温暖，百花盛开" },
+                    { idiom: "秋高气爽", pinyin: "qiū gāo qì shuǎng", missing: "气", missingPinyin: "qì", options: ["气", "风", "云", "天"], optionPinyins: ["qì", "fēng", "yún", "tiān"], hint: "形容秋天天空高远，气候清爽" },
+                    { idiom: "冰天雪地", pinyin: "bīng tiān xuě dì", missing: "雪", missingPinyin: "xuě", options: ["雪", "冰", "霜", "露"], optionPinyins: ["xuě", "bīng", "shuāng", "lù"], hint: "形容冰雪覆盖的寒冷景象" },
+                    { idiom: "山清水秀", pinyin: "shān qīng shuǐ xiù", missing: "水", missingPinyin: "shuǐ", options: ["水", "山", "林", "石"], optionPinyins: ["shuǐ", "shān", "lín", "shí"], hint: "形容山水风景优美" },
+                    { idiom: "鸟语花香", pinyin: "niǎo yǔ huā xiāng", missing: "香", missingPinyin: "xiāng", options: ["香", "味", "气", "韵"], optionPinyins: ["xiāng", "wèi", "qì", "yùn"], hint: "形容春天美好的景象" }
+                ],
+                wisdom: [
+                    { idiom: "知足常乐", pinyin: "zhī zú cháng lè", missing: "乐", missingPinyin: "lè", options: ["乐", "喜", "欢", "愉"], optionPinyins: ["lè", "xǐ", "huān", "yú"], hint: "知道满足就会经常快乐" },
+                    { idiom: "厚德载物", pinyin: "hòu dé zài wù", missing: "物", missingPinyin: "wù", options: ["物", "人", "事", "理"], optionPinyins: ["wù", "rén", "shì", "lǐ"], hint: "品德高尚的人能承担重任" },
+                    { idiom: "自强不息", pinyin: "zì qiáng bù xī", missing: "息", missingPinyin: "xī", options: ["息", "止", "停", "断"], optionPinyins: ["xī", "zhǐ", "tíng", "duàn"], hint: "自己努力向上，永不停息" },
+                    { idiom: "见贤思齐", pinyin: "jiàn xián sī qí", missing: "齐", missingPinyin: "qí", options: ["齐", "同", "等", "平"], optionPinyins: ["qí", "tóng", "děng", "píng"], hint: "见到有才德的人就想要向他看齐" },
+                    { idiom: "己所不欲", pinyin: "jǐ suǒ bù yù", missing: "欲", missingPinyin: "yù", options: ["欲", "想", "要", "愿"], optionPinyins: ["yù", "xiǎng", "yào", "yuàn"], hint: "自己不愿意的，不要强加给别人" }
+                ],
+                story: [
+                    { idiom: "卧薪尝胆", pinyin: "wò xīn cháng dǎn", missing: "胆", missingPinyin: "dǎn", options: ["胆", "苦", "辛", "酸"], optionPinyins: ["dǎn", "kǔ", "xīn", "suān"], hint: "形容人刻苦自励，发奋图强" },
+                    { idiom: "破釜沉舟", pinyin: "pò fǔ chén zhōu", missing: "舟", missingPinyin: "zhōu", options: ["舟", "船", "舰", "艇"], optionPinyins: ["zhōu", "chuán", "jiàn", "tǐng"], hint: "比喻下定决心，不留退路" },
+                    { idiom: "背水一战", pinyin: "bèi shuǐ yī zhàn", missing: "战", missingPinyin: "zhàn", options: ["战", "斗", "争", "搏"], optionPinyins: ["zhàn", "dòu", "zhēng", "bó"], hint: "比喻在绝境中作最后的斗争" },
+                    { idiom: "四面楚歌", pinyin: "sì miàn chǔ gē", missing: "歌", missingPinyin: "gē", options: ["歌", "声", "音", "曲"], optionPinyins: ["gē", "shēng", "yīn", "qǔ"], hint: "比喻四面受敌，孤立无援" },
+                    { idiom: "草木皆兵", pinyin: "cǎo mù jiē bīng", missing: "兵", missingPinyin: "bīng", options: ["兵", "将", "士", "卒"], optionPinyins: ["bīng", "jiàng", "shì", "zú"], hint: "形容惊慌时疑神疑鬼" }
+                ],
+                mixed: [
+                    { idiom: "一鸣惊人", pinyin: "yī míng jīng rén", missing: "惊", missingPinyin: "jīng", options: ["惊", "动", "震", "响"], optionPinyins: ["jīng", "dòng", "zhèn", "xiǎng"], hint: "比喻平时默默无闻，突然做出惊人的成绩" },
+                    { idiom: "百发百中", pinyin: "bǎi fā bǎi zhòng", missing: "字", missingPinyin: "zhòng", options: ["中", "准", "对", "正"], optionPinyins: ["zhòng", "zhǔn", "duì", "zhèng"], hint: "形容射箭或射击非常准确" },
+                    { idiom: "千钧一发", pinyin: "qiān jūn yī fà", missing: "发", missingPinyin: "fà", options: ["发", "丝", "线", "绳"], optionPinyins: ["fà", "sī", "xiàn", "shéng"], hint: "比喻情况万分危急" },
+                    { idiom: "万无一失", pinyin: "wàn wú yī shī", missing: "失", missingPinyin: "shī", options: ["失", "错", "误", "差"], optionPinyins: ["shī", "cuò", "wù", "chā"], hint: "形容非常有把握，绝对不会出差错" },
+                    { idiom: "十全十美", pinyin: "shí quán shí měi", missing: "美", missingPinyin: "měi", options: ["美", "好", "善", "佳"], optionPinyins: ["měi", "hǎo", "shàn", "jiā"], hint: "形容完美无缺" }
+                ]
+            },
+            hard: {
+                nature: [
+                    { idiom: "海阔天空", pinyin: "hǎi kuò tiān kōng", missing: "空", missingPinyin: "kōng", options: ["空", "阔", "广", "大"], optionPinyins: ["kōng", "kuò", "guǎng", "dà"], hint: "形容空间广阔，比喻心胸开阔" },
+                    { idiom: "山重水复", pinyin: "shān chóng shuǐ fù", missing: "复", missingPinyin: "fù", options: ["复", "重", "叠", "层"], optionPinyins: ["fù", "chóng", "dié", "céng"], hint: "形容山峦重叠，水流曲折" },
+                    { idiom: "风起云涌", pinyin: "fēng qǐ yún yǒng", missing: "涌", missingPinyin: "yǒng", options: ["涌", "起", "升", "腾"], optionPinyins: ["yǒng", "qǐ", "shēng", "téng"], hint: "形容事物迅速发展，声势浩大" },
+                    { idiom: "日新月异", pinyin: "rì xīn yuè yì", missing: "异", missingPinyin: "yì", options: ["异", "新", "变", "改"], optionPinyins: ["yì", "xīn", "biàn", "gǎi"], hint: "形容发展变化很快" },
+                    { idiom: "天翻地覆", pinyin: "tiān fān dì fù", missing: "覆", missingPinyin: "fù", options: ["覆", "翻", "转", "变"], optionPinyins: ["fù", "fān", "zhuǎn", "biàn"], hint: "形容变化巨大而彻底" }
+                ],
+                wisdom: [
+                    { idiom: "学海无涯", pinyin: "xué hǎi wú yá", missing: "涯", missingPinyin: "yá", options: ["涯", "边", "际", "限"], optionPinyins: ["yá", "biān", "jì", "xiàn"], hint: "学问的海洋没有边际" },
+                    { idiom: "书山有路", pinyin: "shū shān yǒu lù", missing: "字", missingPinyin: "lù", options: ["路", "径", "道", "途"], optionPinyins: ["lù", "jìng", "dào", "tú"], hint: "书山有路勤为径" },
+                    { idiom: "业精于勤", pinyin: "yè jīng yú qín", missing: "勤", missingPinyin: "qín", options: ["勤", "奋", "努", "力"], optionPinyins: ["qín", "fèn", "nǔ", "lì"], hint: "学业精深是由于勤奋" },
+                    { idiom: "行成于思", pinyin: "xíng chéng yú sī", missing: "思", missingPinyin: "sī", options: ["思", "考", "想", "虑"], optionPinyins: ["sī", "kǎo", "xiǎng", "lǜ"], hint: "行动的成功在于思考" },
+                    { idiom: "德高望重", pinyin: "dé gāo wàng zhòng", missing: "望", missingPinyin: "wàng", options: ["望", "重", "高", "尊"], optionPinyins: ["wàng", "zhòng", "gāo", "zūn"], hint: "道德高尚，声望很高" }
+                ],
+                story: [
+                    { idiom: "精卫填海", pinyin: "jīng wèi tián hǎi", missing: "海", missingPinyin: "hǎi", options: ["海", "洋", "湖", "河"], optionPinyins: ["hǎi", "yáng", "hú", "hé"], hint: "比喻意志坚决，不畏艰难" },
+                    { idiom: "愚公移山", pinyin: "yú gōng yí shān", missing: "山", missingPinyin: "shān", options: ["山", "峰", "岭", "丘"], optionPinyins: ["shān", "fēng", "lǐng", "qiū"], hint: "比喻做事有毅力，不怕困难" },
+                    { idiom: "夸父追日", pinyin: "kuā fù zhuī rì", missing: "日", missingPinyin: "rì", options: ["日", "阳", "光", "明"], optionPinyins: ["rì", "yáng", "guāng", "míng"], hint: "比喻人有大志，也比喻不自量力" },
+                    { idiom: "女娲补天", pinyin: "nǚ wā bǔ tiān", missing: "天", missingPinyin: "tiān", options: ["天", "空", "穹", "宇"], optionPinyins: ["tiān", "kōng", "qióng", "yǔ"], hint: "比喻人有大志，也比喻不自量力" },
+                    { idiom: "盘古开天", pinyin: "pán gǔ kāi tiān", missing: "天", missingPinyin: "tiān", options: ["天", "地", "宇", "宙"], optionPinyins: ["tiān", "dì", "yǔ", "zhòu"], hint: "比喻开创事业" }
+                ],
+                mixed: [
+                    { idiom: "一马当先", pinyin: "yī mǎ dāng xiān", missing: "先", missingPinyin: "xiān", options: ["先", "前", "首", "前"], optionPinyins: ["xiān", "qián", "shǒu", "qián"], hint: "形容领先，带头" },
+                    { idiom: "百尺竿头", pinyin: "bǎi chǐ gān tóu", missing: "头", missingPinyin: "tóu", options: ["头", "端", "顶", "尖"], optionPinyins: ["tóu", "duān", "dǐng", "jiān"], hint: "比喻学问、成绩等达到了很高的程度" },
+                    { idiom: "千载难逢", pinyin: "qiān zǎi nán féng", missing: "逢", missingPinyin: "féng", options: ["逢", "遇", "见", "遇"], optionPinyins: ["féng", "yù", "jiàn", "yù"], hint: "形容机会极其难得" },
+                    { idiom: "万古长青", pinyin: "wàn gǔ cháng qīng", missing: "青", missingPinyin: "qīng", options: ["青", "绿", "翠", "碧"], optionPinyins: ["qīng", "lǜ", "cuì", "bì"], hint: "比喻精神或友谊永远存在" },
+                    { idiom: "千秋万代", pinyin: "qiān qiū wàn dài", missing: "代", missingPinyin: "dài", options: ["代", "世", "年", "岁"], optionPinyins: ["dài", "shì", "nián", "suì"], hint: "形容时间很长" }
+                ]
+            }
+        };
+
+        // 难度配置
+        const difficultyConfig = {
+            easy: { timeLimit: 30 },
+            medium: { timeLimit: 25 },
+            hard: { timeLimit: 20 }
+        };
+
+        // 游戏状态
+        let gameState = {
+            difficulty: 'easy',
+            theme: 'nature',
+            currentLevel: 1,
+            currentQuestionIndex: 0, // 当前关卡内的题目索引
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            correctCount: 0,
+            totalQuestions: 5,
+            timeLeft: 30,
+            isTimerEnabled: true,
+            timer: null,
+            currentQuestion: null,
+            levelQuestions: {} // 每关的题目
+        };
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGame();
+            renderBadgePreview();
+        });
+
+        // 初始化游戏
+        function initializeGame() {
+            // 难度选择
+            document.querySelectorAll('.difficulty-btn').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.difficulty-btn').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    gameState.difficulty = this.dataset.difficulty;
+                    checkStartButton();
+                });
+            });
+
+            // 主题选择
+            document.querySelectorAll('.theme-btn').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.theme-btn').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    gameState.theme = this.dataset.theme;
+                    checkStartButton();
+                });
+            });
+
+            // 开始按钮
+            const startBtn = document.getElementById('startBtn');
+            startBtn.addEventListener('click', startGame);
+
+            // 返回按钮
+            document.getElementById('playAgain').addEventListener('click', startGame);
+            document.getElementById('backToHome').addEventListener('click', () => window.location.href = 'index.html');
+
+            // 默认选择
+            document.querySelector('[data-difficulty="easy"]').click();
+            document.querySelector('[data-theme="nature"]').click();
+        }
+
+        // 检查开始按钮状态
+        function checkStartButton() {
+            const startBtn = document.getElementById('startBtn');
+            if (gameState.difficulty && gameState.theme) {
+                startBtn.disabled = false;
+                startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                startBtn.disabled = true;
+                startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // 渲染徽章预览
+        function renderBadgePreview() {
+            if (!window.achievements || !window.achievements.getByScope) {
+                setTimeout(renderBadgePreview, 150);
+                return;
+            }
+
+            const badges = window.achievements.getByScope('game:idiom_fill');
+            const container = document.getElementById('badgePreview');
+            container.innerHTML = '';
+
+            badges.forEach(badge => {
+                const earned = !!badge.earned;
+                const badgeEl = document.createElement('div');
+                badgeEl.className = `relative flex-shrink-0 w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${earned ? 'from-yellow-100 to-orange-100 border-yellow-300' : 'from-gray-50 to-gray-100 border-gray-200 opacity-80'} shadow-sm flex flex-col items-center justify-center overflow-hidden`;
+                
+                // 徽章内容
+                badgeEl.innerHTML = `
+                    <div class="text-2xl mb-1">${badge.icon}</div>
+                    <div class="text-[10px] font-bold text-center leading-tight px-1 ${earned ? 'text-amber-900' : 'text-gray-400'}">${badge.name}</div>
+                    <div class="absolute right-1 top-1 ${earned ? 'bg-amber-400' : 'bg-gray-400'} text-white text-[10px] px-1 rounded-full shadow">${earned ? '已获' : '未获'}</div>
+                `;
+                
+                badgeEl.title = `${badge.name}: ${badge.desc} ${earned ? '✅ 已获得' : '❌ 未获得'}`;
+                container.appendChild(badgeEl);
+            });
+        }
+
+        // 开始游戏
+        function startGame() {
+            // 设置每关成语数
+            gameState.questionsPerLevel = 3; // 每关3个成语
+            gameState.totalQuestions = 20;
+            
+            // 生成题目
+            generateQuestions();
+            
+            // 重置游戏状态
+            gameState.currentLevel = 1;
+            gameState.currentQuestionIndex = 0; // 当前关卡内的题目索引
+            gameState.score = 0;
+            gameState.combo = 0;
+            gameState.maxCombo = 0;
+            gameState.correctCount = 0;
+            gameState.timeLeft = difficultyConfig[gameState.difficulty].timeLimit;
+            
+            // 显示游戏页面
+            showGamePage();
+            
+            // 显示第一题
+            showQuestion();
+            
+            // 更新进度条
+            updateProgress();
+            
+            // 开始计时
+            if (gameState.isTimerEnabled) {
+                startTimer();
+            }
+            
+            // 重置成就显示
+            document.getElementById('achievements').innerHTML = '';
+        }
+
+        // 生成题目
+        function generateQuestions() {
+            const difficulty = gameState.difficulty;
+            const theme = gameState.theme;
+            const allQuestions = idiomDatabase[difficulty][theme];
+            
+            // 为每关生成不同的题目
+            gameState.levelQuestions = {};
+            
+            // 为每个关卡生成3个不重复的成语
+            for (let level = 1; level <= gameState.totalQuestions; level++) {
+                const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+                gameState.levelQuestions[level] = shuffled.slice(0, gameState.questionsPerLevel);
+            }
+        }
+
+        // 显示游戏页面
+        function showGamePage() {
+            document.getElementById('startPage').classList.add('hidden');
+            document.getElementById('resultPage').classList.add('hidden');
+            document.getElementById('gamePage').classList.remove('hidden');
+            
+            // 重置反馈信息
+            document.getElementById('feedback').innerHTML = '';
+            
+            // 重置进度条
+            document.getElementById('progressBar').style.width = '0%';
+        }
+
+        // 显示开始页面
+        function showStartPage() {
+            document.getElementById('gamePage').classList.add('hidden');
+            document.getElementById('resultPage').classList.add('hidden');
+            document.getElementById('startPage').classList.remove('hidden');
+            
+            // 停止计时
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+        }
+        
+        // 进入下一关
+        function nextLevel() {
+            gameState.currentLevel++;
+            gameState.currentQuestionIndex = 0; // 重置关卡内题目索引
+            gameState.combo = 0;
+            gameState.timeLeft = difficultyConfig[gameState.difficulty].timeLimit;
+            
+            // 显示游戏界面
+            showGamePage();
+            
+            // 显示下一题
+            showQuestion();
+            
+            // 更新进度条
+            updateProgress();
+            
+            // 更新显示（包括关卡显示）
+            updateDisplay();
+            
+            // 开始计时
+            if (gameState.isTimerEnabled) {
+                startTimer();
+            }
+        }
+        
+        // 更新计时器描述
+        function updateTimerDescription() {
+            const description = document.getElementById('timer-description');
+            if (!gameState.isTimerEnabled) {
+                description.textContent = '不限时模式';
+            } else {
+                const config = difficultyConfig[gameState.difficulty];
+                description.textContent = `根据难度限时`;
+            }
+        }
+
+        // 显示题目
+        function showQuestion() {
+            if (gameState.currentLevel > gameState.totalQuestions) {
+                endGame();
+                return;
+            }
+
+            // 获取当前关卡的题目
+            const currentLevelQuestions = gameState.levelQuestions[gameState.currentLevel];
+            if (!currentLevelQuestions || gameState.currentQuestionIndex >= currentLevelQuestions.length) {
+                endGame();
+                return;
+            }
+
+            gameState.currentQuestion = currentLevelQuestions[gameState.currentQuestionIndex];
+            
+            // 清空反馈区域
+            document.getElementById('feedback').innerHTML = '';
+            
+            // 更新题目显示
+            const questionEl = document.getElementById('idiomQuestion');
+            const pinyinEl = document.getElementById('idiomPinyin');
+            const idiom = gameState.currentQuestion.idiom;
+            const missing = gameState.currentQuestion.missing;
+            const missingIndex = idiom.indexOf(missing);
+            const pinyin = gameState.currentQuestion.pinyin;
+            
+            let displayText = '';
+            let displayPinyin = '';
+            for (let i = 0; i < idiom.length; i++) {
+                if (i === missingIndex) {
+                    displayText += '<span class="text-orange-400 border-b-2 border-transparent px-1">_</span>';
+                    displayPinyin += '<span class="text-orange-400 border-b-2 border-transparent px-1">_</span>';
+                } else {
+                    displayText += idiom[i];
+                    displayPinyin += pinyin.split(' ')[i];
+                }
+                if (i < idiom.length - 1) {
+                    displayPinyin += ' ';
+                }
+            }
+            questionEl.innerHTML = displayText;
+            pinyinEl.innerHTML = displayPinyin;
+
+            // 更新提示
+            document.getElementById('questionHint').textContent = gameState.currentQuestion.hint;
+
+            // 生成选项
+            generateOptions();
+
+            // 更新进度
+            updateProgress();
+        }
+
+        // 生成选项
+        function generateOptions() {
+            const container = document.getElementById('optionsContainer');
+            const options = gameState.currentQuestion.options;
+            const optionPinyins = gameState.currentQuestion.optionPinyins;
+            const correctAnswer = gameState.currentQuestion.missing;
+            
+            container.innerHTML = '';
+            
+            // 打乱选项顺序
+            const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+            const shuffledPinyins = [...optionPinyins].sort(() => Math.random() - 0.5);
+            
+            shuffledOptions.forEach((option, index) => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'bg-white rounded-2xl p-4 text-center cursor-pointer transition-all duration-300 text-xl font-bold text-text shadow-lg hover:shadow-xl hover:scale-105';
+                
+                // 找到对应的拼音
+                const originalIndex = options.indexOf(option);
+                const pinyin = optionPinyins[originalIndex];
+                
+                optionEl.innerHTML = `
+                    <div class="text-2xl mb-1">${option}</div>
+                    <div class="text-sm text-gray-500">${pinyin}</div>
+                `;
+                
+                optionEl.addEventListener('click', () => selectOption(option, optionEl));
+                container.appendChild(optionEl);
+            });
+        }
+
+        // 选择选项
+        function selectOption(selected, optionEl) {
+            const correctAnswer = gameState.currentQuestion.missing;
+            const isCorrect = selected === correctAnswer;
+            
+            if (isCorrect) {
+                // 正确答案
+                optionEl.classList.add('correct-animation');
+                
+                // 计算分数：基础分10分 + 连击奖励 + 时间奖励
+                const baseScore = 10;
+                const comboBonus = gameState.combo * 2;
+                const timeBonus = Math.max(0, Math.floor(gameState.timeLeft / 5)); // 剩余时间奖励
+                const totalScore = baseScore + comboBonus + timeBonus;
+                
+                gameState.score += totalScore;
+                gameState.combo++;
+                gameState.correctCount++;
+                gameState.maxCombo = Math.max(gameState.maxCombo, gameState.combo);
+                
+                // 清空游戏界面反馈区域
+                document.getElementById('feedback').innerHTML = '';
+                
+                // 在toast中显示连击信息
+                let toastMessage = '太棒了！答对了！';
+                if (gameState.combo >= 3) {
+                    toastMessage += ` 🔥 ${gameState.combo}连击！`;
+                } else if (gameState.combo >= 2) {
+                    toastMessage += ` ⚡ ${gameState.combo}连击！`;
+                }
+                showToast(toastMessage, 'success');
+                
+                // 检查是否完成当前关卡
+                gameState.currentQuestionIndex++;
+                if (gameState.currentQuestionIndex >= gameState.questionsPerLevel) {
+                    // 完成当前关卡，显示结果页面
+                    setTimeout(() => {
+                        showResultPage();
+                    }, 1000);
+                } else {
+                    // 继续当前关卡的下一题
+                    setTimeout(() => {
+                        showQuestion();
+                        updateProgress();
+                    }, 1000);
+                }
+            } else {
+                // 错误答案
+                optionEl.classList.add('wrong-animation');
+                gameState.combo = 0;
+                
+                // 清空游戏界面反馈区域
+                document.getElementById('feedback').innerHTML = '';
+                showToast(`没关系，继续加油！正确答案是：${correctAnswer}`, 'error');
+                
+                // 检查是否完成当前关卡
+                gameState.currentQuestionIndex++;
+                if (gameState.currentQuestionIndex >= gameState.questionsPerLevel) {
+                    // 完成当前关卡，显示结果页面
+                    setTimeout(() => {
+                        showResultPage();
+                    }, 1000);
+                } else {
+                    // 继续当前关卡的下一题
+                    setTimeout(() => {
+                        showQuestion();
+                        updateProgress();
+                    }, 1000);
+                }
+            }
+            
+            // 更新显示
+            updateDisplay();
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            document.getElementById('currentLevel').textContent = gameState.currentLevel;
+            document.getElementById('currentScore').textContent = gameState.score;
+            document.getElementById('combo').textContent = gameState.combo;
+        }
+
+        // 更新进度
+        function updateProgress() {
+            // 计算本关进度：当前关卡内的题目进度
+            const currentLevelProgress = gameState.currentQuestionIndex / gameState.questionsPerLevel * 100;
+            
+            // 添加调试信息
+            console.log('更新进度:', {
+                currentQuestionIndex: gameState.currentQuestionIndex,
+                questionsPerLevel: gameState.questionsPerLevel,
+                progress: currentLevelProgress + '%'
+            });
+            
+            document.getElementById('progressBar').style.width = currentLevelProgress + '%';
+            
+            // 更新进度显示 - 显示已完成的题目数 / 总题目数
+            document.getElementById('progressDisplay').textContent = `${gameState.currentQuestionIndex}/${gameState.questionsPerLevel}`;
+        }
+
+        // 开始计时
+        function startTimer() {
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                document.getElementById('countdown').textContent = `倒计时 ${gameState.timeLeft}.0`;
+                
+                // 时间不足时的警告
+                if (gameState.timeLeft <= 5) {
+                    document.getElementById('countdown').classList.add('text-red-500', 'animate-pulse');
+                } else {
+                    document.getElementById('countdown').classList.remove('text-red-500', 'animate-pulse');
+                }
+                
+                                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    // 清空游戏界面反馈区域
+                    document.getElementById('feedback').innerHTML = '';
+                    showToast('时间到！', 'error');
+                    
+                    // 延迟1秒后自动进入结果页
+                    setTimeout(() => {
+                        showResultPage();
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        // 结束游戏
+        function endGame() {
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+            
+            // 解锁成就
+            const achievements = [];
+            if (window.achievements && window.achievements.unlockAchievement) {
+                if (gameState.correctCount > 0) {
+                    if (window.achievements.unlockAchievement('idm_first_finish')) {
+                        achievements.push({ icon: '📚', name: '成语初体验' });
+                    }
+                    // 解锁系统级徽章
+                    window.achievements.unlockAchievement('global_first_game');
+                }
+                if (gameState.score >= 50) {
+                    if (window.achievements.unlockAchievement('idm_high_score')) {
+                        achievements.push({ icon: '⭐', name: '成语高手' });
+                    }
+                }
+                if (gameState.maxCombo >= 3) {
+                    if (window.achievements.unlockAchievement('idm_combo_master')) {
+                        achievements.push({ icon: '🔥', name: '连击大师' });
+                    }
+                }
+            }
+            
+            // 记录到学习中心（语文-成语）
+            try {
+                if (window.recordLearningProgress) {
+                    const accuracy = Math.round((gameState.correctCount / gameState.totalQuestions) * 100);
+                    const totalTime = gameState.totalQuestions * 30; // 总用时
+                    window.recordLearningProgress('chinese', 'idioms', accuracy, totalTime);
+                }
+            } catch (_) {}
+            
+            // 显示结果页面
+            showResultPage();
+            
+            // 显示成就
+            if (achievements.length > 0) {
+                const achievementsEl = document.getElementById('achievements');
+                achievementsEl.innerHTML = `
+                    <h3 class="text-lg font-bold mb-4">获得成就</h3>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        ${achievements.map(achievement => `
+                            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm">
+                                <span class="mr-2">${achievement.icon}</span>
+                                <span>${achievement.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // 显示结果页面
+        function showResultPage() {
+            document.getElementById('gamePage').classList.add('hidden');
+            document.getElementById('startPage').classList.add('hidden');
+            document.getElementById('resultPage').classList.remove('hidden');
+            
+            // 更新结果
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('final-level').textContent = gameState.currentLevel;
+            document.getElementById('final-accuracy').textContent = `${Math.round((gameState.correctCount / gameState.currentLevel) * 100)}%`;
+            document.getElementById('maxCombo').textContent = gameState.maxCombo;
+            
+            // 根据表现显示不同的结果
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            const accuracy = Math.round((gameState.correctCount / gameState.currentLevel) * 100);
+            
+            if (accuracy >= 90) {
+                resultIcon.textContent = '🏆';
+                resultTitle.textContent = '完美表现！';
+            } else if (accuracy >= 70) {
+                resultIcon.textContent = '🎉';
+                resultTitle.textContent = '很棒！';
+            } else if (accuracy >= 50) {
+                resultIcon.textContent = '👍';
+                resultTitle.textContent = '不错哦！';
+            } else {
+                resultIcon.textContent = '💪';
+                resultTitle.textContent = '继续努力！';
+            }
+            
+            // 控制"下一关"按钮的显示
+            const nextLevelBtn = document.getElementById('nextLevel');
+            if (gameState.currentLevel >= 20) {
+                // 最后一关，隐藏"下一关"按钮
+                nextLevelBtn.style.display = 'none';
+            } else {
+                // 不是最后一关，显示"下一关"按钮
+                nextLevelBtn.style.display = 'inline-flex';
+            }
+        }
+
+        // 显示Toast提示
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `fixed top-20 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-sm text-gray-800 px-6 py-3 rounded-full shadow-lg transition-all duration-300 z-50`;
+            
+            if (type === 'success') {
+                toast.classList.add('bg-green-500', 'text-white');
+            } else if (type === 'error') {
+                toast.classList.add('bg-red-500', 'text-white');
+            } else {
+                toast.classList.add('bg-blue-500', 'text-white');
+            }
+            
+            toast.classList.remove('opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 2000);
+        }
+
+        // 初始化游戏
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化游戏状态
+            gameState = {
+                difficulty: 'easy',
+                theme: 'nature',
+                isTimerEnabled: true
+            };
+            
+            // 添加按钮事件监听器
+            document.getElementById('nextLevel').addEventListener('click', nextLevel);
+            document.getElementById('playAgain').addEventListener('click', () => {
+                gameState.currentLevel = 1;
+                gameState.score = 0;
+                gameState.combo = 0;
+                gameState.maxCombo = 0;
+                gameState.correctCount = 0;
+                startGame();
+            });
+            document.getElementById('backToHome').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+            
+            // 开始按钮事件监听器
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            
+            // 难度选择按钮事件监听器
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    gameState.difficulty = this.dataset.difficulty;
+                    checkStartButton();
+                });
+            });
+            
+            // 主题选择按钮事件监听器
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    gameState.theme = this.dataset.theme;
+                    checkStartButton();
+                });
+            });
+            
+            // 倒计时开关事件监听器
+            document.getElementById('timer-toggle').addEventListener('change', function() {
+                gameState.isTimerEnabled = this.checked;
+                updateTimerDescription();
+            });
+            
+            // 默认选择
+            document.querySelector('[data-difficulty="easy"]').click();
+            document.querySelector('[data-theme="nature"]').click();
+            
+            // 添加样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .difficulty-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0.75rem;
+                    border-radius: 0.75rem;
+                    border: 2px solid #e5e7eb;
+                    background: white;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .difficulty-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+                }
+                .difficulty-btn.active {
+                    border-color: #4F46E5;
+                    background: linear-gradient(135deg, #4F46E5, #10B981);
+                    color: white;
+                }
+                .theme-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0.75rem;
+                    border-radius: 0.75rem;
+                    border: 2px solid #e5e7eb;
+                    background: white;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                .theme-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+                }
+                .theme-btn.active {
+                    border-color: #4F46E5;
+                    background: linear-gradient(135deg, #4F46E5, #10B981);
+                    color: white;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // 渲染徽章预览
+            renderBadgePreview();
+        });
+    </script>
+</body>
+</html>

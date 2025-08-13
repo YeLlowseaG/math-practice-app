@@ -471,6 +471,10 @@
                         chineseProgress += chinese.poetry.totalScore / chinese.poetry.attempts;
                         chineseCount++;
                     }
+                    if (chinese.idioms?.attempts > 0) {
+                        chineseProgress += chinese.idioms.totalScore / chinese.idioms.attempts;
+                        chineseCount++;
+                    }
                     
                     if (chineseCount > 0) {
                         totalProgress += (chineseProgress / chineseCount);
@@ -674,8 +678,8 @@
                     const all = window.achievements.getAll();
                     const globals = all.filter(function(a){ return a.scope === 'global'; });
                     const nonGlobals = all.filter(function(a){ return a.scope !== 'global'; });
-                    const container = document.getElementById('achievements-container');
-                    container.innerHTML = '';
+                const container = document.getElementById('achievements-container');
+                container.innerHTML = '';
                     // 统计并显示数量（已获/总数）
                     var totalCount = all.length;
                     var earnedTotal = all.filter(function(a){ return a.earned; }).length;
@@ -684,16 +688,16 @@
                     // 系统级（横向滚动项）
                     globals.forEach(function(a){
                         const earned = !!a.earned;
-                        const badge = document.createElement('div');
+                    const badge = document.createElement('div');
                         badge.className = `flex-shrink-0 w-36 snap-start flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${earned ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-300' : 'bg-gray-100 border-2 border-gray-200 opacity-60'}`;
-                        badge.innerHTML = `
+                    badge.innerHTML = `
                             <div class="text-2xl mb-1">${a.icon}</div>
                             <div class="text-xs font-bold text-center text-gray-700">${a.name}</div>
                             <div class="text-xs text-gray-500 text-center mt-1" style="font-size: 10px;">${a.desc}</div>
                         `;
                         badge.title = `${a.name}: ${a.desc} ${earned ? '✅ 已获得' : '❌ 未获得'}`;
-                        container.appendChild(badge);
-                    });
+                    container.appendChild(badge);
+                });
                     var earnedCount = globals.filter(function(a){ return a.earned; }).length;
                     document.getElementById('total-badges').textContent = earnedCount;
 
@@ -778,6 +782,15 @@
                     chineseCount++;
                     if (poetryAvg < 70) {
                         suggestions.push("🎭 诗词拼图需要多练，建议背诵一些简单的古诗。");
+                    }
+                }
+                
+                if (chinese.idioms?.attempts > 0) {
+                    const idiomsAvg = chinese.idioms.totalScore / chinese.idioms.attempts;
+                    chineseTotal += idiomsAvg;
+                    chineseCount++;
+                    if (idiomsAvg < 70) {
+                        suggestions.push("📚 成语填空需要积累，建议多读成语故事书。");
                     }
                 }
 
@@ -996,7 +1009,8 @@
                     chinese: {
                         pinyin: { totalScore: 320, attempts: 4, consonantsLearned: ['b', 'p', 'm', 'f'], vowelsLearned: ['a', 'o', 'e'] },
                         antonyms: { totalScore: 450, attempts: 6, wordsLearned: [] },
-                        poetry: { totalScore: 180, attempts: 2, poemsCompleted: [] }
+                        poetry: { totalScore: 180, attempts: 2, poemsCompleted: [] },
+                        idioms: { totalScore: 0, attempts: 0, idiomsCompleted: [] }
                     },
                     math: {
                         addition: { totalScore: 850, attempts: 12, bestStreak: 5 },
