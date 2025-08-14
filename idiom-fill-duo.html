@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>成语填空大挑战 - 双人对战</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script defer src="./assets/achievements.js"></script>
+    <script defer src="./wellness.js"></script>
+</head>
+<body class="bg-gradient-to-b from-blue-50 to-indigo-50 min-h-screen font-sans text-gray-800 overflow-hidden">
+    <!-- 开始界面 -->
+    <div id="start-screen" class="flex flex-col items-center justify-center h-screen p-6">
+        <button onclick="window.location.href='index.html'" class="absolute top-4 right-4 bg-white/90 px-4 py-2 rounded-full shadow-lg text-sm font-bold text-gray-600">
+            <i class="fa fa-home mr-2"></i>首页
+        </button>
+        
+        <div class="text-center max-w-lg mx-auto bg-white rounded-3xl shadow-2xl p-8">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-cyan-500 mb-4">成语填空大挑战</h1>
+            <p class="text-lg mb-6">两个人，一人一边<br>找出正确的成语，看谁更快！</p>
+            
+            <div class="flex justify-center mb-8">
+                <div class="w-24 h-24 bg-red-500 rounded-full flex items-center justify-center text-white text-4xl shadow-lg">
+                    <i class="fa fa-user"></i>
+                </div>
+                <div class="mx-4 text-2xl flex items-center">VS</div>
+                <div class="w-24 h-24 bg-cyan-500 rounded-full flex items-center justify-center text-white text-4xl shadow-lg">
+                    <i class="fa fa-user"></i>
+                </div>
+            </div>
+            
+            <div class="mb-6 flex items-center justify-center gap-4 bg-gray-50 rounded-2xl p-4">
+                <i class="fa fa-clock-o text-gray-600"></i>
+                <span class="text-gray-700 font-medium">倒计时模式</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="timer-toggle" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+                <span class="text-xs text-gray-500" id="timer-description">每题10秒限时</span>
+            </div>
+            
+            <div id="badge-preview" class="mt-6">
+                <h3 class="text-sm font-bold mb-2">我的徽章</h3>
+                <div id="badge-preview-grid" class="flex justify-center gap-3 flex-wrap"></div>
+            </div>
+
+            <button id="start-btn" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 px-8 rounded-full text-xl shadow-lg transition-all duration-300 hover:scale-105 active:scale-95">
+                开始游戏 <i class="fa fa-play ml-2"></i>
+            </button>
+
+            <div class="mt-6 text-sm text-gray-500">
+                <p>适合年龄：6-9岁</p>
+            </div>
+        </div>
+        
+        <div class="absolute top-10 left-10 text-5xl text-red-500/30">
+            <i class="fa fa-star"></i>
+        </div>
+        <div class="absolute bottom-10 right-10 text-5xl text-cyan-500/30">
+            <i class="fa fa-heart"></i>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="hidden h-screen flex flex-col">
+        <div class="flex justify-between items-center p-4 bg-white/80 shadow-md">
+            <div class="flex items-center gap-3">
+                <button onclick="window.location.href='index.html'" class="bg-white/90 px-3 py-2 rounded-full shadow-md text-sm font-bold text-gray-600">
+                    <i class="fa fa-home mr-1"></i>首页
+                </button>
+                <div class="bg-yellow-400 px-4 py-2 rounded-full text-sm font-bold shadow-md">
+                    <span id="round-counter">第1轮</span> / 共10轮
+                </div>
+            </div>
+            
+            <div id="timer" class="text-2xl font-bold text-yellow-500 bg-white/90 px-6 py-2 rounded-full shadow-md">
+                <i class="fa fa-clock-o mr-2"></i><span id="countdown">10</span>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col lg:flex-row">
+            <!-- 玩家1区域 -->
+            <div class="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-red-50 to-pink-50">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center text-white text-3xl shadow-lg mb-3">
+                        <i class="fa fa-user"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-red-500">玩家1</h3>
+                    <div class="text-4xl font-bold text-red-500 mt-2" id="score-player1">0</div>
+                </div>
+                
+                <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+                    <div class="text-2xl font-bold text-gray-800 mb-4" id="idiom-player1">守_待兔</div>
+                    <div class="text-lg text-gray-600 mb-6" id="pinyin-player1">shǒu _ dài tù</div>
+                    <div class="text-sm text-gray-500 mb-4" id="hint-player1">等待兔子撞到树上</div>
+                    
+                    <div id="options-player1" class="grid grid-cols-2 gap-3">
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden lg:block w-1 bg-gradient-to-b from-transparent via-yellow-400 to-transparent"></div>
+
+            <!-- 玩家2区域 -->
+            <div class="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-cyan-50 to-blue-50">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-cyan-500 rounded-full flex items-center justify-center text-white text-3xl shadow-lg mb-3">
+                        <i class="fa fa-user"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-cyan-500">玩家2</h3>
+                    <div class="text-4xl font-bold text-cyan-500 mt-2" id="score-player2">0</div>
+                </div>
+                
+                <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
+                    <div class="text-2xl font-bold text-gray-800 mb-4" id="idiom-player2">守_待兔</div>
+                    <div class="text-lg text-gray-600 mb-6" id="pinyin-player2">shǒu _ dài tù</div>
+                    <div class="text-sm text-gray-500 mb-4" id="hint-player2">等待兔子撞到树上</div>
+                    
+                    <div id="options-player2" class="grid grid-cols-2 gap-3">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果界面 -->
+    <div id="result-screen" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4 text-center">
+            <div class="text-6xl mb-4" id="result-icon">🏆</div>
+            <h2 class="text-3xl font-bold mb-4" id="result-title">游戏结束！</h2>
+            <div class="text-xl mb-6">
+                <div class="mb-2">玩家1: <span class="font-bold text-red-500" id="final-score-player1">0</span>分</div>
+                <div class="mb-2">玩家2: <span class="font-bold text-cyan-500" id="final-score-player2">0</span>分</div>
+                <div class="text-2xl font-bold mt-4" id="winner-text">平局！</div>
+            </div>
+            <div class="flex gap-4 justify-center">
+                <button onclick="restartGame()" class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95">
+                    再来一局
+                </button>
+                <button onclick="window.location.href='index.html'" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95">
+                    返回首页
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        let gameState = {
+            currentRound: 1,
+            totalRounds: 10,
+            scores: { player1: 0, player2: 0 },
+            currentQuestions: { player1: null, player2: null },
+            isTimerEnabled: true,
+            timeLeft: 10,
+            timer: null
+        };
+
+        // 成语数据库
+        const idiomDatabase = [
+            { idiom: '守株待兔', missing: '株', pinyin: 'shǒu zhū dài tù', hint: '等待兔子撞到树上' },
+            { idiom: '画蛇添足', missing: '足', pinyin: 'huà shé tiān zú', hint: '多此一举' },
+            { idiom: '对牛弹琴', missing: '琴', pinyin: 'duì niú tán qín', hint: '对不懂的人说深奥的话' },
+            { idiom: '亡羊补牢', missing: '牢', pinyin: 'wáng yáng bǔ láo', hint: '及时补救' },
+            { idiom: '井底之蛙', missing: '蛙', pinyin: 'jǐng dǐ zhī wā', hint: '见识短浅' },
+            { idiom: '学而不厌', missing: '厌', pinyin: 'xué ér bù yàn', hint: '学习永不满足' },
+            { idiom: '温故知新', missing: '新', pinyin: 'wēn gù zhī xīn', hint: '复习旧知识得到新理解' },
+            { idiom: '不耻下问', missing: '问', pinyin: 'bù chǐ xià wèn', hint: '虚心向别人请教' }
+        ];
+
+        // 开始游戏
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            gameState.currentRound = 1;
+            gameState.scores = { player1: 0, player2: 0 };
+            
+            generateNewQuestions();
+            updateDisplay();
+            
+            if (gameState.isTimerEnabled) {
+                startTimer();
+            }
+        }
+
+        // 生成新题目
+        function generateNewQuestions() {
+            const shuffled = [...idiomDatabase].sort(() => Math.random() - 0.5);
+            gameState.currentQuestions.player1 = shuffled[0];
+            gameState.currentQuestions.player2 = shuffled[1] || shuffled[0];
+            
+            displayQuestion('player1');
+            displayQuestion('player2');
+        }
+
+        // 显示题目
+        function displayQuestion(player) {
+            const question = gameState.currentQuestions[player];
+            if (!question) return;
+            
+            const idiomEl = document.getElementById(`idiom-${player}`);
+            const pinyinEl = document.getElementById(`pinyin-${player}`);
+            const hintEl = document.getElementById(`hint-${player}`);
+            const optionsEl = document.getElementById(`options-${player}`);
+            
+            const idiom = question.idiom;
+            const missing = question.missing;
+            const missingIndex = idiom.indexOf(missing);
+            
+            let displayText = '';
+            for (let i = 0; i < idiom.length; i++) {
+                if (i === missingIndex) {
+                    displayText += '<span class="text-orange-400 border-b-2 border-transparent px-1">_</span>';
+                } else {
+                    displayText += idiom[i];
+                }
+            }
+            idiomEl.innerHTML = displayText;
+            
+            const pinyin = question.pinyin;
+            let displayPinyin = '';
+            for (let i = 0; i < pinyin.split(' ').length; i++) {
+                if (i === missingIndex) {
+                    displayPinyin += '<span class="text-orange-400 border-b-2 border-transparent px-1">_</span>';
+                } else {
+                    displayPinyin += pinyin.split(' ')[i];
+                }
+                if (i < pinyin.split(' ').length - 1) {
+                    displayPinyin += ' ';
+                }
+            }
+            pinyinEl.innerHTML = displayPinyin;
+            
+            hintEl.textContent = question.hint;
+            generateOptions(player, question);
+        }
+
+        // 生成选项
+        function generateOptions(player, question) {
+            const optionsEl = document.getElementById(`options-${player}`);
+            const correctAnswer = question.missing;
+            
+            const allChars = '天地人山水火木金土日月星辰风云雨雪花草树木鸟兽虫鱼';
+            let wrongOptions = [];
+            while (wrongOptions.length < 3) {
+                const char = allChars[Math.floor(Math.random() * allChars.length)];
+                if (char !== correctAnswer && !wrongOptions.includes(char)) {
+                    wrongOptions.push(char);
+                }
+            }
+            
+            const allOptions = [...wrongOptions, correctAnswer].sort(() => Math.random() - 0.5);
+            
+            optionsEl.innerHTML = allOptions.map(option => `
+                <button class="bg-white border-2 border-gray-200 rounded-2xl p-4 text-center cursor-pointer transition-all duration-300 text-xl font-bold text-gray-800 shadow-lg hover:shadow-xl hover:scale-105" 
+                        onclick="selectOption('${player}', '${option}', this)">
+                    ${option}
+                </button>
+            `).join('');
+        }
+
+        // 选择选项
+        function selectOption(player, selected, optionEl) {
+            const question = gameState.currentQuestions[player];
+            const correctAnswer = question.missing;
+            const isCorrect = selected === correctAnswer;
+            
+            if (isCorrect) {
+                optionEl.style.backgroundColor = '#10B981';
+                optionEl.style.color = 'white';
+                
+                const timeBonus = Math.max(0, Math.floor(gameState.timeLeft / 2));
+                const score = 10 + timeBonus;
+                gameState.scores[player] += score;
+                
+                if (window.achievements) {
+                    if (gameState.scores[player] >= 50) {
+                        window.achievements.unlockAchievement('combo_duo');
+                    }
+                    if (gameState.currentRound === 1 && gameState.scores[player] > 0) {
+                        window.achievements.unlockAchievement('first_win');
+                    }
+                }
+            } else {
+                optionEl.style.backgroundColor = '#EF4444';
+                optionEl.style.color = 'white';
+            }
+            
+            const optionsEl = document.getElementById(`options-${player}`);
+            optionsEl.querySelectorAll('button').forEach(btn => {
+                btn.disabled = true;
+                btn.style.cursor = 'not-allowed';
+            });
+            
+            updateDisplay();
+            
+            if (bothPlayersAnswered()) {
+                setTimeout(() => {
+                    nextRound();
+                }, 1500);
+            }
+        }
+
+        // 检查两个玩家是否都答完了
+        function bothPlayersAnswered() {
+            const player1Answered = document.querySelector('#options-player1 button:disabled');
+            const player2Answered = document.querySelector('#options-player2 button:disabled');
+            return player1Answered && player2Answered;
+        }
+
+        // 下一轮
+        function nextRound() {
+            gameState.currentRound++;
+            
+            if (gameState.currentRound > gameState.totalRounds) {
+                endGame();
+                return;
+            }
+            
+            generateNewQuestions();
+            updateDisplay();
+            
+            if (gameState.isTimerEnabled) {
+                resetTimer();
+                startTimer();
+            }
+        }
+
+        // 结束游戏
+        function endGame() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            document.getElementById('final-score-player1').textContent = gameState.scores.player1;
+            document.getElementById('final-score-player2').textContent = gameState.scores.player2;
+            
+            const winnerText = document.getElementById('winner-text');
+            if (gameState.scores.player1 > gameState.scores.player2) {
+                winnerText.textContent = '玩家1获胜！';
+                winnerText.className = 'text-2xl font-bold mt-4 text-red-500';
+            } else if (gameState.scores.player2 > gameState.scores.player1) {
+                winnerText.textContent = '玩家2获胜！';
+                winnerText.className = 'text-2xl font-bold mt-4 text-cyan-500';
+            } else {
+                winnerText.textContent = '平局！';
+                winnerText.className = 'text-2xl font-bold mt-4 text-gray-600';
+            }
+            
+            if (window.recordLearningProgress) {
+                const totalScore = gameState.scores.player1 + gameState.scores.player2;
+                const avgScore = Math.round(totalScore / 2);
+                window.recordLearningProgress('chinese', 'idioms', avgScore, gameState.totalRounds * 10);
+            }
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            document.getElementById('result-screen').classList.add('hidden');
+            startGame();
+        }
+
+        // 开始计时
+        function startTimer() {
+            if (!gameState.isTimerEnabled) return;
+            
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                document.getElementById('countdown').textContent = gameState.timeLeft;
+                
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    setTimeout(() => {
+                        nextRound();
+                    }, 1000);
+                }
+            }, 1000);
+        }
+
+        // 重置计时器
+        function resetTimer() {
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+            }
+            gameState.timeLeft = 10;
+            document.getElementById('countdown').textContent = gameState.timeLeft;
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            document.getElementById('score-player1').textContent = gameState.scores.player1;
+            document.getElementById('score-player2').textContent = gameState.scores.player2;
+            document.getElementById('round-counter').textContent = `第${gameState.currentRound}轮`;
+        }
+
+        // 倒计时开关
+        document.getElementById('timer-toggle').addEventListener('change', function() {
+            gameState.isTimerEnabled = this.checked;
+            const description = document.getElementById('timer-description');
+            if (gameState.isTimerEnabled) {
+                description.textContent = '每题10秒限时';
+            } else {
+                description.textContent = '无时间限制';
+            }
+        });
+
+        // 开始按钮事件
+        document.getElementById('start-btn').addEventListener('click', startGame);
+
+        // 徽章预览
+        (function(){
+            const GAME_KEY = 'idiom_fill_duo';
+            const badgeDefs = [
+                { id: 'first_win', name: '首胜达成', icon: '🎯' },
+                { id: 'combo_duo', name: '连击达人', icon: '🔥' },
+                { id: 'speed_duel', name: '极速对决', icon: '⚡' },
+                { id: 'round_master', name: '回合大师', icon: '🏆' },
+                { id: 'perfect_round', name: '完美回合', icon: '💎' }
+            ];
+            function getEarnedIds(){
+                try { return JSON.parse(localStorage.getItem('earnedAchievements_' + GAME_KEY) || '[]'); } catch(_) { return []; }
+            }
+            function renderBadgePreview(){
+                const grid = document.getElementById('badge-preview-grid');
+                if(!grid) return;
+                const owned = new Set(getEarnedIds());
+                grid.innerHTML = badgeDefs.map(a => {
+                    const earned = owned.has(a.id);
+                    const base = earned ? 'from-yellow-100 to-orange-100 border-yellow-300 text-amber-900' : 'from-gray-50 to-gray-100 border-gray-200 text-gray-400 opacity-80';
+                    return `
+                        <div class="relative w-20 h-20 rounded-2xl border-2 bg-gradient-to-br ${base} shadow-sm flex flex-col items-center justify-center overflow-hidden" title="${a.name}">
+                            <div class="text-2xl mb-1">${a.icon}</div>
+                            <div class="text-[10px] font-bold text-center leading-tight px-1">${a.name}</div>
+                            ${earned ? '<div class="absolute right-1 top-1 bg-amber-400 text-white text-[10px] px-1 rounded-full shadow">已获</div>' : '<div class="absolute right-1 top-1 bg-gray-400 text-white text-[10px] px-1 rounded-full shadow">未获</div>'}
+                        </div>`;
+                }).join('');
+            }
+            document.addEventListener('DOMContentLoaded', renderBadgePreview);
+        })();
+    </script>
+</body>
+</html> 
